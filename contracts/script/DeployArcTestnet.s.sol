@@ -21,7 +21,9 @@ contract DeployArcTestnet is LocalScriptBase {
         address deployer = _account(privateKey);
         address resolver = vm.envOr("RESOLVER_ADDRESS", deployer);
         address configuredSettlementToken = vm.envOr("SETTLEMENT_TOKEN_ADDRESS", address(0));
+        bool shouldSeedMarkets = vm.envOr("SEED_DEMO_MARKETS", uint256(0)) == 1;
         string memory settlementTokenStrategy;
+        address[] memory markets = new address[](0);
 
         vm.startBroadcast(privateKey);
 
@@ -42,9 +44,12 @@ contract DeployArcTestnet is LocalScriptBase {
         factory = new MarketFactory();
         factory.setResolverApproval(resolver, true);
 
+        if (shouldSeedMarkets) {
+            markets = _createDemoMarkets(factory, settlementToken, resolver);
+        }
+
         vm.stopBroadcast();
 
-        address[] memory markets = new address[](0);
         vm.writeFile(
             ARC_TESTNET_ADDRESSES_PATH,
             _deploymentJson(
@@ -56,6 +61,36 @@ contract DeployArcTestnet is LocalScriptBase {
                 "arc-testnet",
                 settlementTokenStrategy
             )
+        );
+    }
+
+    function _createDemoMarkets(
+        MarketFactory factory,
+        address settlementToken,
+        address resolver
+    ) internal returns (address[] memory markets) {
+        markets = new address[](3);
+
+        markets[0] = factory.createMarket(
+            settlementToken,
+            resolver,
+            block.timestamp + 14 days,
+            "Will BTC close above $120K at month end?",
+            "arc-testnet://probity/btc-above-120k"
+        );
+        markets[1] = factory.createMarket(
+            settlementToken,
+            resolver,
+            block.timestamp + 21 days,
+            "Will Arc announce a stablecoin gas pilot before quarter end?",
+            "arc-testnet://probity/arc-stablecoin-gas-pilot"
+        );
+        markets[2] = factory.createMarket(
+            settlementToken,
+            resolver,
+            block.timestamp + 30 days,
+            "Will ETH ETF weekly inflows exceed $1B this month?",
+            "arc-testnet://probity/eth-etf-weekly-inflows"
         );
     }
 }

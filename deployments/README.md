@@ -81,6 +81,26 @@ Optional:
 ```txt
 RESOLVER_ADDRESS=0x...
 SETTLEMENT_TOKEN_ADDRESS=0x...
+SEED_DEMO_MARKETS=0
 ```
 
-If `SETTLEMENT_TOKEN_ADDRESS` is omitted, the script deploys a test-only `MockUSDC`. Use a dedicated testnet deployer key and never commit secrets.
+If `SETTLEMENT_TOKEN_ADDRESS` is omitted, the script deploys a test-only `MockUSDC`. Set `SEED_DEMO_MARKETS=1` only when you want the deployment script to create three demo markets during the same broadcast.
+
+## Frontend handoff
+
+After a successful Arc testnet deployment:
+
+1. Review `deployments/arc-testnet/addresses.json`.
+2. Run `pnpm contracts:export-abis` after Foundry compilation.
+3. Set Vercel environment variables:
+
+```txt
+NEXT_PUBLIC_DEPLOYMENT_TARGET=arc-testnet
+NEXT_PUBLIC_MARKET_DATA_MODE=auto
+NEXT_PUBLIC_CHAIN_ID=5042002
+NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
+NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=<MarketFactory from deployments/arc-testnet/addresses.json>
+NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS=<MockUSDC or configured settlement token address>
+```
+
+Use a dedicated testnet deployer wallet, testnet funds only, and never commit `.env` files or private keys.

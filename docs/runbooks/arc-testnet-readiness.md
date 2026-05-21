@@ -39,7 +39,7 @@ Expected `deployments/arc-testnet/addresses.json` shape:
 
 ```json
 {
-  "chainId": 0,
+  "chainId": 5042002,
   "deploymentBlock": 0,
   "contracts": {
     "MarketFactory": "0x...",
@@ -87,9 +87,12 @@ ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
 PRIVATE_KEY=0x...
 RESOLVER_ADDRESS=0x...
 SETTLEMENT_TOKEN_ADDRESS=0x...
+SEED_DEMO_MARKETS=0
 ```
 
 `SETTLEMENT_TOKEN_ADDRESS` is optional. If omitted, the script deploys a test-only `MockUSDC` and records it as the settlement token. If provided, the address must point to an existing ERC20-style contract.
+
+`SEED_DEMO_MARKETS` defaults to `0`. Set it to `1` only when you want the Arc testnet deployment script to create three demo markets during deployment. These are presentation markets only; they do not add liquidity or execute trades automatically.
 
 Run:
 
@@ -111,6 +114,15 @@ deployments/arc-testnet/addresses.json
 ```
 
 The script verifies it is running on chain id `5042002` before broadcasting.
+
+## Safety Notes
+
+- Do not deploy from a wallet that holds production or mainnet funds.
+- Do not commit `.env`, `.env.local`, private keys, or funded wallet secrets.
+- Use a fresh test wallet for Arc testnet deployment.
+- Use testnet funds only.
+- Confirm `SETTLEMENT_TOKEN_ADDRESS` onchain before using an existing token.
+- Keep public demo fallback enabled until both `MarketFactory` and settlement token addresses are configured in Vercel.
 
 ## Vercel Checklist
 

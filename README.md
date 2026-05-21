@@ -298,12 +298,13 @@ ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
 PRIVATE_KEY=0x...
 RESOLVER_ADDRESS=0x...
 SETTLEMENT_TOKEN_ADDRESS=0x...
+SEED_DEMO_MARKETS=0
 
 pnpm contracts:deploy:arc-testnet
 pnpm contracts:export-abis
 ```
 
-`SETTLEMENT_TOKEN_ADDRESS` is optional for test deployments. If omitted, the script deploys a test-only `MockUSDC`. Never commit real private keys or `.env` files.
+`SETTLEMENT_TOKEN_ADDRESS` is optional for test deployments. If omitted, the script deploys a test-only `MockUSDC`. Set `SEED_DEMO_MARKETS=1` only if you want the deployment to create three presentation markets. Never commit real private keys or `.env` files.
 
 To deploy and refresh ABI artifacts in one step:
 

@@ -33,3 +33,4 @@ deployments/**/addresses.local.json
 
 *.log
 pnpm-debug.log*
+_tmp_*
