@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://probity-market.vercel.app"),
   title: "Probity",
   description: "Institutional-grade prediction markets on Arc",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg"
+  },
   alternates: {
     canonical: "/"
   },
