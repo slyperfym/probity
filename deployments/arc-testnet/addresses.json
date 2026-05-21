@@ -1,15 +1,15 @@
 {
   "chainId": 5042002,
-  "deploymentBlock": 0,
+  "deploymentBlock": 43383602,
   "contracts": {
-    "MarketFactory": "",
-    "MockUSDC": ""
+    "MarketFactory": "0x77262eba39f3830fd6ec60d52ffaf4bd6c0ef3a5",
+    "MockUSDC": "0x62f60afded532b8ca75ba5716cafdcff8ab90cc5"
   },
   "markets": [],
   "metadata": {
-    "deployer": "",
-    "resolver": "",
-    "settlementTokenStrategy": "USDC-style test token",
-    "mode": "arc-testnet-placeholder"
+    "deployer": "0xaa7aa6d54c28c8afb639389197ca2a900b6171c3",
+    "resolver": "0xaa7aa6d54c28c8afb639389197ca2a900b6171c3",
+    "settlementTokenStrategy": "deployed-test-MockUSDC",
+    "mode": "arc-testnet"
   }
 }
