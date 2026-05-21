@@ -7,7 +7,18 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Probity",
-  description: "Institutional-grade prediction markets on Arc"
+  description: "Institutional-grade prediction markets on Arc",
+  openGraph: {
+    description: "Institutional-grade prediction markets on Arc",
+    siteName: "Probity",
+    title: "Probity",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    description: "Institutional-grade prediction markets on Arc",
+    title: "Probity"
+  }
 };
 
 export default function RootLayout({

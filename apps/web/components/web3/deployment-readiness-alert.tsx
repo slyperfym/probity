@@ -32,7 +32,7 @@ function getDeploymentMessage() {
     }
 
     if (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken) {
-      return "Arc testnet configuration is ready. Probity is showing mock market data until MarketFactory and settlement token addresses are configured for this deployment.";
+      return "Arc testnet configuration is ready for this demo. Contract addresses are not configured yet, so Probity is showing mock market data until MarketFactory and settlement token addresses are added.";
     }
 
     return `Arc testnet target active for ${probityChain.name} (${probityChain.id}). Verify this chain metadata before public demos.`;
