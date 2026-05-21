@@ -20,8 +20,8 @@ export default function AdminPage() {
             Resolver operations dashboard.
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
-            Resolve expired local markets, monitor claimable outcomes, and keep mock fallback
-            available when local contracts are not deployed.
+            Resolve expired local markets, monitor claimable outcomes, and preserve demo
+            fallback behavior when deployed contract addresses are unavailable.
           </p>
         </div>
       </section>
@@ -39,7 +39,7 @@ export default function AdminPage() {
             icon={TimerReset}
             label="SLA"
             value="11m"
-            text="Mock average resolution time for dashboard composition."
+            text="Demo average resolution time for dashboard composition."
           />
           <AdminControlCard
             icon={ShieldCheck}

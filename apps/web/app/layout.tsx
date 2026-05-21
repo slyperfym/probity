@@ -6,10 +6,15 @@ import { Providers } from "@/app/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://probity-market.vercel.app"),
   title: "Probity",
   description: "Institutional-grade prediction markets on Arc",
+  alternates: {
+    canonical: "/"
+  },
   openGraph: {
     description: "Institutional-grade prediction markets on Arc",
+    url: "https://probity-market.vercel.app",
     siteName: "Probity",
     title: "Probity",
     type: "website"

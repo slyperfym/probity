@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -77,7 +77,7 @@ const features = [
 ];
 
 const metrics = [
-  { label: "Mock volume", value: "$37.4M" },
+  { label: "Demo volume", value: "$37.4M" },
   { label: "Active markets", value: "128" },
   { label: "Avg. resolution", value: "11m" }
 ];
@@ -105,9 +105,9 @@ export default function HomePage() {
                 Explore Markets
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Button size="lg" variant="secondary">
+              <Link className={cn(buttonVariants({ size: "lg", variant: "secondary" }))} href="#infrastructure">
                 View Protocol Design
-              </Button>
+              </Link>
             </div>
             <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3">
               {metrics.map((metric) => (
@@ -129,7 +129,7 @@ export default function HomePage() {
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-3">
                 <div>
                   <div className="text-sm font-medium text-white">Probity Market Terminal</div>
-                  <div className="text-xs text-slate-500">Mock preview data</div>
+                  <div className="text-xs text-slate-500">Demo market data</div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-emerald-300">
                   <span className="probity-pulse h-2 w-2 rounded-full bg-emerald-400" />

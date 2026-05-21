@@ -16,7 +16,7 @@ import { formatUsd } from "@/features/markets/lib/formatters";
 
 export const metadata = {
   title: "Portfolio | Probity",
-  description: "Mock user portfolio for Probity prediction markets"
+  description: "Demo user portfolio for Probity prediction markets"
 };
 
 export default function PortfolioPage() {
@@ -33,8 +33,8 @@ export default function PortfolioPage() {
             Wallet-level exposure and rewards.
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
-            Mock positions, claimable rewards, and activity history. This page is ready for
-            indexed wallet data once contracts and the indexer are integrated.
+            Demo positions, claimable rewards, and activity history. This page is ready for
+            indexed wallet data once Arc testnet contracts and indexing are configured.
           </p>
         </div>
       </section>
@@ -56,12 +56,12 @@ export default function PortfolioPage() {
             <StateCard
               description="Loading states are available for future wallet/indexer hydration while preserving layout stability."
               kind="loading"
-              title="Mock loading state"
+              title="Loading state preview"
             />
             <StateCard
               description="Indexer or RPC errors will render here with retry actions after data fetching is implemented."
               kind="error"
-              title="Mock error state"
+              title="Error state preview"
             />
           </div>
         </div>

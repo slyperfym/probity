@@ -5,7 +5,7 @@ import { MarketsBoard } from "@/features/markets/components/markets-board";
 
 export const metadata = {
   title: "Markets | Probity",
-  description: "Browse mock Probity prediction markets"
+  description: "Browse Probity demo prediction markets"
 };
 
 export default function MarketsPage() {
@@ -20,14 +20,14 @@ export default function MarketsPage() {
                 Forecasting markets for institutional signal.
               </h1>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
-                Browse mock YES/NO markets across macro, crypto, policy, Arc infrastructure,
-                and earnings. Data is local for now and shaped for future indexer and viem
-                integration.
+                Browse YES/NO markets across macro, crypto, policy, Arc infrastructure,
+                and earnings. Public demo data stays active until Arc testnet contract
+                addresses are configured.
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-slate-950/75 px-4 py-3 text-sm text-slate-300">
               <BarChart3 className="h-4 w-4 text-cyan-300" />
-              Mock market data
+              Demo market data
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { CreateMarketForm } from "@/features/market-creation/components/create-m
 
 export const metadata = {
   title: "Create Market | Probity",
-  description: "Mock market creation UI for Probity"
+  description: "Market creation workspace for Probity"
 };
 
 export default function CreatePage() {
@@ -20,7 +20,7 @@ export default function CreatePage() {
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
             Draft institutional-grade market terms, resolution criteria, resolver assignment,
-            and USDC-style settlement parameters before factory integration.
+            and USDC-style settlement parameters before live factory writes are enabled.
           </p>
         </div>
       </section>
@@ -36,7 +36,7 @@ export default function CreatePage() {
           <GuidelineCard
             icon={ShieldCheck}
             title="Resolver accountability"
-            text="Resolver selection remains centralized in this mock layer. Role-gated factory creation comes later."
+            text="Resolver selection remains controlled for the MVP. Role-gated factory creation is part of the next contract integration step."
           />
         </aside>
       </section>

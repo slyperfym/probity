@@ -17,7 +17,7 @@ export function CreateMarketForm() {
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>Create Market</CardTitle>
-          <Badge variant="info">Mock form</Badge>
+          <Badge variant="info">Demo draft</Badge>
         </div>
       </CardHeader>
       <CardContent>
