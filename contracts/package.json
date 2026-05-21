@@ -1,0 +1,15 @@
+{
+  "name": "@probity/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node ../scripts/run-forge-if-available.mjs build",
+    "test": "forge test",
+    "chain:local": "anvil --chain-id 31337 --block-time 1",
+    "deploy:local": "forge script script/DeployLocal.s.sol:DeployLocal --rpc-url http://127.0.0.1:8545 --broadcast",
+    "seed:local": "forge script script/SeedLocalMarkets.s.sol:SeedLocalMarkets --rpc-url http://127.0.0.1:8545 --broadcast",
+    "lint": "forge fmt --check",
+    "format": "forge fmt",
+    "clean": "forge clean"
+  }
+}

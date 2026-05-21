@@ -1,0 +1,14 @@
+{
+  "chainId": 31337,
+  "deploymentBlock": 0,
+  "contracts": {
+    "MarketFactory": "",
+    "MockUSDC": ""
+  },
+  "markets": [],
+  "metadata": {
+    "deployer": "",
+    "resolver": "",
+    "mode": "local-anvil"
+  }
+}

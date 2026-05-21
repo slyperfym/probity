@@ -1,0 +1,124 @@
+import type { Abi, Address } from "viem";
+import { getAddress, isAddress, zeroAddress } from "viem";
+
+import arcTestnetAddresses from "../../../deployments/arc-testnet/addresses.json";
+import arcTestnetMarketFactoryAbi from "../../../deployments/arc-testnet/abis/MarketFactory.json";
+import arcTestnetMockUsdcAbi from "../../../deployments/arc-testnet/abis/MockUSDC.json";
+import arcTestnetPredictionMarketAbi from "../../../deployments/arc-testnet/abis/PredictionMarket.json";
+import localAddresses from "../../../deployments/local/addresses.json";
+import localMarketFactoryAbi from "../../../deployments/local/abis/MarketFactory.json";
+import localMockUsdcAbi from "../../../deployments/local/abis/MockUSDC.json";
+import localPredictionMarketAbi from "../../../deployments/local/abis/PredictionMarket.json";
+import { publicEnv } from "@/config/env";
+
+type DeploymentTarget = "local" | "arc-testnet";
+export type MarketDataMode = "auto" | "mock" | "contracts";
+
+type DeploymentAddresses = {
+  chainId: number;
+  deploymentBlock: number;
+  contracts: {
+    MarketFactory?: string;
+    MockUSDC?: string;
+  };
+};
+
+export type ProbityContractName = "MarketFactory" | "MockUSDC";
+
+export type ProbityAddressMap = Record<ProbityContractName, Address | undefined>;
+
+function getDeploymentTarget(): DeploymentTarget {
+  return publicEnv.deploymentTarget === "arc-testnet" ? "arc-testnet" : "local";
+}
+
+function getMarketDataMode(): MarketDataMode {
+  if (publicEnv.marketDataMode === "mock" || publicEnv.marketDataMode === "contracts") {
+    return publicEnv.marketDataMode;
+  }
+
+  return "auto";
+}
+
+const deploymentByTarget: Record<DeploymentTarget, DeploymentAddresses> = {
+  "arc-testnet": arcTestnetAddresses,
+  local: localAddresses
+};
+
+const abiByTarget = {
+  "arc-testnet": {
+    marketFactory: arcTestnetMarketFactoryAbi as Abi,
+    mockUsdc: arcTestnetMockUsdcAbi as Abi,
+    predictionMarket: arcTestnetPredictionMarketAbi as Abi
+  },
+  local: {
+    marketFactory: localMarketFactoryAbi as Abi,
+    mockUsdc: localMockUsdcAbi as Abi,
+    predictionMarket: localPredictionMarketAbi as Abi
+  }
+} satisfies Record<
+  DeploymentTarget,
+  {
+    marketFactory: Abi;
+    mockUsdc: Abi;
+    predictionMarket: Abi;
+  }
+>;
+
+function normalizeAddress(value: string | undefined): Address | undefined {
+  if (!value || !isAddress(value)) {
+    return undefined;
+  }
+
+  return getAddress(value);
+}
+
+const activeDeploymentTarget = getDeploymentTarget();
+const activeDeployment = deploymentByTarget[activeDeploymentTarget];
+const activeAbis = abiByTarget[activeDeploymentTarget];
+
+export const contractAbis = {
+  marketFactory: activeAbis.marketFactory,
+  mockUsdc: activeAbis.mockUsdc,
+  predictionMarket: activeAbis.predictionMarket
+} as const;
+
+export const contractAddresses: ProbityAddressMap = {
+  MarketFactory:
+    normalizeAddress(publicEnv.marketFactoryAddress) ??
+    normalizeAddress(activeDeployment.contracts.MarketFactory),
+  MockUSDC:
+    normalizeAddress(publicEnv.settlementTokenAddress) ??
+    normalizeAddress(activeDeployment.contracts.MockUSDC)
+};
+
+export const deploymentConfig = {
+  chainId: activeDeployment.chainId,
+  deploymentBlock: activeDeployment.deploymentBlock,
+  marketDataMode: getMarketDataMode(),
+  target: activeDeploymentTarget
+} as const;
+
+export function hasContractAddress(name: ProbityContractName) {
+  return Boolean(contractAddresses[name]);
+}
+
+export function getMarketFactoryConfig() {
+  return {
+    abi: contractAbis.marketFactory,
+    address: contractAddresses.MarketFactory ?? zeroAddress
+  } as const;
+}
+
+export function getSettlementTokenConfig() {
+  return {
+    abi: contractAbis.mockUsdc,
+    address: contractAddresses.MockUSDC ?? zeroAddress
+  } as const;
+}
+
+export function getPredictionMarketConfig(address: Address | undefined) {
+  return {
+    abi: contractAbis.predictionMarket,
+    address: address ?? zeroAddress
+  } as const;
+}

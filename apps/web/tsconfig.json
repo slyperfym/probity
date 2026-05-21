@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@/app/*": ["./app/*"],
+      "@/components/*": ["./components/*"],
+      "@/config/*": ["./config/*"],
+      "@/features/*": ["./features/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/styles/*": ["./styles/*"],
+      "@probity/ui": ["../../packages/ui/src/index.ts"],
+      "@probity/config": ["../../packages/config/src/index.ts"],
+      "@probity/types": ["../../packages/types/src/index.ts"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

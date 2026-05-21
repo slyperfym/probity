@@ -1,0 +1,22 @@
+{
+  "name": "@probity/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "echo \"No config lint configured yet\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No config tests configured yet\"",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@probity/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

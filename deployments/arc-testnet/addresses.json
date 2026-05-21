@@ -1,0 +1,8 @@
+{
+  "chainId": 0,
+  "deploymentBlock": 0,
+  "contracts": {
+    "MarketFactory": "",
+    "MockUSDC": ""
+  }
+}
