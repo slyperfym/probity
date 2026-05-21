@@ -88,11 +88,14 @@ PRIVATE_KEY=0x...
 RESOLVER_ADDRESS=0x...
 SETTLEMENT_TOKEN_ADDRESS=0x...
 SEED_DEMO_MARKETS=0
+FORCE_SEED_MARKETS=0
 ```
 
 `SETTLEMENT_TOKEN_ADDRESS` is optional. If omitted, the script deploys a test-only `MockUSDC` and records it as the settlement token. If provided, the address must point to an existing ERC20-style contract.
 
 `SEED_DEMO_MARKETS` defaults to `0`. Set it to `1` only when you want the Arc testnet deployment script to create three demo markets during deployment. These are presentation markets only; they do not add liquidity or execute trades automatically.
+
+`FORCE_SEED_MARKETS` is only used by the standalone seed script. Leave it at `0` unless you intentionally want to create another set of demo markets on a factory that already has markets.
 
 Run:
 
@@ -114,6 +117,28 @@ deployments/arc-testnet/addresses.json
 ```
 
 The script verifies it is running on chain id `5042002` before broadcasting.
+
+## Seed Markets After Deployment
+
+If the Arc testnet frontend connects to `MarketFactory` but displays zero contract markets, run the standalone seed script:
+
+```txt
+ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
+PRIVATE_KEY=0x...
+RESOLVER_ADDRESS=0x...
+pnpm contracts:seed:arc-testnet
+pnpm contracts:export-abis
+```
+
+The seed script:
+
+- reads `deployments/arc-testnet/addresses.json`
+- confirms chain id `5042002`
+- approves the resolver on the existing factory
+- creates three demo markets only when `marketCount()` is zero
+- writes the latest `factory.allMarkets()` array back to `deployments/arc-testnet/addresses.json`
+
+After seeding, update Vercel only if contract addresses changed. If only the `markets` array changed, redeploying the frontend is optional because the app reads market addresses directly from `MarketFactory.allMarkets()`.
 
 ## Safety Notes
 

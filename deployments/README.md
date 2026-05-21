@@ -42,7 +42,7 @@ Deployment scripts should write `addresses.json` after local or testnet deployme
 
 ## Arc testnet placeholders
 
-`deployments/arc-testnet/addresses.json` intentionally contains empty placeholder addresses until Probity contracts are deployed to a reachable Arc testnet RPC.
+`deployments/arc-testnet/addresses.json` may contain empty placeholder addresses before deployment. After Arc testnet deployment or seeding, it should contain the latest `MarketFactory`, settlement token, and seeded market addresses.
 
 Do not hardcode unofficial Arc RPC URLs, chain ids, explorers, or token addresses in source. Use environment variables and update deployment artifacts only after deployment.
 
@@ -85,6 +85,20 @@ SEED_DEMO_MARKETS=0
 ```
 
 If `SETTLEMENT_TOKEN_ADDRESS` is omitted, the script deploys a test-only `MockUSDC`. Set `SEED_DEMO_MARKETS=1` only when you want the deployment script to create three demo markets during the same broadcast.
+
+## Arc testnet market seeding
+
+If Arc contracts are deployed but `/markets` shows zero contract markets, seed markets against the existing `MarketFactory`:
+
+```txt
+ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
+PRIVATE_KEY=0x...
+RESOLVER_ADDRESS=0x...
+pnpm contracts:seed:arc-testnet
+pnpm contracts:export-abis
+```
+
+The seed script reads `deployments/arc-testnet/addresses.json`, creates demo markets only when `marketCount()` is zero, then writes the latest `allMarkets()` output back to the same artifact. Set `FORCE_SEED_MARKETS=1` only if you intentionally want another set of demo markets.
 
 ## Frontend handoff
 

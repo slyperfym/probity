@@ -4,6 +4,7 @@ import * as React from "react";
 import { Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { deploymentConfig } from "@/config/contracts";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { MarketCard } from "@/features/markets/components/market-card";
 import {
@@ -31,8 +32,14 @@ export function MarketsBoard() {
   const activeMarkets = filteredMarkets.filter((market) => market.status === "active").length;
   const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
   const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
-  const dataSourceLabel = localMarkets.isUsingMockFallback ? "Mock dataset" : "Local contracts";
+  const contractSourceLabel = deploymentConfig.isArcTestnet ? "Arc testnet" : "Local contracts";
+  const dataSourceLabel = localMarkets.isUsingMockFallback ? "Mock dataset" : contractSourceLabel;
   const dataSourceTone = localMarkets.isUsingMockFallback ? "text-amber-200" : "text-emerald-200";
+  const hasConnectedFactoryWithoutMarkets =
+    !localMarkets.isLoading &&
+    !localMarkets.isUsingMockFallback &&
+    localMarkets.factoryMarkets.isConfigured &&
+    localMarkets.factoryMarkets.contractMarkets.length === 0;
 
   return (
     <div className="space-y-6">
@@ -53,14 +60,16 @@ export function MarketsBoard() {
             <div className="font-medium text-slate-100">
               {localMarkets.isUsingMockFallback
                 ? "Mock fallback active"
-                : "Local MarketFactory connected"}
+                : `${contractSourceLabel} MarketFactory connected`}
             </div>
             <p className="mt-1 text-slate-500">
               {localMarkets.isUsingMockFallback
                 ? localMarkets.fallbackReason
-                : `${localMarkets.markets.length} market${
-                    localMarkets.markets.length === 1 ? "" : "s"
-                  } rendered from local PredictionMarket contracts.`}
+                : hasConnectedFactoryWithoutMarkets
+                  ? "The configured MarketFactory is reachable, but it has not created any markets yet. Run the Arc seed script to publish demo markets."
+                  : `${localMarkets.markets.length} market${
+                      localMarkets.markets.length === 1 ? "" : "s"
+                    } rendered from deployed PredictionMarket contracts.`}
             </p>
           </div>
           <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-400">
@@ -97,6 +106,14 @@ export function MarketsBoard() {
           {filteredMarkets.map((market) => (
             <MarketCard key={market.id} market={market} />
           ))}
+        </div>
+      ) : hasConnectedFactoryWithoutMarkets ? (
+        <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/10 p-10 text-center">
+          <div className="text-sm font-medium text-white">No deployed markets found.</div>
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-cyan-100/80">
+            Probity is connected to the configured MarketFactory, but `allMarkets()` returned an
+            empty list. Seed Arc testnet demo markets, then refresh this page.
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-10 text-center">

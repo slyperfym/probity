@@ -48,9 +48,9 @@ export function useMarketFactoryMarkets() {
     deploymentConfig.marketDataMode === "mock"
       ? "Mock mode is enabled by environment configuration."
       : !isConfigured
-        ? "No local MarketFactory address is configured."
+        ? "No MarketFactory address is configured."
         : query.isError
-          ? "The configured local chain is unavailable or returned an error."
+          ? "The configured chain is unavailable or returned an error."
           : "";
 
   return {

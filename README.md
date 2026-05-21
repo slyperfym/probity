@@ -299,12 +299,22 @@ PRIVATE_KEY=0x...
 RESOLVER_ADDRESS=0x...
 SETTLEMENT_TOKEN_ADDRESS=0x...
 SEED_DEMO_MARKETS=0
+FORCE_SEED_MARKETS=0
 
 pnpm contracts:deploy:arc-testnet
 pnpm contracts:export-abis
 ```
 
 `SETTLEMENT_TOKEN_ADDRESS` is optional for test deployments. If omitted, the script deploys a test-only `MockUSDC`. Set `SEED_DEMO_MARKETS=1` only if you want the deployment to create three presentation markets. Never commit real private keys or `.env` files.
+
+If contracts are already deployed but the market board shows zero contract markets, seed the existing factory:
+
+```txt
+pnpm contracts:seed:arc-testnet
+pnpm contracts:export-abis
+```
+
+The seed command reads `deployments/arc-testnet/addresses.json`, creates demo markets only when `marketCount()` is zero, and writes the latest market list back to the deployment artifact. Set `FORCE_SEED_MARKETS=1` only when intentionally creating another set of demo markets.
 
 To deploy and refresh ABI artifacts in one step:
 

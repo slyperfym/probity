@@ -4,7 +4,7 @@ import * as React from "react";
 import type { Address } from "viem";
 import { useReadContracts } from "wagmi";
 
-import { contractAbis } from "@/config/contracts";
+import { contractAbis, deploymentConfig } from "@/config/contracts";
 import { useMarketFactoryMarkets } from "@/features/contracts/hooks/use-market-factory";
 import type { Market, MarketCategory, MarketOutcome, MarketStatus } from "@/features/markets/types";
 
@@ -85,7 +85,7 @@ export function useLocalContractMarkets() {
   return {
     ...marketReads,
     fallbackReason: marketReads.isError
-      ? "Local market reads failed, so Probity is showing mock data."
+      ? "Deployed market reads failed, so Probity is showing mock data."
       : factoryMarkets.fallbackReason,
     factoryMarkets,
     isLoading:
@@ -133,14 +133,14 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
     liquidityUsd: marketStatus === "resolved" ? 0 : volumeUsd,
     outcome,
     participants: 0,
-    resolver: resolver ? `${resolver.slice(0, 6)}...${resolver.slice(-4)}` : "Local resolver",
+    resolver: resolver ? `${resolver.slice(0, 6)}...${resolver.slice(-4)}` : "Configured resolver",
     resolverAddress: resolver,
     rules: [
-      "This local market resolves through the configured resolver address.",
+      "This market resolves through the configured resolver address.",
       "YES/NO balances and settlement funds are read directly from the deployed PredictionMarket contract.",
-      "Local seeded markets are for development only and do not execute production oracle logic."
+      "Seeded markets are for testnet and local development only and do not execute production oracle logic."
     ],
-    settlementToken: "Mock USDC",
+    settlementToken: deploymentConfig.isArcTestnet ? "USDC-style test token" : "Mock USDC",
     status: marketStatus,
     title,
     volumeUsd,
@@ -183,8 +183,8 @@ function inferCategory(title: string, metadataURI: string | undefined): MarketCa
 
 function buildDescription(metadataURI: string | undefined) {
   if (!metadataURI) {
-    return "Local contract market seeded through the Probity Foundry workflow.";
+    return "Contract market seeded through the Probity Foundry workflow.";
   }
 
-  return `Local contract market seeded from ${metadataURI}.`;
+  return `Contract market seeded from ${metadataURI}.`;
 }
