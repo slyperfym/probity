@@ -19,7 +19,7 @@ The project is built as an Arc-ready protocol prototype. It is suitable for hack
 
 ## Product Overview
 
-Probity lets users browse binary YES/NO forecasting markets, inspect market probability and liquidity, connect a wallet, trade local MockUSDC positions, and claim payouts after resolution. Resolver operators can review expired markets and resolve them YES or NO through the admin dashboard when using local deployed contracts.
+Probity lets users browse binary YES/NO forecasting markets, inspect market probability and liquidity, connect a wallet, trade with USDC-style settlement, and claim payouts after resolution. Resolver operators can review expired markets and resolve them YES or NO through the admin dashboard when using deployed contracts.
 
 The MVP is intentionally scoped around clear protocol mechanics rather than AMM complexity or production oracle infrastructure. It demonstrates the full product loop:
 
@@ -270,14 +270,15 @@ NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS=
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 ```
 
-Do not hardcode private keys or unofficial token addresses in source. Use `apps/web/.env.arc-testnet.example` as the template and update Vercel environment variables once deployed Arc testnet contract addresses are available.
+Do not hardcode private keys or unofficial token addresses in source. Use `.env.example` as the template and update Vercel environment variables once deployed Arc testnet contract addresses are available.
 
 Settlement token strategy:
 
 - Local development uses `MockUSDC`.
-- Arc testnet should use a USDC-style ERC20 test token.
-- Prefer an official test token if Arc provides one.
-- If a temporary token is deployed for demos, document clearly that it is test-only and not production USDC.
+- Arc testnet demos should use the configured Arc testnet USDC-style settlement token.
+- Public demo wallets should obtain Arc testnet USDC from the Circle faucet before trading.
+- Arc testnet uses USDC as the gas token, so users need testnet USDC for both gas and settlement.
+- The USDC token address must come from official docs, a faucet, an explorer, or user-provided configuration.
 
 Deployment artifact path:
 
@@ -305,16 +306,17 @@ pnpm contracts:deploy:arc-testnet
 pnpm contracts:export-abis
 ```
 
-`SETTLEMENT_TOKEN_ADDRESS` is optional for test deployments. If omitted, the script deploys a test-only `MockUSDC`. Set `SEED_DEMO_MARKETS=1` only if you want the deployment to create three presentation markets. Never commit real private keys or `.env` files.
+`SETTLEMENT_TOKEN_ADDRESS` is required for Arc testnet deployment and must point to the Arc testnet USDC-style token you intend to use. The Arc deploy script does not deploy MockUSDC. Set `SEED_DEMO_MARKETS=1` only if you want the deployment to create three presentation markets. Never commit real private keys or `.env` files.
 
 If contracts are already deployed but the market board shows zero contract markets, seed the existing factory:
 
 ```txt
+SETTLEMENT_TOKEN_ADDRESS=0x...
 pnpm contracts:seed:arc-testnet
 pnpm contracts:export-abis
 ```
 
-The seed command reads `deployments/arc-testnet/addresses.json`, creates demo markets only when `marketCount()` is zero, and writes the latest market list back to the deployment artifact. Set `FORCE_SEED_MARKETS=1` only when intentionally creating another set of demo markets.
+The seed command reads `deployments/arc-testnet/addresses.json`, uses the configured USDC settlement token, creates demo markets only when `marketCount()` is zero, and writes the latest market list back to the deployment artifact. Set `FORCE_SEED_MARKETS=1` only when intentionally creating another set of demo markets.
 
 To deploy and refresh ABI artifacts in one step:
 
@@ -331,7 +333,7 @@ Recommended MVP demo:
 3. Start Anvil locally and run `pnpm contracts:bootstrap:local`.
 4. Refresh `/markets` to show local contract-backed markets.
 5. Open a market detail page and connect a wallet.
-6. Approve MockUSDC.
+6. Approve USDC on Arc testnet, or MockUSDC in local Anvil development.
 7. Buy YES or NO shares.
 8. Use `/admin` with the resolver wallet to resolve an expired local market.
 9. Return to the market detail page and claim winnings when eligible.
@@ -346,7 +348,8 @@ Recommended MVP demo:
 - No production database or hosted indexer
 - No production compliance/KYC layer
 - No audited smart contracts
-- Local MockUSDC is not real USDC
+- Local MockUSDC is not real USDC and is only for Anvil development
+- Arc testnet trading requires configured USDC settlement and user-funded testnet USDC wallets
 - Vercel deployment is primarily a frontend/product demo unless connected to reachable deployed Arc testnet contracts
 
 ## Roadmap

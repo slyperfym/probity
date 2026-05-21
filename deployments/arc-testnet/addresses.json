@@ -1,6 +1,6 @@
 {
   "chainId": 5042002,
-  "deploymentBlock": 43400355,
+  "deploymentBlock": 43401291,
   "contracts": {
     "MarketFactory": "0x77262eba39f3830fd6ec60d52ffaf4bd6c0ef3a5",
     "MockUSDC": "0x62f60afded532b8ca75ba5716cafdcff8ab90cc5"

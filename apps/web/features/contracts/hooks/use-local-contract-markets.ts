@@ -27,7 +27,8 @@ export type MarketReadTuple = [
   Address | undefined,
   bigint | undefined,
   bigint | undefined,
-  bigint | undefined
+  bigint | undefined,
+  Address | undefined
 ];
 
 export function useLocalContractMarkets() {
@@ -49,7 +50,8 @@ export function useLocalContractMarkets() {
         { abi: contractAbis.predictionMarket, address, functionName: "resolver" },
         { abi: contractAbis.predictionMarket, address, functionName: "totalYesShares" },
         { abi: contractAbis.predictionMarket, address, functionName: "totalNoShares" },
-        { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" }
+        { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" },
+        { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" }
       ]),
     [marketAddresses]
   );
@@ -69,9 +71,9 @@ export function useLocalContractMarkets() {
 
     return marketAddresses
       .map((address, index) => {
-        const offset = index * 9;
+        const offset = index * 10;
         const readTuple = marketReads.data
-          .slice(offset, offset + 9)
+          .slice(offset, offset + 10)
           .map((result) => (result.status === "success" ? result.result : undefined)) as MarketReadTuple;
 
         return mapPredictionMarketReadsToMarket(address, readTuple);
@@ -107,7 +109,8 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
     resolver,
     totalYesShares,
     totalNoShares,
-    totalDeposited
+    totalDeposited,
+    settlementTokenAddress
   ] = reads;
 
   if (!title || expirationTime === undefined) {
@@ -140,7 +143,8 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
       "YES/NO balances and settlement funds are read directly from the deployed PredictionMarket contract.",
       "Seeded markets are for testnet and local development only and do not execute production oracle logic."
     ],
-    settlementToken: deploymentConfig.isArcTestnet ? "USDC-style test token" : "Mock USDC",
+    settlementToken: deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC",
+    settlementTokenAddress,
     status: marketStatus,
     title,
     volumeUsd,

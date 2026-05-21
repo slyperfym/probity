@@ -15,6 +15,7 @@ export type Market = {
   liquidityUsd: number;
   expiresAt: string;
   settlementToken: string;
+  settlementTokenAddress?: `0x${string}`;
   resolver: string;
   resolverAddress?: `0x${string}`;
   rules: string[];

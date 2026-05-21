@@ -28,8 +28,10 @@ Local development uses `MockUSDC`.
 
 Arc testnet should use a USDC-style ERC20 settlement token:
 
-- Prefer an official test USDC-style token if Arc provides one.
-- If no official token exists, deploy a clearly named test ERC20 and document that it is not production USDC.
+- Use the Arc testnet USDC-style token address from official docs, the Circle faucet, an explorer, or user-provided configuration.
+- Public demo users should obtain Arc testnet USDC from the Circle faucet before trading.
+- Arc testnet uses USDC as the gas token, so users need testnet USDC for gas and market settlement.
+- Do not deploy or configure MockUSDC for the Arc public demo path.
 - Configure the token address as `NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS`.
 - Record the same address in `deployments/arc-testnet/addresses.json`.
 
@@ -43,26 +45,27 @@ Expected `deployments/arc-testnet/addresses.json` shape:
   "deploymentBlock": 0,
   "contracts": {
     "MarketFactory": "0x...",
+    "SettlementToken": "0x...",
     "MockUSDC": "0x..."
   },
   "markets": [],
   "metadata": {
     "deployer": "0x...",
     "resolver": "0x...",
-    "settlementTokenStrategy": "USDC-style test token",
+    "settlementTokenStrategy": "configured-arc-testnet-USDC",
     "mode": "arc-testnet"
   }
 }
 ```
 
-The `MockUSDC` key currently represents the configured settlement token address in frontend helpers. It may point to MockUSDC locally or a USDC-style test token on Arc testnet.
+The `SettlementToken` key is the preferred frontend settlement-token address. The legacy `MockUSDC` key is retained for compatibility with existing frontend helpers and local development artifacts.
 
 ## Contract Deployment Path
 
 1. Confirm official Arc testnet chain id, RPC URL, explorer URL, and native currency metadata.
 2. Confirm settlement token strategy.
 3. Configure a dedicated testnet deployer wallet. Do not use a production or mainnet-funded private key.
-4. Deploy or select the USDC-style settlement token.
+4. Select the Arc testnet USDC settlement token address from official docs, faucet, explorer, or user-provided configuration.
 5. Deploy `MarketFactory`.
 6. Approve the intended resolver address in `MarketFactory`.
 7. Create seed markets if needed.
@@ -91,7 +94,7 @@ SEED_DEMO_MARKETS=0
 FORCE_SEED_MARKETS=0
 ```
 
-`SETTLEMENT_TOKEN_ADDRESS` is optional. If omitted, the script deploys a test-only `MockUSDC` and records it as the settlement token. If provided, the address must point to an existing ERC20-style contract.
+`SETTLEMENT_TOKEN_ADDRESS` is required for Arc testnet deployment. It must point to an existing Arc testnet USDC-style contract. The Arc deployment script does not deploy MockUSDC.
 
 `SEED_DEMO_MARKETS` defaults to `0`. Set it to `1` only when you want the Arc testnet deployment script to create three demo markets during deployment. These are presentation markets only; they do not add liquidity or execute trades automatically.
 
@@ -126,6 +129,7 @@ If the Arc testnet frontend connects to `MarketFactory` but displays zero contra
 ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
 PRIVATE_KEY=0x...
 RESOLVER_ADDRESS=0x...
+SETTLEMENT_TOKEN_ADDRESS=0x...
 pnpm contracts:seed:arc-testnet
 pnpm contracts:export-abis
 ```
@@ -134,6 +138,7 @@ The seed script:
 
 - reads `deployments/arc-testnet/addresses.json`
 - confirms chain id `5042002`
+- uses `SETTLEMENT_TOKEN_ADDRESS` as the USDC settlement token
 - approves the resolver on the existing factory
 - creates three demo markets only when `marketCount()` is zero
 - writes the latest `factory.allMarkets()` array back to `deployments/arc-testnet/addresses.json`
@@ -147,6 +152,7 @@ After seeding, update Vercel only if contract addresses changed. If only the `ma
 - Use a fresh test wallet for Arc testnet deployment.
 - Use testnet funds only.
 - Confirm `SETTLEMENT_TOKEN_ADDRESS` onchain before using an existing token.
+- Tell public demo users to fund wallets with Arc testnet USDC from the Circle faucet before trading.
 - Keep public demo fallback enabled until both `MarketFactory` and settlement token addresses are configured in Vercel.
 
 ## Vercel Checklist

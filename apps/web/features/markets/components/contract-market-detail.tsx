@@ -10,7 +10,7 @@ import { useReadContracts } from "wagmi";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { contractAbis } from "@/config/contracts";
+import { contractAbis, deploymentConfig } from "@/config/contracts";
 import {
   mapPredictionMarketReadsToMarket,
   type MarketReadTuple
@@ -34,7 +34,8 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
       { abi: contractAbis.predictionMarket, address, functionName: "resolver" },
       { abi: contractAbis.predictionMarket, address, functionName: "totalYesShares" },
       { abi: contractAbis.predictionMarket, address, functionName: "totalNoShares" },
-      { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" }
+      { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" },
+      { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" }
     ],
     query: {
       retry: 1
@@ -65,7 +66,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
     return (
       <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-300 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-7xl rounded-lg border border-white/10 bg-white/[0.03] p-8">
-          Reading local PredictionMarket contract...
+          Reading deployed PredictionMarket contract...
         </div>
       </main>
     );
@@ -75,9 +76,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
     return (
       <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-300 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-7xl rounded-lg border border-white/10 bg-white/[0.03] p-8">
-          <div className="text-lg font-semibold text-white">Local market unavailable</div>
+          <div className="text-lg font-semibold text-white">Onchain market unavailable</div>
           <p className="mt-2 text-sm text-slate-400">
-            The configured Anvil chain is unavailable, the address is not a Probity market, or the
+            The configured chain is unavailable, the address is not a Probity market, or the
             market was redeployed. Return to markets to use the mock fallback.
           </p>
           <Link className={cn(buttonVariants({ variant: "outline" }), "mt-5")} href="/markets">
@@ -107,7 +108,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
               <div className="flex flex-wrap items-center gap-2">
                 <Badge>{market.category}</Badge>
                 <MarketStatusBadge status={market.status} />
-                <Badge variant="info">Local Contract</Badge>
+                <Badge variant="info">
+                  {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
+                </Badge>
               </div>
               <h1 className="mt-5 max-w-4xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
                 {market.title}

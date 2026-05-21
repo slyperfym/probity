@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!market) {
     if (isAddress(id)) {
       return {
-        title: "Local Market | Probity",
-        description: "Read-only local PredictionMarket detail"
+        title: "Onchain Market | Probity",
+        description: "Read-only deployed PredictionMarket detail"
       };
     }
 

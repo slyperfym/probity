@@ -3,6 +3,7 @@
   "deploymentBlock": 0,
   "contracts": {
     "MarketFactory": "",
+    "SettlementToken": "",
     "MockUSDC": ""
   },
   "markets": [],

@@ -2,15 +2,14 @@
 pragma solidity ^0.8.24;
 
 import { MarketFactory } from "../src/MarketFactory.sol";
-import { MockUSDC } from "../src/mocks/MockUSDC.sol";
 import { LocalScriptBase } from "./LocalScriptBase.sol";
 
 contract DeployArcTestnet is LocalScriptBase {
     uint256 internal constant ARC_TESTNET_CHAIN_ID = 5_042_002;
-    uint256 internal constant TEST_TOKEN_BOOTSTRAP_AMOUNT = 1_000_000e6;
 
     error WrongChain(uint256 actualChainId);
     error SettlementTokenNotContract();
+    error SettlementTokenRequired();
 
     function run() external returns (address settlementToken, MarketFactory factory) {
         if (block.chainid != ARC_TESTNET_CHAIN_ID) {
@@ -20,26 +19,20 @@ contract DeployArcTestnet is LocalScriptBase {
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
         address deployer = _account(privateKey);
         address resolver = vm.envOr("RESOLVER_ADDRESS", deployer);
-        address configuredSettlementToken = vm.envOr("SETTLEMENT_TOKEN_ADDRESS", address(0));
+        address configuredSettlementToken = vm.envAddress("SETTLEMENT_TOKEN_ADDRESS");
         bool shouldSeedMarkets = vm.envOr("SEED_DEMO_MARKETS", uint256(0)) == 1;
-        string memory settlementTokenStrategy;
         address[] memory markets = new address[](0);
 
-        vm.startBroadcast(privateKey);
-
         if (configuredSettlementToken == address(0)) {
-            MockUSDC usdc = new MockUSDC();
-            usdc.mint(deployer, TEST_TOKEN_BOOTSTRAP_AMOUNT);
-            settlementToken = address(usdc);
-            settlementTokenStrategy = "deployed-test-MockUSDC";
-        } else {
-            if (configuredSettlementToken.code.length == 0) {
-                revert SettlementTokenNotContract();
-            }
-
-            settlementToken = configuredSettlementToken;
-            settlementTokenStrategy = "configured-USDC-style-test-token";
+            revert SettlementTokenRequired();
         }
+        if (configuredSettlementToken.code.length == 0) {
+            revert SettlementTokenNotContract();
+        }
+
+        settlementToken = configuredSettlementToken;
+
+        vm.startBroadcast(privateKey);
 
         factory = new MarketFactory();
         factory.setResolverApproval(resolver, true);
@@ -59,7 +52,7 @@ contract DeployArcTestnet is LocalScriptBase {
                 deployer,
                 resolver,
                 "arc-testnet",
-                settlementTokenStrategy
+                "configured-arc-testnet-USDC"
             )
         );
     }

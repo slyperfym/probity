@@ -19,6 +19,7 @@ type DeploymentAddresses = {
   deploymentBlock: number;
   contracts: {
     MarketFactory?: string;
+    SettlementToken?: string;
     MockUSDC?: string;
   };
 };
@@ -102,6 +103,7 @@ export const contractAddresses: ProbityAddressMap = {
     normalizeAddress(activeDeployment.contracts.MarketFactory),
   MockUSDC:
     normalizeAddress(publicEnv.settlementTokenAddress) ??
+    normalizeAddress(activeDeployment.contracts.SettlementToken) ??
     normalizeAddress(activeDeployment.contracts.MockUSDC)
 };
 

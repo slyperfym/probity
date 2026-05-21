@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateCard } from "@/components/feedback/state-card";
-import { getPredictionMarketConfig } from "@/config/contracts";
+import { deploymentConfig, getPredictionMarketConfig } from "@/config/contracts";
 import type { ResolverMarket } from "@/features/admin/types";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { ActivityFeed } from "@/features/indexing";
@@ -40,6 +40,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   }, [queryClient, resolveReceipt.isSuccess]);
 
   const isLocalMode = !localMarkets.isUsingMockFallback && localMarkets.markets.length > 0;
+  const contractModeLabel = deploymentConfig.isArcTestnet ? "Arc testnet" : "Local contracts";
   const markets = isLocalMode ? localMarkets.markets.map(toResolverMarket) : mockMarkets;
 
   if (markets.length === 0) {
@@ -83,7 +84,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Resolver Queue</CardTitle>
             <Badge variant={isLocalMode ? "yes" : "info"}>
-              {isLocalMode ? "Local contracts" : "Mock fallback"}
+              {isLocalMode ? contractModeLabel : "Mock fallback"}
             </Badge>
           </div>
         </CardHeader>
@@ -229,14 +230,14 @@ function getResolverNotice({
   isLocalMode: boolean;
 }) {
   if (!isLocalMode) {
-    return "Mock fallback is active, so resolver transactions are disabled until local deployed contracts are reachable.";
+    return "Mock fallback is active, so resolver transactions are disabled until deployed contracts are reachable.";
   }
 
   if (!isConnected || !accountAddress) {
-    return "Connect the resolver wallet for the local market before resolving expired markets.";
+    return "Connect the resolver wallet for this market before resolving expired markets.";
   }
 
-  return "Only the resolver address stored on each local PredictionMarket can resolve YES or NO after expiration.";
+  return "Only the resolver address stored on each deployed PredictionMarket can resolve YES or NO after expiration.";
 }
 
 function ResolverTransactionState({

@@ -16,10 +16,7 @@ contract SeedArcTestnetMarkets is LocalScriptBase {
 
         string memory deploymentJson = vm.readFile(ARC_TESTNET_ADDRESSES_PATH);
         address factoryAddress = vm.parseJsonAddress(deploymentJson, ".contracts.MarketFactory");
-        address settlementToken = vm.envOr(
-            "SETTLEMENT_TOKEN_ADDRESS",
-            vm.parseJsonAddress(deploymentJson, ".contracts.MockUSDC")
-        );
+        address settlementToken = vm.envAddress("SETTLEMENT_TOKEN_ADDRESS");
 
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
         address deployer = _account(privateKey);
@@ -49,7 +46,7 @@ contract SeedArcTestnetMarkets is LocalScriptBase {
                 deployer,
                 resolver,
                 "arc-testnet",
-                "seeded-USDC-style-test-token"
+                "seeded-arc-testnet-USDC"
             )
         );
     }

@@ -10,7 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { probityChain } from "@/config/chains";
-import { getPredictionMarketConfig, getSettlementTokenConfig, hasContractAddress } from "@/config/contracts";
+import {
+  contractAddresses,
+  deploymentConfig,
+  getPredictionMarketConfig,
+  getSettlementTokenConfig,
+  hasContractAddress
+} from "@/config/contracts";
 import {
   useMockUsdcAllowance,
   useMockUsdcBalance,
@@ -32,6 +38,16 @@ export function TradingPanel({ market }: { market: Market }) {
   const estimatedShares = Number(amount || 0) / Math.max(selectedProbability / 100, 0.01);
   const parsedAmount = parseTradeAmount(amount);
   const isMarketClosed = market.status === "expired" || market.status === "resolved";
+  const tokenLabel = deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC";
+  const environmentLabel = deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Test";
+  const configuredSettlementToken = contractAddresses.MockUSDC?.toLowerCase();
+  const marketSettlementToken = market.settlementTokenAddress?.toLowerCase();
+  const hasSettlementTokenMismatch = Boolean(
+    deploymentConfig.isArcTestnet &&
+      configuredSettlementToken &&
+      marketSettlementToken &&
+      configuredSettlementToken !== marketSettlementToken
+  );
 
   const balanceQuery = useMockUsdcBalance(accountAddress);
   const allowanceQuery = useMockUsdcAllowance({
@@ -84,6 +100,7 @@ export function TradingPanel({ market }: { market: Market }) {
     isConnected &&
     Boolean(accountAddress) &&
     !isWrongChain &&
+    !hasSettlementTokenMismatch &&
     parsedAmount > 0n &&
     !isMarketClosed &&
     hasEnoughBalance &&
@@ -106,8 +123,21 @@ export function TradingPanel({ market }: { market: Market }) {
     isLocalContractMarket,
     isMarketClosed,
     isWrongChain,
-    parsedAmount
+    parsedAmount,
+    tokenLabel,
+    hasSettlementTokenMismatch
   });
+
+  React.useEffect(() => {
+    const error = approveWrite.error ?? buyWrite.error ?? claimWrite.error;
+
+    if (error) {
+      console.error("Probity transaction error", {
+        decoded: getFriendlyTransactionError(error),
+        raw: error
+      });
+    }
+  }, [approveWrite.error, buyWrite.error, claimWrite.error]);
 
   function handleApprove() {
     if (!marketAddress || parsedAmount <= 0n) {
@@ -150,7 +180,7 @@ export function TradingPanel({ market }: { market: Market }) {
         <div className="flex items-center justify-between gap-3">
           <CardTitle>Trading Panel</CardTitle>
           <Badge variant={isLocalContractMarket ? "yes" : "info"}>
-            {isLocalContractMarket ? "Local Test" : "Mock"}
+            {isLocalContractMarket ? environmentLabel : "Mock"}
           </Badge>
         </div>
       </CardHeader>
@@ -158,11 +188,12 @@ export function TradingPanel({ market }: { market: Market }) {
         <div className="mb-5 rounded-lg border border-amber-300/25 bg-amber-300/5 p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-amber-100">
             <AlertTriangle className="h-4 w-4" />
-            Local test trading only
+            {deploymentConfig.isArcTestnet ? "Arc testnet trading" : "Local test trading only"}
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            These actions are intended for Anvil and MockUSDC. They are not a production trading
-            flow and should only be used against locally deployed Probity contracts.
+            {deploymentConfig.isArcTestnet
+              ? "These actions use configured Arc testnet contracts and USDC settlement. Users need Arc testnet USDC from the Circle faucet before trading."
+              : "These actions are intended for Anvil and MockUSDC. They are not a production trading flow and should only be used against locally deployed Probity contracts."}
           </p>
         </div>
 
@@ -197,7 +228,7 @@ export function TradingPanel({ market }: { market: Market }) {
         <div className="mt-5 space-y-3 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
           <PreviewRow label="Selected side" value={side} />
           <PreviewRow
-            label={isLocalContractMarket ? "Local probability" : "Mock probability"}
+            label={isLocalContractMarket ? "Onchain probability" : "Mock probability"}
             value={`${selectedProbability}%`}
           />
           <PreviewRow
@@ -206,8 +237,11 @@ export function TradingPanel({ market }: { market: Market }) {
           />
           {isLocalContractMarket && (
             <>
-              <PreviewRow label="MockUSDC balance" value={`${formatUsdc(balance)} USDC`} />
+              <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} USDC`} />
               <PreviewRow label="Market allowance" value={`${formatUsdc(allowance)} USDC`} />
+              {market.settlementTokenAddress && (
+                <PreviewRow label="Market token" value={shortAddress(market.settlementTokenAddress)} />
+              )}
               <PreviewRow label="YES position" value={`${formatUsdc(yesPosition)} shares`} />
               <PreviewRow label="NO position" value={`${formatUsdc(noPosition)} shares`} />
               {market.status === "resolved" && (
@@ -223,7 +257,7 @@ export function TradingPanel({ market }: { market: Market }) {
 
         {statusMessage && <TradingNotice message={statusMessage} />}
         <TransactionState
-          error={approveWrite.error?.message ?? buyWrite.error?.message ?? claimWrite.error?.message}
+          error={approveWrite.error ?? buyWrite.error ?? claimWrite.error}
           isPending={isWriting}
           pendingHash={approveWrite.data ?? buyWrite.data ?? claimWrite.data}
           successMessage={
@@ -242,7 +276,7 @@ export function TradingPanel({ market }: { market: Market }) {
             <>
               <Button disabled={!canApprove} onClick={handleApprove} type="button">
                 {isApproving && <Loader2 className="h-4 w-4 animate-spin" />}
-                Approve MockUSDC
+                Approve {tokenLabel}
               </Button>
               <Button disabled={!canBuy} onClick={handleBuy} type="button" variant="outline">
                 {isBuying && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -280,7 +314,7 @@ function TransactionState({
   pendingHash,
   successMessage
 }: {
-  error: string | undefined;
+  error: Error | null | undefined;
   isPending: boolean;
   pendingHash: string | undefined;
   successMessage: string;
@@ -295,7 +329,7 @@ function TransactionState({
         <div className="flex items-center gap-2 text-cyan-100">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>
-            Waiting for wallet or local chain confirmation
+            Waiting for wallet or chain confirmation
             {pendingHash ? ` (${shortAddress(pendingHash)})` : ""}...
           </span>
         </div>
@@ -309,7 +343,7 @@ function TransactionState({
       {error && (
         <div className="mt-2 flex items-start gap-2 text-rose-200">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{shortenError(error)}</span>
+          <span>{getFriendlyTransactionError(error)}</span>
         </div>
       )}
     </div>
@@ -325,7 +359,9 @@ function getStatusMessage({
   isLocalContractMarket,
   isMarketClosed,
   isWrongChain,
-  parsedAmount
+  parsedAmount,
+  tokenLabel,
+  hasSettlementTokenMismatch
 }: {
   accountAddress: string | undefined;
   hasEnoughAllowance: boolean;
@@ -336,17 +372,23 @@ function getStatusMessage({
   isMarketClosed: boolean;
   isWrongChain: boolean;
   parsedAmount: bigint;
+  tokenLabel: string;
+  hasSettlementTokenMismatch: boolean;
 }) {
   if (!isLocalContractMarket) {
     return "This is mock fallback data, so contract writes remain disabled.";
   }
 
   if (!isConnected || !accountAddress) {
-    return "Connect a wallet on the local Anvil chain to approve MockUSDC, buy shares, or claim payouts.";
+    return `Connect a wallet on ${probityChain.name} to approve ${tokenLabel}, buy shares, or claim payouts.`;
+  }
+
+  if (hasSettlementTokenMismatch) {
+    return "This market was created with a different settlement token than the configured Arc testnet USDC. Redeploy or reseed markets with the current USDC token before trading.";
   }
 
   if (isWrongChain) {
-    return `Switch your wallet to ${probityChain.name} (${probityChain.id}) before sending local test transactions.`;
+    return `Switch your wallet to ${probityChain.name} (${probityChain.id}) before sending transactions.`;
   }
 
   if (isMarketClosed) {
@@ -356,15 +398,15 @@ function getStatusMessage({
   }
 
   if (parsedAmount <= 0n) {
-    return "Enter a positive MockUSDC amount to trade.";
+    return `Enter a positive ${tokenLabel} amount to trade.`;
   }
 
   if (!hasEnoughBalance) {
-    return "Your connected wallet does not have enough MockUSDC for this local test trade.";
+    return `Your connected wallet does not have enough ${tokenLabel} for this trade.`;
   }
 
   if (!hasEnoughAllowance) {
-    return "Approve MockUSDC for this market before buying YES or NO shares.";
+    return `Approve ${tokenLabel} for this market before buying YES or NO shares.`;
   }
 
   return "";
@@ -387,6 +429,52 @@ function formatUsdc(value: bigint) {
 function shortenError(value: string) {
   return value.length > 180 ? `${value.slice(0, 180)}...` : value;
 }
+
+function getFriendlyTransactionError(error: Error) {
+  const raw = getErrorText(error);
+  const selector = extractSelector(raw);
+
+  if (selector) {
+    const decoded = customErrorMessages[selector];
+
+    if (decoded) {
+      return decoded;
+    }
+  }
+
+  if (raw.includes("User rejected") || raw.includes("User denied")) {
+    return "Transaction was rejected in the wallet.";
+  }
+
+  return shortenError(raw);
+}
+
+function getErrorText(error: Error) {
+  const details = [
+    error.message,
+    "shortMessage" in error ? String(error.shortMessage) : "",
+    "details" in error ? String(error.details) : "",
+    "cause" in error ? String(error.cause) : ""
+  ];
+
+  return details.filter(Boolean).join(" ");
+}
+
+function extractSelector(value: string) {
+  return value.match(/0x[0-9a-fA-F]{8}/)?.[0]?.toLowerCase();
+}
+
+const customErrorMessages: Record<string, string> = {
+  "0x045c4b02":
+    "The settlement token transfer failed. Confirm the market was seeded with the configured USDC token and that your wallet has enough balance and allowance.",
+  "0x13be252b":
+    "The settlement token reported insufficient allowance. Approve this specific PredictionMarket contract as the spender, then retry.",
+  "0x31be252b":
+    "The settlement token reported an allowance-related failure. This usually means the market was seeded with a different token than the one approved in the UI.",
+  "0xb521771a": "This market is not active or has already expired, so buying is disabled.",
+  "0xcbca5aa2": "Enter an amount greater than zero before buying.",
+  "0xf4d678b8": "The settlement token reported insufficient balance for this trade."
+};
 
 function shortAddress(value: string) {
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
