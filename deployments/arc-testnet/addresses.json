@@ -1,15 +1,16 @@
 {
   "chainId": 5042002,
-  "deploymentBlock": 43401291,
+  "deploymentBlock": 43407857,
   "contracts": {
-    "MarketFactory": "0x77262eba39f3830fd6ec60d52ffaf4bd6c0ef3a5",
-    "MockUSDC": "0x62f60afded532b8ca75ba5716cafdcff8ab90cc5"
+    "MarketFactory": "0x7bca73d2dd03924bdac330d176760b09f17c1504",
+    "SettlementToken": "0x3600000000000000000000000000000000000000",
+    "MockUSDC": "0x3600000000000000000000000000000000000000"
   },
-  "markets": ["0x3392868288afd57d61699b177cdc25e12f4bcf0b", "0x4ea5c728a3f87d827b130b90e8c395d5222a6404", "0xfb192241be8a801c33df95d8ac333f9fc440b124"],
+  "markets": ["0xd14f59fc07ea741753c62cd6de6850470a7e23f7", "0xa2f12814586643a5dca02b175acae54a392be6aa", "0x282cea20808ea07ba544b7e713ffe7cedd245e7a"],
   "metadata": {
     "deployer": "0xaa7aa6d54c28c8afb639389197ca2a900b6171c3",
     "resolver": "0xaa7aa6d54c28c8afb639389197ca2a900b6171c3",
-    "settlementTokenStrategy": "seeded-USDC-style-test-token",
+    "settlementTokenStrategy": "seeded-arc-testnet-USDC",
     "mode": "arc-testnet"
   }
 }
