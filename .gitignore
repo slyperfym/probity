@@ -4,6 +4,12 @@ node_modules
 dist
 coverage
 
+# Generated framework/build caches
+**/.next
+**/.turbo
+**/dist
+**/coverage
+
 .env
 .env.local
 .env.development.local
@@ -11,10 +17,17 @@ coverage
 .env.production.local
 .env.*.local
 
+# Foundry generated artifacts
+out
+cache
+broadcast
 contracts/out
 contracts/cache
 contracts/broadcast
 contracts/lib
+
+# TypeScript incremental cache
+*.tsbuildinfo
 
 deployments/**/addresses.local.json
 
