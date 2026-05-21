@@ -17,7 +17,9 @@ export const anvil = defineChain({
   }
 });
 
-export const arcConfigured = defineChain({
+// Arc testnet values are intentionally environment-driven until official public
+// RPC, chain id, explorer, and gas-token metadata are selected for a deployment.
+export const arcTestnetConfigured = defineChain({
   id: publicEnv.chainId,
   name: publicEnv.arcChainName,
   nativeCurrency: {
@@ -40,10 +42,12 @@ export const arcConfigured = defineChain({
     : undefined
 });
 
-export const probityChain = publicEnv.chainId === anvil.id ? anvil : arcConfigured;
+export const probityChain = publicEnv.chainId === anvil.id ? anvil : arcTestnetConfigured;
 
 export const supportedChains = [probityChain] as const;
 
 export const supportedChainIds = supportedChains.map((chain) => chain.id);
 
 export const isLocalChain = probityChain.id === anvil.id;
+export const isArcTestnetTarget = publicEnv.deploymentTarget === "arc-testnet";
+export const isMockTarget = publicEnv.deploymentTarget === "mock";

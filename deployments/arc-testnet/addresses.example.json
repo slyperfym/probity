@@ -1,4 +1,15 @@
 {
   "chainId": 0,
-  "contracts": {}
+  "deploymentBlock": 0,
+  "contracts": {
+    "MarketFactory": "",
+    "MockUSDC": ""
+  },
+  "markets": [],
+  "metadata": {
+    "deployer": "",
+    "resolver": "",
+    "settlementTokenStrategy": "USDC-style test token",
+    "mode": "arc-testnet-placeholder"
+  }
 }

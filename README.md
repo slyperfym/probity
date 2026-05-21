@@ -236,6 +236,47 @@ NEXT_PUBLIC_DEPLOYMENT_TARGET=local
 
 Local Anvil contracts are not available to Vercel-hosted users. The live deployment should be treated as a product/interface demo unless connected to a reachable testnet deployment.
 
+## Arc Testnet Deployment Path
+
+Probity is Arc testnet-ready at the configuration layer, but no production deployment is claimed in this MVP.
+
+Arc testnet configuration is environment-driven:
+
+```txt
+NEXT_PUBLIC_DEPLOYMENT_TARGET=arc-testnet
+NEXT_PUBLIC_MARKET_DATA_MODE=auto
+NEXT_PUBLIC_CHAIN_ID=
+NEXT_PUBLIC_RPC_URL=
+NEXT_PUBLIC_ARC_CHAIN_NAME=Arc Testnet
+NEXT_PUBLIC_ARC_NATIVE_CURRENCY_NAME=
+NEXT_PUBLIC_ARC_NATIVE_CURRENCY_SYMBOL=
+NEXT_PUBLIC_ARC_BLOCK_EXPLORER_URL=
+NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=
+NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS=
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
+```
+
+Do not hardcode unofficial Arc RPC URLs, chain ids, explorers, or token addresses in source. Use `apps/web/.env.arc-testnet.example` as the template and update Vercel environment variables once official Arc testnet details and deployed contract addresses are available.
+
+Settlement token strategy:
+
+- Local development uses `MockUSDC`.
+- Arc testnet should use a USDC-style ERC20 test token.
+- Prefer an official test token if Arc provides one.
+- If a temporary token is deployed for demos, document clearly that it is test-only and not production USDC.
+
+Deployment artifact path:
+
+```txt
+deployments/arc-testnet/addresses.json
+```
+
+Detailed checklist:
+
+```txt
+docs/runbooks/arc-testnet-readiness.md
+```
+
 ## Demo Flow
 
 Recommended MVP demo:

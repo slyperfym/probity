@@ -38,7 +38,7 @@ export function WalletConnectionAlert() {
   const unsupportedChain = isConnected && !supportedChainIds.includes(chainId);
   const connectionMessage = isError ? getConnectionErrorMessage(error) : null;
   const message = unsupportedChain
-    ? `Unsupported network. Probity is configured for ${probityChain.name} (${probityChain.id}).`
+    ? `Unsupported network. Probity is configured for ${probityChain.name} (${probityChain.id}). Wallet writes are disabled until you switch networks.`
     : connectionMessage;
 
   if (!message || dismissedError === message) {

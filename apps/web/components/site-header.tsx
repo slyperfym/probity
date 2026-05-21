@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Activity, BarChart3 } from "lucide-react";
 
+import { DeploymentReadinessAlert } from "@/components/web3/deployment-readiness-alert";
 import { WalletConnectionAlert } from "@/components/web3/wallet-connection-alert";
 import { WalletConnectButton } from "@/components/web3/wallet-connect-button";
 
@@ -49,6 +50,7 @@ export function SiteHeader() {
           </div>
         </div>
       </div>
+      <DeploymentReadinessAlert />
       <WalletConnectionAlert />
     </header>
   );

@@ -39,3 +39,11 @@ deployments/arc-testnet/abis/*.json
 ```
 
 Deployment scripts should write `addresses.json` after local or testnet deployment. The frontend also accepts explicit environment overrides, so it remains usable when `addresses.json` contains placeholders.
+
+## Arc testnet placeholders
+
+`deployments/arc-testnet/addresses.json` intentionally contains empty placeholder addresses until Probity contracts are deployed to a reachable Arc testnet RPC.
+
+Do not hardcode unofficial Arc RPC URLs, chain ids, explorers, or token addresses in source. Use environment variables and update deployment artifacts only after deployment.
+
+For Arc testnet MVP testing, the settlement token should be a USDC-style ERC20 test token. If an official test USDC contract is available, configure that address. Otherwise, deploy a clearly named test settlement token and document it in the deployment artifact metadata.

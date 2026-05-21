@@ -9,9 +9,9 @@ import localAddresses from "../../../deployments/local/addresses.json";
 import localMarketFactoryAbi from "../../../deployments/local/abis/MarketFactory.json";
 import localMockUsdcAbi from "../../../deployments/local/abis/MockUSDC.json";
 import localPredictionMarketAbi from "../../../deployments/local/abis/PredictionMarket.json";
-import { publicEnv } from "@/config/env";
+import { publicEnv, type PublicDeploymentTarget } from "@/config/env";
 
-type DeploymentTarget = "local" | "arc-testnet";
+type DeploymentTarget = PublicDeploymentTarget;
 export type MarketDataMode = "auto" | "mock" | "contracts";
 
 type DeploymentAddresses = {
@@ -28,10 +28,14 @@ export type ProbityContractName = "MarketFactory" | "MockUSDC";
 export type ProbityAddressMap = Record<ProbityContractName, Address | undefined>;
 
 function getDeploymentTarget(): DeploymentTarget {
-  return publicEnv.deploymentTarget === "arc-testnet" ? "arc-testnet" : "local";
+  return publicEnv.deploymentTarget;
 }
 
 function getMarketDataMode(): MarketDataMode {
+  if (publicEnv.deploymentTarget === "mock") {
+    return "mock";
+  }
+
   if (publicEnv.marketDataMode === "mock" || publicEnv.marketDataMode === "contracts") {
     return publicEnv.marketDataMode;
   }
@@ -41,7 +45,12 @@ function getMarketDataMode(): MarketDataMode {
 
 const deploymentByTarget: Record<DeploymentTarget, DeploymentAddresses> = {
   "arc-testnet": arcTestnetAddresses,
-  local: localAddresses
+  local: localAddresses,
+  mock: {
+    chainId: publicEnv.chainId,
+    contracts: {},
+    deploymentBlock: 0
+  }
 };
 
 const abiByTarget = {
@@ -51,6 +60,11 @@ const abiByTarget = {
     predictionMarket: arcTestnetPredictionMarketAbi as Abi
   },
   local: {
+    marketFactory: localMarketFactoryAbi as Abi,
+    mockUsdc: localMockUsdcAbi as Abi,
+    predictionMarket: localPredictionMarketAbi as Abi
+  },
+  mock: {
     marketFactory: localMarketFactoryAbi as Abi,
     mockUsdc: localMockUsdcAbi as Abi,
     predictionMarket: localPredictionMarketAbi as Abi
@@ -94,6 +108,10 @@ export const contractAddresses: ProbityAddressMap = {
 export const deploymentConfig = {
   chainId: activeDeployment.chainId,
   deploymentBlock: activeDeployment.deploymentBlock,
+  hasMarketFactory: Boolean(contractAddresses.MarketFactory),
+  hasSettlementToken: Boolean(contractAddresses.MockUSDC),
+  isArcTestnet: activeDeploymentTarget === "arc-testnet",
+  isMockOnly: getMarketDataMode() === "mock",
   marketDataMode: getMarketDataMode(),
   target: activeDeploymentTarget
 } as const;

@@ -1,4 +1,5 @@
 export const DEFAULT_LOCAL_CHAIN_ID = 31337;
+export type PublicDeploymentTarget = "local" | "arc-testnet" | "mock";
 
 function readPositiveInteger(value: string | undefined, fallback: number) {
   if (!value) {
@@ -20,8 +21,16 @@ export const publicEnv = {
   arcBlockExplorerUrl: process.env.NEXT_PUBLIC_ARC_BLOCK_EXPLORER_URL ?? "",
   marketFactoryAddress: process.env.NEXT_PUBLIC_MARKET_FACTORY_ADDRESS ?? "",
   settlementTokenAddress: process.env.NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS ?? "",
-  deploymentTarget: process.env.NEXT_PUBLIC_DEPLOYMENT_TARGET ?? "local",
+  deploymentTarget: readDeploymentTarget(process.env.NEXT_PUBLIC_DEPLOYMENT_TARGET),
   marketDataMode: process.env.NEXT_PUBLIC_MARKET_DATA_MODE ?? "auto"
 } as const;
 
 export const hasWalletConnectProjectId = publicEnv.walletConnectProjectId.trim().length > 0;
+
+function readDeploymentTarget(value: string | undefined): PublicDeploymentTarget {
+  if (value === "arc-testnet" || value === "mock") {
+    return value;
+  }
+
+  return "local";
+}
