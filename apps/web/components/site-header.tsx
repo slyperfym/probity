@@ -4,6 +4,8 @@ import { Activity, BarChart3 } from "lucide-react";
 import { DeploymentReadinessAlert } from "@/components/web3/deployment-readiness-alert";
 import { WalletConnectionAlert } from "@/components/web3/wallet-connection-alert";
 import { WalletConnectButton } from "@/components/web3/wallet-connect-button";
+import { isArcTestnetTarget } from "@/config/chains";
+import { deploymentConfig } from "@/config/contracts";
 
 const navItems = [
   { label: "Markets", href: "/markets" },
@@ -13,6 +15,10 @@ const navItems = [
 ];
 
 export function SiteHeader() {
+  const showArcDemoMode =
+    isArcTestnetTarget &&
+    (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken);
+
   return (
     <header className="sticky top-0 z-50 bg-slate-950/85 backdrop-blur-xl">
       <div className="border-b border-white/10">
@@ -42,10 +48,21 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200 sm:flex">
-              <Activity className="h-3.5 w-3.5" />
-              Arc ready
-            </div>
+            {showArcDemoMode ? (
+              <div className="hidden items-center gap-2 rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 lg:flex">
+                <Activity className="h-3.5 w-3.5 text-cyan-300" />
+                <span>Demo Mode</span>
+                <span className="text-slate-600">/</span>
+                <span>Arc Testnet Ready</span>
+                <span className="text-slate-600">/</span>
+                <span>Mock Data Active</span>
+              </div>
+            ) : (
+              <div className="hidden items-center gap-2 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200 sm:flex">
+                <Activity className="h-3.5 w-3.5" />
+                Arc ready
+              </div>
+            )}
             <WalletConnectButton />
           </div>
         </div>

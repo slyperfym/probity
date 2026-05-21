@@ -23,7 +23,7 @@ export function DeploymentReadinessAlert() {
 
 function getDeploymentMessage() {
   if (isMockTarget) {
-    return "Mock deployment target active. Wallet writes and contract reads are disabled unless you switch to local or Arc testnet configuration.";
+    return "Demo mode is active. Probity is showing mock market data while contract reads and wallet writes remain disabled for this environment.";
   }
 
   if (isArcTestnetTarget) {
@@ -32,7 +32,7 @@ function getDeploymentMessage() {
     }
 
     if (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken) {
-      return "Arc testnet target selected without deployed contract addresses. The app will preserve mock fallback until MarketFactory and settlement token addresses are configured.";
+      return "Arc testnet configuration is ready. Probity is showing mock market data until MarketFactory and settlement token addresses are configured for this deployment.";
     }
 
     return `Arc testnet target active for ${probityChain.name} (${probityChain.id}). Verify this chain metadata before public demos.`;

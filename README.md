@@ -2,9 +2,20 @@
 
 Stablecoin-native prediction market infrastructure for institutional-grade forecasting on Arc.
 
+**Live demo:** [https://probity.vercel.app](https://probity.vercel.app)  
+**GitHub repository:** [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
+
 Probity is a prediction market MVP designed around transparent onchain execution, deterministic resolver-controlled settlement, and a professional trading interface. It combines a Next.js frontend, local Foundry contracts, wallet connectivity, local trading flows, resolver/admin operations, and an indexing-ready data model.
 
 The project is built as an Arc-ready protocol prototype. It is suitable for hackathon and ecosystem review, but it is not production-ready financial infrastructure.
+
+## Status
+
+- **MVP:** live frontend and local protocol prototype
+- **Live deployment:** Vercel demo, using mock fallback unless reachable contract addresses are configured
+- **Local trading:** enabled only with local Anvil contracts and MockUSDC
+- **Arc testnet:** configuration and deployment workflow are ready; contract-backed testnet mode requires deployed `MarketFactory` and settlement token addresses
+- **Production readiness:** not production-ready, not audited, and not intended for real funds
 
 ## Product Overview
 
@@ -36,9 +47,9 @@ Arc is a strong fit for prediction markets because forecasting products need rel
 - Institutional dark-mode market UI
 - Market exploration and market detail pages
 - Wallet connection with RainbowKit and wagmi
-- Local MockUSDC approval flow
-- Local buy YES / buy NO transaction flow
-- Local claim payout transaction flow
+- Local-only MockUSDC approval flow
+- Local-only buy YES / buy NO transaction flow
+- Local-only claim payout transaction flow
 - Resolver/admin dashboard
 - Resolver-only local market resolution
 - Mock fallback mode when contracts are not deployed
@@ -62,7 +73,7 @@ docs/                 Runbooks and development notes
 scripts/              ABI export and workspace scripts
 ```
 
-The frontend can run entirely with mock data, or it can read/write against local Anvil contracts when deployment artifacts are present.
+The frontend can run entirely with mock data, or it can read/write against local Anvil contracts when deployment artifacts are present. Arc testnet mode is configuration-ready and shows mock data until deployed testnet contract addresses are configured.
 
 ## Tech Stack
 
@@ -218,7 +229,10 @@ Foundry must be installed locally for contract tests and Anvil workflows.
 
 ## Vercel Deployment
 
-The frontend is deployed on Vercel from GitHub.
+The frontend is deployed on Vercel from GitHub:
+
+- Live demo: [https://probity.vercel.app](https://probity.vercel.app)
+- Repository: [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
 
 Recommended Vercel settings:
 
@@ -234,11 +248,11 @@ NEXT_PUBLIC_MARKET_DATA_MODE=auto
 NEXT_PUBLIC_DEPLOYMENT_TARGET=local
 ```
 
-Local Anvil contracts are not available to Vercel-hosted users. The live deployment should be treated as a product/interface demo unless connected to a reachable testnet deployment.
+Local Anvil contracts are not available to Vercel-hosted users. The live deployment should be treated as a product/interface demo unless connected to a reachable Arc testnet deployment.
 
 ## Arc Testnet Deployment Path
 
-Probity is Arc testnet-ready at the configuration layer, but no production deployment is claimed in this MVP.
+Probity is Arc testnet-ready at the configuration and deployment-workflow layer, but no production deployment is claimed in this MVP.
 
 Arc testnet configuration is environment-driven:
 
@@ -256,7 +270,7 @@ NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS=
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 ```
 
-Do not hardcode unofficial Arc RPC URLs, chain ids, explorers, or token addresses in source. Use `apps/web/.env.arc-testnet.example` as the template and update Vercel environment variables once official Arc testnet details and deployed contract addresses are available.
+Do not hardcode private keys or unofficial token addresses in source. Use `apps/web/.env.arc-testnet.example` as the template and update Vercel environment variables once deployed Arc testnet contract addresses are available.
 
 Settlement token strategy:
 
@@ -322,7 +336,7 @@ Recommended MVP demo:
 - No production compliance/KYC layer
 - No audited smart contracts
 - Local MockUSDC is not real USDC
-- Vercel deployment is primarily a frontend/product demo unless connected to reachable deployed contracts
+- Vercel deployment is primarily a frontend/product demo unless connected to reachable deployed Arc testnet contracts
 
 ## Roadmap
 
