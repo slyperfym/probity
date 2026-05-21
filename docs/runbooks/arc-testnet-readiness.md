@@ -9,8 +9,8 @@ Configure these values in Vercel and local `.env` files when an Arc testnet RPC 
 ```txt
 NEXT_PUBLIC_DEPLOYMENT_TARGET=arc-testnet
 NEXT_PUBLIC_MARKET_DATA_MODE=auto
-NEXT_PUBLIC_CHAIN_ID=
-NEXT_PUBLIC_RPC_URL=
+NEXT_PUBLIC_CHAIN_ID=5042002
+NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_ARC_CHAIN_NAME=Arc Testnet
 NEXT_PUBLIC_ARC_NATIVE_CURRENCY_NAME=
 NEXT_PUBLIC_ARC_NATIVE_CURRENCY_SYMBOL=
@@ -61,19 +61,56 @@ The `MockUSDC` key currently represents the configured settlement token address 
 
 1. Confirm official Arc testnet chain id, RPC URL, explorer URL, and native currency metadata.
 2. Confirm settlement token strategy.
-3. Deploy or select the USDC-style settlement token.
-4. Deploy `MarketFactory`.
-5. Approve the intended resolver address in `MarketFactory`.
-6. Create seed markets if needed.
-7. Export ABIs:
+3. Configure a dedicated testnet deployer wallet. Do not use a production or mainnet-funded private key.
+4. Deploy or select the USDC-style settlement token.
+5. Deploy `MarketFactory`.
+6. Approve the intended resolver address in `MarketFactory`.
+7. Create seed markets if needed.
+8. Export ABIs:
 
 ```txt
 pnpm contracts:export-abis
 ```
 
-8. Update `deployments/arc-testnet/addresses.json`.
-9. Configure Vercel environment variables.
-10. Redeploy the frontend.
+9. Update `deployments/arc-testnet/addresses.json`.
+10. Configure Vercel environment variables.
+11. Redeploy the frontend.
+
+## Foundry Deployment Command
+
+Arc testnet deployment uses `contracts/script/DeployArcTestnet.s.sol`.
+
+Set environment variables in your shell or local `.env` workflow. Do not commit real secrets:
+
+```txt
+ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
+PRIVATE_KEY=0x...
+RESOLVER_ADDRESS=0x...
+SETTLEMENT_TOKEN_ADDRESS=0x...
+```
+
+`SETTLEMENT_TOKEN_ADDRESS` is optional. If omitted, the script deploys a test-only `MockUSDC` and records it as the settlement token. If provided, the address must point to an existing ERC20-style contract.
+
+Run:
+
+```txt
+pnpm contracts:deploy:arc-testnet
+pnpm contracts:export-abis
+```
+
+Or run both deployment and ABI export together:
+
+```txt
+pnpm contracts:bootstrap:arc-testnet
+```
+
+The deployment script writes:
+
+```txt
+deployments/arc-testnet/addresses.json
+```
+
+The script verifies it is running on chain id `5042002` before broadcasting.
 
 ## Vercel Checklist
 

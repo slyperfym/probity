@@ -29,7 +29,15 @@ contract DeployLocal is LocalScriptBase {
         address[] memory markets = new address[](0);
         vm.writeFile(
             LOCAL_ADDRESSES_PATH,
-            _deploymentJson(address(factory), address(usdc), markets, deployer, deployer)
+            _deploymentJson(
+                address(factory),
+                address(usdc),
+                markets,
+                deployer,
+                deployer,
+                "local-anvil",
+                "MockUSDC"
+            )
         );
     }
 }

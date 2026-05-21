@@ -11,6 +11,9 @@ fs_permissions = [
   { access = "read-write", path = "../deployments" }
 ]
 
+[rpc_endpoints]
+arc_testnet = "${ARC_TESTNET_RPC_URL}"
+
 [fmt]
 line_length = 100
 tab_width = 4

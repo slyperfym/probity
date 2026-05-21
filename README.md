@@ -245,8 +245,8 @@ Arc testnet configuration is environment-driven:
 ```txt
 NEXT_PUBLIC_DEPLOYMENT_TARGET=arc-testnet
 NEXT_PUBLIC_MARKET_DATA_MODE=auto
-NEXT_PUBLIC_CHAIN_ID=
-NEXT_PUBLIC_RPC_URL=
+NEXT_PUBLIC_CHAIN_ID=5042002
+NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_ARC_CHAIN_NAME=Arc Testnet
 NEXT_PUBLIC_ARC_NATIVE_CURRENCY_NAME=
 NEXT_PUBLIC_ARC_NATIVE_CURRENCY_SYMBOL=
@@ -275,6 +275,26 @@ Detailed checklist:
 
 ```txt
 docs/runbooks/arc-testnet-readiness.md
+```
+
+Arc testnet contract deployment uses Foundry:
+
+```txt
+ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
+PRIVATE_KEY=0x...
+RESOLVER_ADDRESS=0x...
+SETTLEMENT_TOKEN_ADDRESS=0x...
+
+pnpm contracts:deploy:arc-testnet
+pnpm contracts:export-abis
+```
+
+`SETTLEMENT_TOKEN_ADDRESS` is optional for test deployments. If omitted, the script deploys a test-only `MockUSDC`. Never commit real private keys or `.env` files.
+
+To deploy and refresh ABI artifacts in one step:
+
+```txt
+pnpm contracts:bootstrap:arc-testnet
 ```
 
 ## Demo Flow
