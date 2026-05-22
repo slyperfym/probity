@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { probityChain } from "@/config/chains";
 import {
   contractAbis,
   contractAddresses,
@@ -32,7 +33,7 @@ const categories = ["Macro", "Crypto", "Policy", "Arc", "Earnings"];
 export function CreateMarketForm() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { address: accountAddress, isConnected } = useAccount();
+  const { address: accountAddress, chain, isConnected } = useAccount();
   const createWrite = useWriteContract();
   const createReceipt = useWaitForTransactionReceipt({ hash: createWrite.data });
   const importedQuestion = searchParams.get("question") ?? "";
@@ -87,6 +88,7 @@ export function CreateMarketForm() {
   const isApprovedResolver = Boolean(approvedResolver.data);
   const isCreating = createWrite.isPending || createReceipt.isLoading;
   const createDisabledReason = getCreateDisabledReason({
+    chainId: chain?.id,
     expiry,
     isApprovedCreator,
     isApprovedResolver,
@@ -158,10 +160,11 @@ export function CreateMarketForm() {
               <div className="text-sm font-medium text-cyan-100">Reference imported from public market metadata</div>
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 This draft uses external market metadata as a reference. The created Probity market
-                will be a separate Arc-native market with independent settlement.
+                will be a separate Arc-native market with independent USDC settlement.
               </p>
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                 <ReferenceMetric label="Source" value={importedSourceLabel} />
+                {importedSourceUrl && <ReferenceMetric label="External URL" value={importedSourceUrl} />}
                 <ReferenceMetric
                   label="Initial YES probability"
                   value={importedProbability ? `${importedProbability}%` : "Not provided"}
@@ -260,6 +263,16 @@ export function CreateMarketForm() {
             />
           </Field>
 
+          <EligibilityPanel
+            accountAddress={accountAddress}
+            chainId={chain?.id}
+            chainName={chain?.name}
+            isApprovedCreator={isApprovedCreator}
+            isApprovedResolver={isApprovedResolver}
+            isConnected={isConnected}
+            resolverAddress={resolverAddress}
+          />
+
           <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
               <FileText className="h-4 w-4" />
@@ -309,7 +322,78 @@ function ReferenceMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-cyan-400/15 bg-slate-950/50 p-3">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
-      <div className="mt-1 text-sm font-medium text-slate-100">{value}</div>
+      <div className="mt-1 break-all text-sm font-medium text-slate-100">{value}</div>
+    </div>
+  );
+}
+
+function EligibilityPanel({
+  accountAddress,
+  chainId,
+  chainName,
+  isApprovedCreator,
+  isApprovedResolver,
+  isConnected,
+  resolverAddress
+}: {
+  accountAddress: Address | undefined;
+  chainName: string | undefined;
+  chainId: number | undefined;
+  isApprovedCreator: boolean;
+  isApprovedResolver: boolean;
+  isConnected: boolean;
+  resolverAddress: Address | undefined;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+      <div className="text-sm font-medium text-white">Wallet eligibility</div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <EligibilityMetric
+          label="Wallet"
+          tone={isConnected ? "yes" : "warn"}
+          value={isConnected && accountAddress ? shortHash(accountAddress) : "Not connected"}
+        />
+        <EligibilityMetric
+          label="Current chain"
+          tone={chainId === probityChain.id ? "yes" : "warn"}
+          value={chainName ?? `Connect to ${probityChain.name}`}
+        />
+        <EligibilityMetric
+          label="Approved creator"
+          tone={isApprovedCreator ? "yes" : "warn"}
+          value={isApprovedCreator ? "Approved" : "Not approved"}
+        />
+        <EligibilityMetric
+          label="Approved resolver"
+          tone={resolverAddress && isApprovedResolver ? "yes" : "warn"}
+          value={
+            !resolverAddress
+              ? "Invalid resolver"
+              : isApprovedResolver
+                ? "Approved"
+                : "Not approved"
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function EligibilityMetric({
+  label,
+  tone,
+  value
+}: {
+  label: string;
+  tone: "yes" | "warn";
+  value: string;
+}) {
+  return (
+    <div className="rounded-md border border-white/10 bg-slate-950/50 p-3">
+      <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
+      <div className={tone === "yes" ? "mt-1 text-sm font-medium text-emerald-200" : "mt-1 text-sm font-medium text-amber-200"}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -367,6 +451,7 @@ function CreateTransactionState({
 
 function getCreateDisabledReason({
   expiry,
+  chainId,
   isApprovedCreator,
   isApprovedResolver,
   isConnected,
@@ -377,6 +462,7 @@ function getCreateDisabledReason({
   question,
   resolverAddress
 }: {
+  chainId: number | undefined;
   expiry: string;
   isApprovedCreator: boolean;
   isApprovedResolver: boolean;
@@ -397,11 +483,15 @@ function getCreateDisabledReason({
   }
 
   if (!isConnected) {
-    return "Connect an approved resolver/admin wallet to create an Arc-native market.";
+    return "Connect an approved creator wallet to create an Arc-native market.";
+  }
+
+  if (chainId !== probityChain.id) {
+    return `Switch to ${probityChain.name} (${probityChain.id}) before creating a market.`;
   }
 
   if (!isApprovedCreator) {
-    return "Connected wallet is not approved as a MarketFactory creator.";
+    return "This wallet is not approved to create Probity markets.";
   }
 
   if (!resolverAddress) {
@@ -409,7 +499,7 @@ function getCreateDisabledReason({
   }
 
   if (!isApprovedResolver) {
-    return "Selected resolver address is not approved on the MarketFactory.";
+    return "Selected resolver address is not approved by the MarketFactory.";
   }
 
   if (!question.trim()) {

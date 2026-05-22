@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { formatUnits, isAddress, parseUnits, type Address } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
@@ -25,6 +26,7 @@ import {
 import type { Market } from "@/features/markets/types";
 
 const USDC_DECIMALS = 6;
+const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 export function TradingPanel({ market }: { market: Market }) {
   const [side, setSide] = React.useState<"YES" | "NO">("YES");
@@ -128,6 +130,13 @@ export function TradingPanel({ market }: { market: Market }) {
     tokenLabel,
     hasSettlementTokenMismatch
   });
+  const shouldShowFaucetLink =
+    deploymentConfig.isArcTestnet &&
+    isLocalContractMarket &&
+    isConnected &&
+    !isMarketClosed &&
+    parsedAmount > 0n &&
+    !hasEnoughBalance;
 
   React.useEffect(() => {
     const error = approveWrite.error ?? buyWrite.error ?? claimWrite.error;
@@ -259,7 +268,7 @@ export function TradingPanel({ market }: { market: Market }) {
           )}
         </div>
 
-        {statusMessage && <TradingNotice message={statusMessage} />}
+        {statusMessage && <TradingNotice message={statusMessage} showFaucetLink={shouldShowFaucetLink} />}
         <TransactionState
           error={approveWrite.error ?? buyWrite.error ?? claimWrite.error}
           isPending={isWriting}
@@ -300,7 +309,13 @@ export function TradingPanel({ market }: { market: Market }) {
   );
 }
 
-function TradingNotice({ message }: { message: string }) {
+function TradingNotice({
+  message,
+  showFaucetLink
+}: {
+  message: string;
+  showFaucetLink?: boolean;
+}) {
   return (
     <div className="mt-5 rounded-lg border border-dashed border-cyan-400/25 bg-cyan-400/5 p-4">
       <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
@@ -308,6 +323,16 @@ function TradingNotice({ message }: { message: string }) {
         Trading guardrail
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-400">{message}</p>
+      {showFaucetLink && (
+        <Link
+          className="mt-3 inline-flex text-sm font-medium text-cyan-200 transition hover:text-cyan-100"
+          href={CIRCLE_FAUCET_URL}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Need testnet USDC? Get Arc testnet USDC from the Circle faucet.
+        </Link>
+      )}
     </div>
   );
 }
@@ -406,7 +431,9 @@ function getStatusMessage({
   }
 
   if (!hasEnoughBalance) {
-    return `Your connected wallet does not have enough ${tokenLabel} for this trade.`;
+    return deploymentConfig.isArcTestnet
+      ? "Your connected wallet does not have enough Arc testnet USDC for this trade."
+      : `Your connected wallet does not have enough ${tokenLabel} for this trade.`;
   }
 
   if (!hasEnoughAllowance) {

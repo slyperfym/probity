@@ -65,7 +65,7 @@ export function ExternalSignals() {
         <p className="mt-2 text-sm leading-6 text-slate-400">
           These references are public Polymarket Gamma market metadata for discovery only.
           Probity does not execute Polymarket trades, is not affiliated with Polymarket, and
-          deploys separate Arc-native markets with independent settlement.
+          deploys separate Arc-native markets with independent USDC settlement.
         </p>
       </div>
 
@@ -109,7 +109,7 @@ function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
         <CardTitle className="leading-6">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
           Not a live Probity market. Use this reference to draft a separate Arc-native market with
-          independent settlement.
+          independent USDC settlement.
         </p>
       </CardHeader>
       <CardContent>

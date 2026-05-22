@@ -35,7 +35,7 @@ function getDeploymentMessage() {
       return "Arc testnet configuration is ready for this demo. Contract addresses are not configured yet, so Probity is showing mock market data until MarketFactory and settlement token addresses are added.";
     }
 
-    return `Arc testnet target active for ${probityChain.name} (${probityChain.id}). Verify this chain metadata before public demos.`;
+    return `Arc testnet onchain demo active for ${probityChain.name} (${probityChain.id}) with USDC settlement. This remains a testnet MVP, not a production deployment.`;
   }
 
   return null;

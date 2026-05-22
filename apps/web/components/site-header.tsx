@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, BarChart3 } from "lucide-react";
+import { Activity, BarChart3, Droplets } from "lucide-react";
 
 import { DeploymentReadinessAlert } from "@/components/web3/deployment-readiness-alert";
 import { WalletConnectionAlert } from "@/components/web3/wallet-connection-alert";
@@ -13,6 +13,8 @@ const navItems = [
   { label: "Create", href: "/create" },
   { label: "Admin", href: "/admin" }
 ];
+
+const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 export function SiteHeader() {
   const showArcDemoMode =
@@ -57,12 +59,18 @@ export function SiteHeader() {
                 <span className="text-slate-600">/</span>
                 <span>Mock Data Active</span>
               </div>
-            ) : (
-              <div className="hidden items-center gap-2 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200 sm:flex">
-                <Activity className="h-3.5 w-3.5" />
-                Arc ready
-              </div>
-            )}
+            ) : null}
+            <a
+              aria-label="Get Arc testnet USDC from Circle faucet"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-medium text-cyan-100 transition hover:border-cyan-300/60 hover:bg-cyan-400/15 hover:text-white sm:px-4"
+              href={CIRCLE_FAUCET_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <Droplets className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Get Faucet</span>
+              <span className="sm:hidden">Faucet</span>
+            </a>
             <WalletConnectButton />
           </div>
         </div>

@@ -291,6 +291,7 @@ Settlement token strategy:
 - Public demo wallets should obtain Arc testnet USDC from the Circle faucet before trading.
 - Arc testnet uses USDC as the gas token, so users need testnet USDC for both gas and settlement.
 - The USDC token address must come from official docs, a faucet, an explorer, or user-provided configuration.
+- Circle faucet: https://faucet.circle.com/
 
 Deployment artifact path:
 
@@ -329,6 +330,19 @@ pnpm contracts:export-abis
 ```
 
 The seed command reads `deployments/arc-testnet/addresses.json`, uses the configured USDC settlement token, creates demo markets only when `marketCount()` is zero, and writes the latest market list back to the deployment artifact. Set `FORCE_SEED_MARKETS=1` only when intentionally creating another set of demo markets.
+
+Approve an Arc testnet market creator wallet:
+
+```txt
+ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
+PRIVATE_KEY=0x...
+MARKET_FACTORY_ADDRESS=0x7BCa73D2dD03924bDaC330D176760B09f17C1504
+CREATOR_ADDRESS=0x303ACa77DE86EEFAe32d7C98DA4C3e836Cc4E46F
+
+pnpm contracts:approve-creator:arc-testnet
+```
+
+This calls `MarketFactory.setCreatorApproval(CREATOR_ADDRESS, true)`. Never commit real private keys or `.env` files. See `docs/public-demo-guide.md` for the public demo checklist.
 
 To deploy and refresh ABI artifacts in one step:
 
