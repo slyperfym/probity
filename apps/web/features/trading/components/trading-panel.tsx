@@ -27,10 +27,11 @@ import type { Market } from "@/features/markets/types";
 
 const USDC_DECIMALS = 6;
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
+const QUICK_AMOUNTS = [1, 5, 10, 100] as const;
 
 export function TradingPanel({ market }: { market: Market }) {
   const [side, setSide] = React.useState<"YES" | "NO">("YES");
-  const [amount, setAmount] = React.useState("1000");
+  const [amount, setAmount] = React.useState("");
   const [lastAction, setLastAction] = React.useState<"approve" | "buy" | "sellYes" | "sellNo" | "claim" | null>(null);
   const queryClient = useQueryClient();
   const { address: accountAddress, chainId, isConnected } = useAccount();
@@ -42,6 +43,7 @@ export function TradingPanel({ market }: { market: Market }) {
   const estimatedYesSellPayout = Number(amount || 0) * (market.yesProbability / 100);
   const estimatedNoSellPayout = Number(amount || 0) * ((100 - market.yesProbability) / 100);
   const parsedAmount = parseTradeAmount(amount);
+  const hasEnteredAmount = parsedAmount > 0n;
   const isMarketClosed = market.status === "expired" || market.status === "resolved";
   const tokenLabel = deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC";
   const environmentLabel = deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Test";
@@ -157,6 +159,7 @@ export function TradingPanel({ market }: { market: Market }) {
     !isMarketClosed &&
     parsedAmount > 0n &&
     !hasEnoughBalance;
+  const selectedSellEstimate = side === "YES" ? estimatedYesSellPayout : estimatedNoSellPayout;
 
   React.useEffect(() => {
     const error = approveWrite.error ?? buyWrite.error ?? sellWrite.error ?? claimWrite.error;
@@ -220,61 +223,108 @@ export function TradingPanel({ market }: { market: Market }) {
     setLastAction("claim");
   }
 
+  function incrementAmount(increment: number) {
+    const currentAmount = Number(amount || 0);
+    const nextAmount = Number.isFinite(currentAmount) ? currentAmount + increment : increment;
+
+    setAmount(formatAmountInput(nextAmount));
+  }
+
+  function handleMaxAmount() {
+    setAmount(formatUnits(balance, USDC_DECIMALS));
+  }
+
   return (
-    <Card className="bg-slate-950/90">
-      <CardHeader>
+    <Card className="bg-slate-950/85">
+      <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle>Trading Panel</CardTitle>
-          <Badge variant={isLocalContractMarket ? "yes" : "info"}>
+          <div>
+            <CardTitle className="text-slate-100">Trade</CardTitle>
+            <p className="mt-1 text-xs text-slate-500">Arc-native YES/NO position entry.</p>
+          </div>
+          <Badge className="border-white/10 bg-white/[0.03] text-slate-300" variant={isLocalContractMarket ? "yes" : "info"}>
             {isLocalContractMarket ? environmentLabel : "Mock"}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="mb-5 rounded-lg border border-amber-300/25 bg-amber-300/5 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-amber-100">
-            <AlertTriangle className="h-4 w-4" />
-            {deploymentConfig.isArcTestnet ? "Arc testnet trading" : "Local test trading only"}
+      <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
+        <div className="rounded-lg border border-amber-300/15 bg-amber-300/[0.035] px-3 py-2.5">
+          <div className="flex items-center gap-2 text-xs font-medium text-amber-100/90">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {deploymentConfig.isArcTestnet ? "Arc testnet trading" : "Local test trading"}
           </div>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
+          <p className="mt-1.5 text-xs leading-5 text-slate-500">
             {deploymentConfig.isArcTestnet
-              ? "These actions use configured Arc testnet contracts and USDC settlement. Users need Arc testnet USDC from the Circle faucet before trading."
-              : "These actions are intended for Anvil and MockUSDC. They are not a production trading flow and should only be used against locally deployed Probity contracts."}
-          </p>
-          <p className="mt-2 text-xs leading-5 text-amber-100/80">
-            Sell uses an MVP sell-back mechanism, not a production orderbook.
+              ? "Use Arc testnet USDC for demo trades. Sell-back is MVP pool pricing, not an orderbook."
+              : "Use local contracts and MockUSDC only. Sell-back is MVP pool pricing, not an orderbook."}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <section className="space-y-2.5">
+          <SectionLabel>Side</SectionLabel>
+          <div className="grid grid-cols-2 gap-2">
           {(["YES", "NO"] as const).map((option) => (
-            <Button
-              key={option}
-              onClick={() => setSide(option)}
-              type="button"
-              variant={side === option ? "outline" : "secondary"}
-            >
-              Buy {option}
-            </Button>
+              <button
+                className={[
+                  "h-10 rounded-md border px-3 text-sm font-medium transition",
+                  side === option
+                    ? option === "YES"
+                      ? "border-emerald-300/35 bg-emerald-400/[0.08] text-emerald-100"
+                      : "border-rose-300/35 bg-rose-400/[0.08] text-rose-100"
+                    : "border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/15 hover:text-slate-200"
+                ].join(" ")}
+                key={option}
+                onClick={() => setSide(option)}
+                type="button"
+              >
+                {option}
+              </button>
           ))}
-        </div>
+          </div>
+        </section>
 
-        <label className="mt-5 block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-500">
-            Amount
-          </span>
-          <div className="flex h-11 items-center rounded-md border border-white/10 bg-white/[0.03] px-3">
+        <section className="space-y-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <SectionLabel>Amount</SectionLabel>
+            {isLocalContractMarket && (
+              <span className="text-xs text-slate-600">Balance {formatUsdc(balance)} {tokenLabel}</span>
+            )}
+          </div>
+          <div className="flex h-12 items-center rounded-md border border-white/[0.08] bg-white/[0.025] px-3 transition focus-within:border-cyan-300/25">
             <input
-              className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
+              className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-slate-100 outline-none placeholder:text-slate-700"
+              inputMode="decimal"
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
               value={amount}
             />
-            <span className="text-sm text-slate-500">USDC</span>
+            <span className="text-sm text-slate-500">{tokenLabel}</span>
           </div>
-        </label>
+          <div className="flex flex-wrap gap-2">
+            {QUICK_AMOUNTS.map((quickAmount) => (
+              <button
+                className="h-8 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200"
+                key={quickAmount}
+                onClick={() => incrementAmount(quickAmount)}
+                type="button"
+              >
+                +${quickAmount}
+              </button>
+            ))}
+            {isLocalContractMarket && balance > 0n && (
+              <button
+                className="h-8 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200"
+                onClick={handleMaxAmount}
+                type="button"
+              >
+                Max
+              </button>
+            )}
+          </div>
+        </section>
 
-        <div className="mt-5 space-y-3 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+        <section className="space-y-2.5 rounded-lg border border-white/[0.07] bg-white/[0.018] p-3 text-sm">
+          <SectionLabel>Summary</SectionLabel>
           <PreviewRow label="Selected side" value={side} />
           <PreviewRow
             label={isLocalContractMarket ? "Onchain probability" : "Mock probability"}
@@ -282,27 +332,22 @@ export function TradingPanel({ market }: { market: Market }) {
           />
           <PreviewRow
             label="Estimated shares"
-            value={estimatedShares.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+            value={hasEnteredAmount ? estimatedShares.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "--"}
           />
           {isLocalContractMarket && (
-            <>
-              <PreviewRow
-                label="Estimated YES sell-back"
-                value={`${estimatedYesSellPayout.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC`}
-              />
-              <PreviewRow
-                label="Estimated NO sell-back"
-                value={`${estimatedNoSellPayout.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC`}
-              />
-            </>
+            <PreviewRow
+              label={`${side} sell-back estimate`}
+              value={
+                hasEnteredAmount
+                  ? `${selectedSellEstimate.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC`
+                  : "--"
+              }
+            />
           )}
           {isLocalContractMarket && (
             <>
               <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} USDC`} />
               <PreviewRow label="Market allowance" value={`${formatUsdc(allowance)} USDC`} />
-              {market.settlementTokenAddress && (
-                <PreviewRow label="Market token" value={shortAddress(market.settlementTokenAddress)} />
-              )}
               <PreviewRow label="YES position" value={`${formatUsdc(yesPosition)} shares`} />
               <PreviewRow label="NO position" value={`${formatUsdc(noPosition)} shares`} />
               {market.status === "resolved" && (
@@ -312,9 +357,12 @@ export function TradingPanel({ market }: { market: Market }) {
                 />
               )}
               <PreviewRow label="Claim status" value={hasClaimed ? "Claimed" : "Not claimed"} />
+              {market.settlementTokenAddress && (
+                <SecondaryDetail label="Market token" value={shortAddress(market.settlementTokenAddress)} />
+              )}
             </>
           )}
-        </div>
+        </section>
 
         {statusMessage && <TradingNotice message={statusMessage} showFaucetLink={shouldShowFaucetLink} />}
         <TransactionState
@@ -336,7 +384,8 @@ export function TradingPanel({ market }: { market: Market }) {
           }
         />
 
-        <div className="mt-5 grid gap-3">
+        <section className="grid gap-2.5">
+          <SectionLabel>Actions</SectionLabel>
           {isLocalContractMarket ? (
             <>
               <Button disabled={!canApprove} onClick={handleApprove} type="button">
@@ -347,7 +396,7 @@ export function TradingPanel({ market }: { market: Market }) {
                 {isBuying && <Loader2 className="h-4 w-4 animate-spin" />}
                 Buy {side}
               </Button>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <Button disabled={!canSellYes} onClick={() => handleSell("YES")} type="button" variant="secondary">
                   {isSelling && lastAction === "sellYes" && <Loader2 className="h-4 w-4 animate-spin" />}
                   Sell YES
@@ -365,7 +414,7 @@ export function TradingPanel({ market }: { market: Market }) {
           ) : (
             <Button disabled>Execute Mock Trade</Button>
           )}
-        </div>
+        </section>
       </CardContent>
     </Card>
   );
@@ -379,15 +428,15 @@ function TradingNotice({
   showFaucetLink?: boolean;
 }) {
   return (
-    <div className="mt-5 rounded-lg border border-dashed border-cyan-400/25 bg-cyan-400/5 p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
-        <ShieldCheck className="h-4 w-4" />
+    <div className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.035] p-3">
+      <div className="flex items-center gap-2 text-xs font-medium text-cyan-100/90">
+        <ShieldCheck className="h-3.5 w-3.5" />
         Trading guardrail
       </div>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{message}</p>
+      <p className="mt-1.5 text-xs leading-5 text-slate-500">{message}</p>
       {showFaucetLink && (
         <Link
-          className="mt-3 inline-flex text-sm font-medium text-cyan-200 transition hover:text-cyan-100"
+          className="mt-2 inline-flex text-xs font-medium text-cyan-200/90 transition hover:text-cyan-100"
           href={CIRCLE_FAUCET_URL}
           rel="noreferrer"
           target="_blank"
@@ -415,7 +464,7 @@ function TransactionState({
   }
 
   return (
-    <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+    <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-3 text-sm">
       {isPending && (
         <div className="flex items-center gap-2 text-cyan-100">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -489,7 +538,7 @@ function getStatusMessage({
   }
 
   if (parsedAmount <= 0n) {
-    return `Enter a positive ${tokenLabel} amount to trade.`;
+    return "";
   }
 
   if (!hasEnoughBalance) {
@@ -516,6 +565,13 @@ function parseTradeAmount(value: string) {
 function formatUsdc(value: bigint) {
   return Number(formatUnits(value, USDC_DECIMALS)).toLocaleString("en-US", {
     maximumFractionDigits: 2
+  });
+}
+
+function formatAmountInput(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: USDC_DECIMALS,
+    useGrouping: false
   });
 }
 
@@ -609,7 +665,24 @@ function PreviewRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-slate-500">{label}</span>
-      <span className="font-medium text-white">{value}</span>
+      <span className="font-medium text-slate-200">{value}</span>
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+      {children}
+    </div>
+  );
+}
+
+function SecondaryDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-t border-white/[0.06] pt-2 text-xs">
+      <span className="text-slate-600">{label}</span>
+      <span className="font-medium text-slate-500">{value}</span>
     </div>
   );
 }
