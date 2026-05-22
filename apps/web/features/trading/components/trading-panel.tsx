@@ -29,6 +29,7 @@ const USDC_DECIMALS = 6;
 export function TradingPanel({ market }: { market: Market }) {
   const [side, setSide] = React.useState<"YES" | "NO">("YES");
   const [amount, setAmount] = React.useState("1000");
+  const [lastAction, setLastAction] = React.useState<"approve" | "buy" | "claim" | null>(null);
   const queryClient = useQueryClient();
   const { address: accountAddress, chainId, isConnected } = useAccount();
 
@@ -149,6 +150,7 @@ export function TradingPanel({ market }: { market: Market }) {
       args: [marketAddress, parsedAmount],
       functionName: "approve"
     });
+    setLastAction("approve");
   }
 
   function handleBuy() {
@@ -161,6 +163,7 @@ export function TradingPanel({ market }: { market: Market }) {
       args: [parsedAmount],
       functionName: side === "YES" ? "buyYes" : "buyNo"
     });
+    setLastAction("buy");
   }
 
   function handleClaim() {
@@ -172,6 +175,7 @@ export function TradingPanel({ market }: { market: Market }) {
       ...getPredictionMarketConfig(marketAddress),
       functionName: "claim"
     });
+    setLastAction("claim");
   }
 
   return (
@@ -261,12 +265,12 @@ export function TradingPanel({ market }: { market: Market }) {
           isPending={isWriting}
           pendingHash={approveWrite.data ?? buyWrite.data ?? claimWrite.data}
           successMessage={
-            approveReceipt.isSuccess
+            lastAction === "approve" && approveReceipt.isSuccess
               ? "Approval confirmed."
-              : buyReceipt.isSuccess
+              : lastAction === "buy" && buyReceipt.isSuccess
                 ? `${side} purchase confirmed.`
-                : claimReceipt.isSuccess
-                  ? "Claim confirmed."
+                : lastAction === "claim" && claimReceipt.isSuccess
+                  ? "Claim payout confirmed."
                   : ""
           }
         />

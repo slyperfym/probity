@@ -42,6 +42,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   const isLocalMode = !localMarkets.isUsingMockFallback && localMarkets.markets.length > 0;
   const contractModeLabel = deploymentConfig.isArcTestnet ? "Arc testnet" : "Local contracts";
   const markets = isLocalMode ? localMarkets.markets.map(toResolverMarket) : mockMarkets;
+  const connectedResolverAddress = accountAddress ? getAddress(accountAddress) : undefined;
 
   if (markets.length === 0) {
     return (
@@ -55,7 +56,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
 
   const awaiting = markets.filter((market) => market.status === "awaiting_resolution").length;
   const resolved = markets.filter((market) => market.status === "resolved").length;
-  const review = markets.filter((market) => market.status === "cancel_review").length;
+  const review = markets.filter((market) => market.status === "cancel_review" || market.status === "active").length;
   const isResolving = resolveWrite.isPending || resolveReceipt.isLoading;
 
   function resolveMarket(market: ResolverMarket, outcome: "YES" | "NO") {
@@ -63,7 +64,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
       return;
     }
 
-    setPendingMarketId(market.id);
+    setPendingMarketId(`${market.id}:${outcome}`);
     resolveWrite.writeContract({
       ...getPredictionMarketConfig(market.contractAddress),
       args: [outcome === "YES" ? 1 : 2],
@@ -106,10 +107,15 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       {market.title}
                       <ArrowUpRight className="mt-0.5 h-4 w-4 text-slate-600 transition group-hover:text-cyan-300" />
                     </Link>
-                    <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
+                    <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2 lg:grid-cols-4">
                       <span>Expires {formatExpiry(market.expiry)}</span>
                       <span>Volume {formatUsd(market.volumeUsd)}</span>
-                      <span>{market.resolver}</span>
+                      <span>Resolver {market.resolver}</span>
+                      <span>
+                        {isResolverEligible({ accountAddress: connectedResolverAddress, market })
+                          ? "Eligible resolver"
+                          : "Resolver wallet required"}
+                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -119,7 +125,9 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       size="sm"
                       variant="secondary"
                     >
-                      {isResolving && pendingMarketId === market.id && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {isResolving && pendingMarketId === `${market.id}:YES` && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      )}
                       Resolve YES
                     </Button>
                     <Button
@@ -128,6 +136,9 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       size="sm"
                       variant="secondary"
                     >
+                      {isResolving && pendingMarketId === `${market.id}:NO` && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      )}
                       Resolve NO
                     </Button>
                   </div>
@@ -167,6 +178,10 @@ function AdminMetric({ label, value }: { label: string; value: string }) {
 }
 
 function ResolverStatusBadge({ status }: { status: ResolverMarket["status"] }) {
+  if (status === "active") {
+    return <Badge variant="muted">Active</Badge>;
+  }
+
   if (status === "awaiting_resolution") {
     return <Badge variant="info">Awaiting resolution</Badge>;
   }
@@ -175,7 +190,7 @@ function ResolverStatusBadge({ status }: { status: ResolverMarket["status"] }) {
     return <Badge variant="yes">Resolved</Badge>;
   }
 
-  return <Badge variant="muted">Cancel review</Badge>;
+  return <Badge variant="muted">Review</Badge>;
 }
 
 function toResolverMarket(market: Market): ResolverMarket {
@@ -190,7 +205,7 @@ function toResolverMarket(market: Market): ResolverMarket {
     proposedOutcome: market.outcome ? market.outcome.toUpperCase() as "YES" | "NO" : null,
     resolver: market.resolver,
     resolverAddress: market.resolverAddress,
-    status: market.status === "resolved" ? "resolved" : isExpired ? "awaiting_resolution" : "cancel_review",
+    status: market.status === "resolved" ? "resolved" : isExpired ? "awaiting_resolution" : "active",
     title: market.title,
     volumeUsd: market.volumeUsd
   };
@@ -217,7 +232,21 @@ function canResolve({
     return false;
   }
 
-  return getAddress(accountAddress) === getAddress(market.resolverAddress);
+  return isResolverEligible({ accountAddress: getAddress(accountAddress), market });
+}
+
+function isResolverEligible({
+  accountAddress,
+  market
+}: {
+  accountAddress: `0x${string}` | undefined;
+  market: ResolverMarket;
+}) {
+  return Boolean(
+    accountAddress &&
+      market.resolverAddress &&
+      getAddress(accountAddress) === getAddress(market.resolverAddress)
+  );
 }
 
 function getResolverNotice({

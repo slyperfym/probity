@@ -20,8 +20,8 @@ export default function AdminPage() {
             Resolver operations dashboard.
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
-            Resolve expired local markets, monitor claimable outcomes, and preserve demo
-            fallback behavior when deployed contract addresses are unavailable.
+            Resolve expired deployed markets, monitor claimable outcomes, and preserve demo
+            fallback behavior when contract addresses are unavailable.
           </p>
         </div>
       </section>
@@ -32,8 +32,8 @@ export default function AdminPage() {
           <AdminControlCard
             icon={Gavel}
             label="Resolver mode"
-            value="Local-first"
-            text="Local PredictionMarket resolution is enabled when deployed contracts are reachable."
+            value="Onchain"
+            text="PredictionMarket resolution is enabled when deployed contracts are reachable."
           />
           <AdminControlCard
             icon={TimerReset}

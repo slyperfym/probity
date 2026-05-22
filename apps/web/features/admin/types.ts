@@ -6,7 +6,7 @@ export type ResolverMarket = {
   category: string;
   expiry: string;
   volumeUsd: number;
-  status: "awaiting_resolution" | "resolved" | "cancel_review";
+  status: "active" | "awaiting_resolution" | "resolved" | "cancel_review";
   proposedOutcome: "YES" | "NO" | "INVALID" | null;
   resolver: string;
   resolverAddress?: `0x${string}`;
