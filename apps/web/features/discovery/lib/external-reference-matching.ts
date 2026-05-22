@@ -6,10 +6,50 @@ import type { Market } from "@/features/markets/types";
 
 export function normalizeQuestion(value: string) {
   return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’‘`´]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[°º]/g, " degrees ")
     .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\+/g, " plus ")
+    .replace(/[$€£]/g, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
     .replace(/\s+/g, " ");
+}
+
+export function getExternalSignalKey(signal: ExternalMarketReference) {
+  return {
+    endDate: normalizeDate(signal.endDate),
+    id: signal.id,
+    question: normalizeQuestion(signal.question),
+    questionHash: normalizedQuestionHash(signal.question),
+    titleExpiry: `${normalizeQuestion(signal.question)}::${normalizeDate(signal.endDate)}`,
+    url: normalizeUrl(signal.url)
+  };
+}
+
+export function getProbityMarketKey(market: Market) {
+  const metadata = market.externalReference;
+  const metadataQuestion = metadata?.externalQuestion
+    ? normalizeQuestion(metadata.externalQuestion)
+    : "";
+  const titleQuestion = normalizeQuestion(market.title);
+  const question = metadataQuestion || titleQuestion;
+
+  return {
+    endDate: normalizeDate(metadata?.externalEndDate ?? market.expiresAt),
+    externalId: metadata?.externalId ?? "",
+    metadataQuestion,
+    metadataQuestionHash: metadata?.normalizedQuestionHash ?? "",
+    question,
+    questionHash: metadata?.normalizedQuestionHash ?? normalizedQuestionHash(market.title),
+    titleExpiry: `${question}::${normalizeDate(metadata?.externalEndDate ?? market.expiresAt)}`,
+    titleQuestion,
+    url: normalizeUrl(metadata?.externalSourceUrl)
+  };
 }
 
 export function normalizedQuestionHash(value: string) {
@@ -47,36 +87,30 @@ export function findProbityMarketForExternalSignal(
   markets: Market[]
 ) {
   return markets.find((market) => {
-    const metadata = market.externalReference;
+    const signalKey = getExternalSignalKey(signal);
+    const marketKey = getProbityMarketKey(market);
 
-    if (!metadata) {
-      return false;
-    }
-
-    const signalUrl = normalizeUrl(signal.url);
-    const metadataUrl = normalizeUrl(metadata.externalSourceUrl);
-
-    if (metadata.externalId && metadata.externalId === signal.id) {
+    if (marketKey.externalId && marketKey.externalId === signalKey.id) {
       return true;
     }
 
-    if (signalUrl && metadataUrl && signalUrl === metadataUrl) {
+    if (signalKey.url && marketKey.url && signalKey.url === marketKey.url) {
       return true;
     }
 
-    const signalQuestionHash = normalizedQuestionHash(signal.question);
-
-    if (
-      metadata.normalizedQuestionHash &&
-      metadata.normalizedQuestionHash === signalQuestionHash
-    ) {
+    if (marketKey.metadataQuestionHash && marketKey.metadataQuestionHash === signalKey.questionHash) {
       return true;
     }
 
-    return (
-      normalizeQuestion(metadata.externalQuestion ?? market.title) === normalizeQuestion(signal.question) &&
-      normalizeDate(metadata.externalEndDate ?? market.expiresAt) === normalizeDate(signal.endDate)
-    );
+    if (marketKey.metadataQuestion && marketKey.metadataQuestion === signalKey.question) {
+      return true;
+    }
+
+    if (marketKey.titleQuestion === signalKey.question) {
+      return true;
+    }
+
+    return Boolean(signalKey.endDate && marketKey.titleExpiry === signalKey.titleExpiry);
   });
 }
 
