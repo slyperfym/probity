@@ -16,6 +16,7 @@ import {
   mapPredictionMarketReadsToMarket,
   type MarketReadTuple
 } from "@/features/contracts/hooks/use-local-contract-markets";
+import { useMarketParticipantCount } from "@/features/contracts/hooks/use-market-participants";
 import { MarketStatusBadge } from "@/features/markets/components/market-status-badge";
 import { ProbabilityBar } from "@/features/markets/components/probability-bar";
 import { formatExpiry, formatInteger, formatUsd } from "@/features/markets/lib/formatters";
@@ -62,6 +63,13 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
         ) as MarketReadTuple
       )
     : null;
+  const participantCount = useMarketParticipantCount(address, Boolean(market));
+  const displayedMarket = market
+    ? {
+        ...market,
+        participants: participantCount.data ?? 0
+      }
+    : null;
 
   if (contractReads.isLoading && !hasTimedOut) {
     return (
@@ -73,7 +81,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
     );
   }
 
-  if (contractReads.isError || hasTimedOut || !market) {
+  if (contractReads.isError || hasTimedOut || !displayedMarket) {
     return (
       <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-300 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-7xl rounded-lg border border-white/10 bg-white/[0.03] p-8">
@@ -90,7 +98,8 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
     );
   }
 
-  const noProbability = 100 - market.yesProbability;
+  const marketWithParticipants = displayedMarket;
+  const noProbability = 100 - marketWithParticipants.yesProbability;
 
   return (
     <main className="min-h-screen bg-slate-950">
@@ -106,23 +115,23 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
 
           <div className="mt-5 max-w-5xl">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>{market.category}</Badge>
-              <MarketStatusBadge status={market.status} />
+              <Badge>{marketWithParticipants.category}</Badge>
+              <MarketStatusBadge status={marketWithParticipants.status} />
               <Badge className="border-cyan-300/20 bg-cyan-400/[0.06] text-cyan-100/85" variant="info">
                 {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
               </Badge>
             </div>
             <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
-              {market.title}
+              {marketWithParticipants.title}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
-              {market.description}
+              {marketWithParticipants.description}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(market.expiresAt)} />
-              <MetaChip icon={Droplets} label="Token" value={market.settlementToken} />
-              <MetaChip icon={Users} label="Participants" value={formatInteger(market.participants)} />
-              <MetaChip icon={ShieldCheck} label="Resolver" value={shortValue(market.resolver)} />
+              <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
+              <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />
+              <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
+              <MetaChip icon={ShieldCheck} label="Resolver" value={shortValue(marketWithParticipants.resolver)} />
               <MetaChip icon={Landmark} label="Market" value={shortValue(address)} />
             </div>
           </div>
@@ -137,18 +146,18 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             </CardHeader>
             <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
               <div className="grid grid-cols-2 gap-3">
-                <OutcomeMetric label="YES" value={market.yesProbability} variant="yes" />
+                <OutcomeMetric label="YES" value={marketWithParticipants.yesProbability} variant="yes" />
                 <OutcomeMetric label="NO" value={noProbability} variant="no" />
               </div>
-              <ProbabilityBar className="mt-4" yesProbability={market.yesProbability} />
+              <ProbabilityBar className="mt-4" yesProbability={marketWithParticipants.yesProbability} />
             </CardContent>
           </Card>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <InfoTile icon={Landmark} label="Volume" value={formatUsd(market.volumeUsd)} />
-            <InfoTile icon={Droplets} label="Liquidity" value={formatUsd(market.liquidityUsd)} />
-            <InfoTile icon={CalendarClock} label="Expires" value={formatExpiry(market.expiresAt)} />
-            <InfoTile icon={Users} label="Participants" value={formatInteger(market.participants)} />
+            <InfoTile icon={Landmark} label="Volume" value={formatUsd(marketWithParticipants.volumeUsd)} />
+            <InfoTile icon={Droplets} label="Liquidity" value={formatUsd(marketWithParticipants.liquidityUsd)} />
+            <InfoTile icon={CalendarClock} label="Expires" value={formatExpiry(marketWithParticipants.expiresAt)} />
+            <InfoTile icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
           </div>
 
           <Card className="bg-slate-950/75">
@@ -176,7 +185,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-          <TradingPanel market={market} />
+          <TradingPanel market={marketWithParticipants} />
           <Link className={cn(buttonVariants({ variant: "outline" }), "w-full")} href="/markets">
             Browse More Markets
           </Link>

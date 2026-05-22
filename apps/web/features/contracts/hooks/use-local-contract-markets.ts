@@ -7,6 +7,7 @@ import { useReadContracts } from "wagmi";
 import { contractAbis, deploymentConfig } from "@/config/contracts";
 import { parseExternalReferenceMetadata } from "@/features/discovery/lib/external-reference-matching";
 import { useMarketFactoryMarkets } from "@/features/contracts/hooks/use-market-factory";
+import { useMarketParticipantCounts } from "@/features/contracts/hooks/use-market-participants";
 import type { Market, MarketCategory, MarketOutcome, MarketStatus } from "@/features/markets/types";
 
 const USDC_DECIMALS = 1_000_000;
@@ -64,6 +65,7 @@ export function useLocalContractMarkets() {
       retry: 1
     }
   });
+  const participantCounts = useMarketParticipantCounts(marketAddresses, shouldReadMarkets);
 
   const markets = React.useMemo(() => {
     if (!shouldReadMarkets || !marketReads.data) {
@@ -77,10 +79,19 @@ export function useLocalContractMarkets() {
           .slice(offset, offset + 10)
           .map((result) => (result.status === "success" ? result.result : undefined)) as MarketReadTuple;
 
-        return mapPredictionMarketReadsToMarket(address, readTuple);
+        const market = mapPredictionMarketReadsToMarket(address, readTuple);
+
+        if (!market) {
+          return null;
+        }
+
+        return {
+          ...market,
+          participants: participantCounts.data?.get(address) ?? 0
+        };
       })
       .filter((market): market is Market => Boolean(market));
-  }, [marketAddresses, marketReads.data, shouldReadMarkets]);
+  }, [marketAddresses, marketReads.data, participantCounts.data, shouldReadMarkets]);
 
   const shouldUseMockFallback =
     factoryMarkets.isUsingMockFallback || marketReads.isError || (shouldReadMarkets && markets.length === 0);
@@ -93,7 +104,7 @@ export function useLocalContractMarkets() {
     factoryMarkets,
     isLoading:
       factoryMarkets.isLoading ||
-      (shouldReadMarkets && marketReads.isLoading),
+      (shouldReadMarkets && (marketReads.isLoading || participantCounts.isLoading)),
     isUsingMockFallback: shouldUseMockFallback,
     markets,
     marketSource: shouldUseMockFallback ? "mock" : "contracts"
