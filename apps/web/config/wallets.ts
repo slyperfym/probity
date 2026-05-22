@@ -2,13 +2,15 @@
 
 import type { Wallet, WalletList } from "@rainbow-me/rainbowkit";
 import {
+  coinbaseWallet,
   injectedWallet,
   metaMaskWallet,
   okxWallet,
+  rainbowWallet,
   walletConnectWallet
 } from "@rainbow-me/rainbowkit/wallets";
 
-import { hasWalletConnectProjectId } from "@/config/env";
+import { hasWalletConnectProjectId, publicEnv } from "@/config/env";
 
 type WalletFactory = WalletList[number]["wallets"][number];
 
@@ -29,7 +31,7 @@ type WindowWithWallets = Window & {
 };
 
 const walletConnectProjectId = hasWalletConnectProjectId
-  ? process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+  ? publicEnv.walletConnectProjectId
   : undefined;
 
 function getInjectedProviders() {
@@ -135,7 +137,7 @@ const recommendedWallets: WalletFactory[] = [probityMetaMaskWallet, probityOkxWa
 
 const walletConnectWallets: WalletFactory[] =
   hasWalletConnectProjectId && walletConnectProjectId
-    ? [walletConnectWallet]
+    ? [rainbowWallet, coinbaseWallet, walletConnectWallet]
     : [];
 
 export const probityWalletList: WalletList = [

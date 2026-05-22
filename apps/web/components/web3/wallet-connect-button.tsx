@@ -35,7 +35,7 @@ export function WalletConnectButton() {
 
         if (!connected) {
           return (
-            <Button onClick={openConnectModal} size="sm" type="button">
+            <Button className="px-3 sm:px-4" onClick={openConnectModal} size="sm" type="button">
               <Wallet className="h-4 w-4" />
               Connect
             </Button>
@@ -64,9 +64,15 @@ export function WalletConnectButton() {
               {chain.name}
               <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
             </button>
-            <Button onClick={openAccountModal} size="sm" type="button" variant="secondary">
+            <Button
+              className="max-w-36 px-3 sm:max-w-none sm:px-4"
+              onClick={openAccountModal}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
               <Wallet className="h-4 w-4" />
-              {account.displayName || formatAddress(account.address)}
+              <span className="truncate">{account.displayName || formatAddress(account.address)}</span>
             </Button>
           </div>
         );

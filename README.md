@@ -272,6 +272,18 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 
 Do not hardcode private keys or unofficial token addresses in source. Use `.env.example` as the template and update Vercel environment variables once deployed Arc testnet contract addresses are available.
 
+### Mobile Wallet Connection
+
+Probity uses RainbowKit, wagmi, and WalletConnect/Reown for mobile wallet QR and deep-link connection flows. Set the Project ID in local `.env.local` and in Vercel:
+
+```txt
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your Reown project id>
+```
+
+When this value is present, the wallet modal includes mobile-friendly WalletConnect options such as Rainbow, Coinbase Wallet, OKX, MetaMask, and the generic WalletConnect QR flow. When it is missing, Probity keeps injected browser wallets working and shows a non-blocking developer warning instead of crashing the app.
+
+For Vercel, add the same variable under Project Settings -> Environment Variables for Production and Preview deployments, then redeploy the frontend.
+
 Settlement token strategy:
 
 - Local development uses `MockUSDC`.

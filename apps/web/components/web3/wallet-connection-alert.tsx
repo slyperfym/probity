@@ -5,6 +5,7 @@ import { AlertTriangle, X } from "lucide-react";
 import { useAccount, useChainId, useConnect } from "wagmi";
 
 import { probityChain, supportedChainIds } from "@/config/chains";
+import { hasWalletConnectProjectId } from "@/config/env";
 import { cn } from "@/lib/utils";
 
 function getConnectionErrorMessage(error: Error | null) {
@@ -31,6 +32,7 @@ function getConnectionErrorMessage(error: Error | null) {
 
 export function WalletConnectionAlert() {
   const [dismissedError, setDismissedError] = React.useState<string | null>(null);
+  const [dismissedProjectIdWarning, setDismissedProjectIdWarning] = React.useState(false);
   const { isConnected } = useAccount();
   const chainId = useChainId();
   const { error, isError, reset } = useConnect();
@@ -42,9 +44,30 @@ export function WalletConnectionAlert() {
     : connectionMessage;
 
   if (!message || dismissedError === message) {
-    return null;
+    if (hasWalletConnectProjectId || dismissedProjectIdWarning) {
+      return null;
+    }
+
+    return (
+      <WalletWarning
+        message="Developer note: WalletConnect/Reown Project ID is not configured. Mobile QR and deep-link wallet options are hidden, while injected browser wallets remain available. Add NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID locally and in Vercel to enable mobile wallet discovery."
+        onDismiss={() => setDismissedProjectIdWarning(true)}
+      />
+    );
   }
 
+  return (
+    <WalletWarning
+      message={message}
+      onDismiss={() => {
+        setDismissedError(message);
+        reset();
+      }}
+    />
+  );
+}
+
+function WalletWarning({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
     <div className="border-b border-amber-400/20 bg-amber-400/10">
       <div className="mx-auto flex w-full max-w-7xl items-start gap-3 px-4 py-3 text-sm text-amber-100 sm:px-6 lg:px-8">
@@ -55,10 +78,7 @@ export function WalletConnectionAlert() {
           className={cn(
             "rounded-md p-1 text-amber-200 transition hover:bg-amber-300/10 hover:text-white"
           )}
-          onClick={() => {
-            setDismissedError(message);
-            reset();
-          }}
+          onClick={onDismiss}
           type="button"
         >
           <X className="h-4 w-4" />
