@@ -32,11 +32,11 @@ export function SiteHeader() {
       <div className="border-b border-white/10">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center gap-3" href="/">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-cyan-400/25 bg-cyan-400/10 text-cyan-200">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-cyan-400/20 bg-cyan-400/[0.07] text-cyan-200/90">
               <BarChart3 className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white">
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-100">
                 Probity
               </div>
               <div className="hidden text-xs text-slate-500 sm:block">Arc prediction markets</div>
@@ -53,8 +53,8 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-2">
             {showArcDemoMode ? (
-              <div className="hidden items-center gap-2 rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 lg:flex">
-                <Activity className="h-3.5 w-3.5 text-cyan-300" />
+              <div className="hidden items-center gap-2 rounded-md border border-cyan-400/15 bg-cyan-400/[0.06] px-3 py-2 text-xs text-cyan-100/85 lg:flex">
+                <Activity className="h-3.5 w-3.5 text-cyan-300/80" />
                 <span>Demo Mode</span>
                 <span className="text-slate-600">/</span>
                 <span>Arc Testnet Ready</span>
@@ -64,7 +64,7 @@ export function SiteHeader() {
             ) : null}
             <a
               aria-label="Get Arc testnet USDC from Circle faucet"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-medium text-cyan-100 transition hover:border-cyan-300/60 hover:bg-cyan-400/15 hover:text-white sm:px-4"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-cyan-400/20 bg-cyan-400/[0.07] px-3 text-xs font-medium text-cyan-100/90 transition hover:border-cyan-300/40 hover:bg-cyan-400/10 hover:text-cyan-50 sm:px-4"
               href={CIRCLE_FAUCET_URL}
               rel="noreferrer"
               target="_blank"
@@ -104,14 +104,14 @@ function NavItem({
       className={cn(
         "relative inline-flex h-9 shrink-0 items-center rounded-md border px-3 text-sm transition",
         isActive
-          ? "border-cyan-300/40 bg-cyan-400/10 text-cyan-50 shadow-[0_0_24px_rgba(34,211,238,0.10)]"
-          : "border-transparent text-slate-400 hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
+          ? "border-cyan-300/25 bg-cyan-400/[0.07] text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.06)]"
+          : "border-transparent text-slate-400 hover:border-white/10 hover:bg-white/[0.035] hover:text-slate-100"
       )}
       href={href}
     >
       {children}
       {isActive && (
-        <span className="absolute inset-x-2 -bottom-px h-px rounded-full bg-cyan-300/80 shadow-[0_0_12px_rgba(34,211,238,0.55)]" />
+        <span className="absolute inset-x-2 -bottom-px h-px rounded-full bg-cyan-300/55" />
       )}
     </Link>
   );

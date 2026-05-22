@@ -35,7 +35,7 @@ export function MarketsBoard() {
   const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
   const contractSourceLabel = deploymentConfig.isArcTestnet ? "Arc testnet" : "Local contracts";
   const dataSourceLabel = localMarkets.isUsingMockFallback ? "Mock dataset" : contractSourceLabel;
-  const dataSourceTone = localMarkets.isUsingMockFallback ? "text-amber-200" : "text-emerald-200";
+  const dataSourceTone = localMarkets.isUsingMockFallback ? "text-amber-300/85" : "text-emerald-300/85";
   const hasConnectedFactoryWithoutMarkets =
     !localMarkets.isLoading &&
     !localMarkets.isUsingMockFallback &&
@@ -55,17 +55,17 @@ export function MarketsBoard() {
         />
       </div>
 
-      <div className="rounded-md border border-white/10 bg-white/[0.02] px-3 py-2">
+      <div className="rounded-md border border-white/[0.07] bg-white/[0.018] px-3 py-2">
         <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
-            <span className="font-medium text-slate-300">
+            <span className="font-medium text-slate-400">
               {localMarkets.isUsingMockFallback
                 ? "Mock fallback active"
                 : deploymentConfig.isArcTestnet
                   ? "Arc MarketFactory connected"
                   : "Local MarketFactory connected"}
             </span>
-            <span className="hidden text-slate-700 sm:inline">·</span>
+            <span className="hidden text-slate-700 sm:inline">/</span>
             <span>
               {localMarkets.isUsingMockFallback
                 ? localMarkets.fallbackReason
@@ -76,15 +76,15 @@ export function MarketsBoard() {
                     }`}
             </span>
           </div>
-          <div className="w-fit rounded-md border border-white/10 bg-slate-950/70 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-500">
+          <div className="w-fit rounded-md border border-white/[0.07] bg-slate-950/60 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-600">
             {localMarkets.factoryMarkets.marketDataMode}
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+      <div className="rounded-lg border border-white/[0.07] bg-slate-950/50 p-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-white/[0.025] px-3 text-sm text-slate-500 lg:w-80">
+          <div className="flex min-h-9 items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 text-sm text-slate-500 lg:w-80">
             <Search className="h-4 w-4 text-slate-600" />
             <span>Search coming with indexer data</span>
           </div>
@@ -154,9 +154,9 @@ function SummaryMetric({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-[0_1px_0_rgba(255,255,255,0.035)_inset]">
+    <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] p-4 shadow-[0_1px_0_rgba(255,255,255,0.025)_inset]">
       <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">{label}</div>
-      <div className={cn("mt-2 truncate text-2xl font-semibold text-white sm:text-3xl", valueClassName)}>
+      <div className={cn("mt-2 truncate text-2xl font-semibold text-slate-100 sm:text-3xl", valueClassName)}>
         {value}
       </div>
     </div>
@@ -181,9 +181,9 @@ function FilterGroup<T extends string>({
       {options.map((option) => (
         <Button
           className={cn(
-            "h-8 border-white/10 px-3 text-xs",
+            "h-8 border-white/[0.08] px-3 text-xs text-slate-400",
             value === option &&
-              "border-cyan-300/60 bg-cyan-400/15 text-cyan-50 shadow-[0_0_18px_rgba(34,211,238,0.10)]"
+              "border-cyan-300/30 bg-cyan-400/[0.08] text-cyan-100 shadow-none"
           )}
           key={option}
           onClick={() => onChange(option)}
