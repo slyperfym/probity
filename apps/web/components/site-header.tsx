@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { Activity, BarChart3, Droplets } from "lucide-react";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { DeploymentReadinessAlert } from "@/components/web3/deployment-readiness-alert";
 import { WalletConnectionAlert } from "@/components/web3/wallet-connection-alert";
 import { WalletConnectButton } from "@/components/web3/wallet-connect-button";
 import { isArcTestnetTarget } from "@/config/chains";
 import { deploymentConfig } from "@/config/contracts";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Markets", href: "/markets" },
@@ -17,6 +22,7 @@ const navItems = [
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 export function SiteHeader() {
+  const pathname = usePathname();
   const showArcDemoMode =
     isArcTestnetTarget &&
     (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken);
@@ -39,13 +45,9 @@ export function SiteHeader() {
 
           <nav className="hidden items-center gap-1 md:flex">
             {navItems.map((item) => (
-              <Link
-                className="rounded-md px-3 py-2 text-sm text-slate-400 transition hover:bg-white/[0.04] hover:text-white"
-                href={item.href}
-                key={item.label}
-              >
+              <NavItem href={item.href} isActive={isActiveRoute(pathname, item.href)} key={item.label}>
                 {item.label}
-              </Link>
+              </NavItem>
             ))}
           </nav>
 
@@ -74,9 +76,47 @@ export function SiteHeader() {
             <WalletConnectButton />
           </div>
         </div>
+        <nav className="mx-auto flex w-full max-w-7xl gap-2 overflow-x-auto px-4 pb-3 md:hidden">
+          {navItems.map((item) => (
+            <NavItem href={item.href} isActive={isActiveRoute(pathname, item.href)} key={item.label}>
+              {item.label}
+            </NavItem>
+          ))}
+        </nav>
       </div>
       <DeploymentReadinessAlert />
       <WalletConnectionAlert />
     </header>
   );
+}
+
+function NavItem({
+  children,
+  href,
+  isActive
+}: {
+  children: ReactNode;
+  href: string;
+  isActive: boolean;
+}) {
+  return (
+    <Link
+      className={cn(
+        "relative inline-flex h-9 shrink-0 items-center rounded-md border px-3 text-sm transition",
+        isActive
+          ? "border-cyan-300/40 bg-cyan-400/10 text-cyan-50 shadow-[0_0_24px_rgba(34,211,238,0.10)]"
+          : "border-transparent text-slate-400 hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
+      )}
+      href={href}
+    >
+      {children}
+      {isActive && (
+        <span className="absolute inset-x-2 -bottom-px h-px rounded-full bg-cyan-300/80 shadow-[0_0_12px_rgba(34,211,238,0.55)]" />
+      )}
+    </Link>
+  );
+}
+
+function isActiveRoute(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }

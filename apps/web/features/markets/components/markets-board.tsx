@@ -43,27 +43,27 @@ export function MarketsBoard() {
     localMarkets.factoryMarkets.contractMarkets.length === 0;
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-3 md:grid-cols-4">
-        <SummaryMetric label="Filtered volume" value={formatUsd(totalVolume)} />
-        <SummaryMetric label="Active markets" value={String(activeMarkets)} />
-        <SummaryMetric label="Displayed liquidity" value={formatUsd(totalLiquidity)} />
+    <div className="space-y-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <SummaryMetric label="Filtered Volume" value={formatUsd(totalVolume)} />
+        <SummaryMetric label="Active Markets" value={String(activeMarkets)} />
+        <SummaryMetric label="Displayed Liquidity" value={formatUsd(totalLiquidity)} />
         <SummaryMetric
-          label="Data source"
+          label="Data Source"
           value={localMarkets.isLoading ? "Checking..." : dataSourceLabel}
           valueClassName={dataSourceTone}
         />
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-slate-950/70 p-4">
+      <div className="rounded-lg border border-white/10 bg-white/[0.025] px-4 py-3">
         <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="font-medium text-slate-100">
+            <div className="text-sm font-medium text-slate-200">
               {localMarkets.isUsingMockFallback
                 ? "Mock fallback active"
                 : `${contractSourceLabel} MarketFactory connected`}
             </div>
-            <p className="mt-1 text-slate-500">
+            <p className="mt-1 max-w-4xl text-xs leading-5 text-slate-500">
               {localMarkets.isUsingMockFallback
                 ? localMarkets.fallbackReason
                 : hasConnectedFactoryWithoutMarkets
@@ -73,16 +73,16 @@ export function MarketsBoard() {
                     } rendered from deployed PredictionMarket contracts.`}
             </p>
           </div>
-          <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+          <div className="w-fit rounded-md border border-white/10 bg-slate-950/70 px-2.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-slate-500">
             {localMarkets.factoryMarkets.marketDataMode}
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-slate-950/70 p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-slate-500 lg:w-80">
-            <Search className="h-4 w-4" />
+      <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3 sm:p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-h-10 items-center gap-2 rounded-md border border-white/10 bg-white/[0.025] px-3 text-sm text-slate-500 lg:w-80">
+            <Search className="h-4 w-4 text-slate-600" />
             <span>Search coming with indexer data</span>
           </div>
           <div className="flex flex-col gap-3 lg:items-end">
@@ -151,9 +151,11 @@ function SummaryMetric({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-      <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
-      <div className={cn("mt-2 text-2xl font-semibold text-white", valueClassName)}>{value}</div>
+    <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-[0_1px_0_rgba(255,255,255,0.035)_inset]">
+      <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">{label}</div>
+      <div className={cn("mt-2 truncate text-2xl font-semibold text-white sm:text-3xl", valueClassName)}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -170,13 +172,15 @@ function FilterGroup<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="mr-1 text-xs uppercase tracking-[0.16em] text-slate-500">{label}</span>
+    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:mr-1">{label}</span>
+      <div className="flex flex-wrap gap-2">
       {options.map((option) => (
         <Button
           className={cn(
-            "h-8 px-3 text-xs",
-            value === option && "border-cyan-300/70 bg-cyan-400/10 text-cyan-100"
+            "h-8 border-white/10 px-3 text-xs",
+            value === option &&
+              "border-cyan-300/60 bg-cyan-400/15 text-cyan-50 shadow-[0_0_18px_rgba(34,211,238,0.10)]"
           )}
           key={option}
           onClick={() => onChange(option)}
@@ -187,6 +191,7 @@ function FilterGroup<T extends string>({
           {option}
         </Button>
       ))}
+      </div>
     </div>
   );
 }

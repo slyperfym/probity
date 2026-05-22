@@ -14,19 +14,21 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-slate-950">
       <section className="probity-grid border-b border-white/10">
-        <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-          <Badge variant="info">Admin Resolver</Badge>
-          <h1 className="mt-5 text-3xl font-semibold text-white sm:text-4xl">
+        <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+          <Badge className="border-cyan-300/40 bg-cyan-400/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.08)]" variant="info">
+            Resolver Admin
+          </Badge>
+          <h1 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
             Resolver operations dashboard.
           </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 sm:text-base">
             Resolve expired deployed markets, monitor claimable outcomes, and preserve demo
             fallback behavior when contract addresses are unavailable.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
+      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
         <ResolverDashboard markets={mockResolverMarkets} />
         <aside className="space-y-4">
           <AdminControlCard
