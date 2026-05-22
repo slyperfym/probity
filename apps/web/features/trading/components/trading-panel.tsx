@@ -150,6 +150,7 @@ export function TradingPanel({ market }: { market: Market }) {
     isLocalContractMarket,
     isMarketClosed,
     isWrongChain,
+    mode,
     parsedAmount,
     tokenLabel,
     hasSettlementTokenMismatch
@@ -371,8 +372,8 @@ export function TradingPanel({ market }: { market: Market }) {
         </section>
 
         <section className="space-y-2.5 rounded-lg border border-white/[0.07] bg-white/[0.018] p-3 text-sm">
-          <SectionLabel>Summary</SectionLabel>
-          <PreviewRow label="Selected side" value={side} />
+          <SectionLabel>Preview</SectionLabel>
+          <PreviewRow label="Action" value={`${mode === "buy" ? "Buy" : "Sell"} ${side}`} />
           <PreviewRow
             label={isLocalContractMarket ? "Onchain probability" : "Mock probability"}
             value={`${selectedProbability}%`}
@@ -394,9 +395,6 @@ export function TradingPanel({ market }: { market: Market }) {
           {isLocalContractMarket && (
             <>
               <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} USDC`} />
-              {mode === "buy" && (
-                <PreviewRow label="Market allowance" value={`${formatUsdc(allowance)} USDC`} />
-              )}
               <PreviewRow label="YES position" value={`${formatUsdc(yesPosition)} shares`} />
               <PreviewRow label="NO position" value={`${formatUsdc(noPosition)} shares`} />
               {market.status === "resolved" && (
@@ -406,9 +404,6 @@ export function TradingPanel({ market }: { market: Market }) {
                 />
               )}
               <PreviewRow label="Claim status" value={hasClaimed ? "Claimed" : "Not claimed"} />
-              {market.settlementTokenAddress && (
-                <SecondaryDetail label="Market token" value={shortAddress(market.settlementTokenAddress)} />
-              )}
             </>
           )}
         </section>
@@ -550,6 +545,7 @@ function getStatusMessage({
   isLocalContractMarket,
   isMarketClosed,
   isWrongChain,
+  mode,
   parsedAmount,
   tokenLabel,
   hasSettlementTokenMismatch
@@ -562,6 +558,7 @@ function getStatusMessage({
   isLocalContractMarket: boolean;
   isMarketClosed: boolean;
   isWrongChain: boolean;
+  mode: "buy" | "sell";
   parsedAmount: bigint;
   tokenLabel: string;
   hasSettlementTokenMismatch: boolean;
@@ -592,14 +589,18 @@ function getStatusMessage({
     return "Enter an amount to preview and trade.";
   }
 
+  if (mode === "sell") {
+    return "";
+  }
+
   if (!hasEnoughBalance) {
     return deploymentConfig.isArcTestnet
-      ? "Your connected wallet does not have enough Arc testnet USDC for this trade."
+      ? "Need testnet USDC? Get Arc testnet USDC from the Circle faucet."
       : `Your connected wallet does not have enough ${tokenLabel} for this trade.`;
   }
 
   if (!hasEnoughAllowance) {
-    return `Approve ${tokenLabel} for this market before buying YES or NO shares.`;
+    return `Approve ${tokenLabel} before buying YES or NO shares.`;
   }
 
   return "";

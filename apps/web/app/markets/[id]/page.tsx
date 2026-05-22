@@ -138,25 +138,20 @@ export default async function MarketDetailPage({
             </CardHeader>
             <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
               <div className="space-y-2">
-                {market.rules.map((rule) => (
+                {[
+                  "This market resolves through the configured resolver address.",
+                  "Positions and settlement funds are read from the deployed PredictionMarket contract.",
+                  "This is an Arc testnet demo market, not production oracle logic."
+                ].map((rule) => (
                   <div className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3" key={rule}>
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />
                     <p className="text-sm leading-6 text-slate-400">{rule}</p>
                   </div>
                 ))}
-                <div className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />
-                  <p className="text-sm leading-6 text-slate-400">
-                    Balances and settlement funds are read from the configured PredictionMarket contract when deployed.
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>
 
-          <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4 text-xs leading-5 text-slate-500">
-            Seeded markets are testnet/demo only. This interface is not production financial infrastructure.
-          </div>
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
