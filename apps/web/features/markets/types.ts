@@ -1,3 +1,5 @@
+import type { ExternalReferenceMetadata } from "@/features/discovery/types";
+
 export type MarketCategory = "Macro" | "Crypto" | "Policy" | "Arc" | "Earnings";
 
 export type MarketStatus = "active" | "expired" | "resolved";
@@ -22,4 +24,6 @@ export type Market = {
   outcome: MarketOutcome;
   participants: number;
   change24h: number;
+  metadataURI?: string;
+  externalReference?: ExternalReferenceMetadata | null;
 };

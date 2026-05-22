@@ -13,3 +13,12 @@ export type ExternalMarketReference = {
   source: "Polymarket";
   url?: string;
 };
+
+export type ExternalReferenceMetadata = {
+  externalId?: string;
+  externalQuestion?: string;
+  externalSourceLabel?: string;
+  externalSourceUrl?: string;
+  externalEndDate?: string;
+  normalizedQuestionHash?: string;
+};

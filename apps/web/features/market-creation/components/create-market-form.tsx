@@ -27,6 +27,7 @@ import {
   getMarketFactoryConfig,
   hasContractAddress
 } from "@/config/contracts";
+import { normalizedQuestionHash } from "@/features/discovery/lib/external-reference-matching";
 
 const categories = ["Macro", "Crypto", "Policy", "Arc", "Earnings"];
 
@@ -40,6 +41,7 @@ export function CreateMarketForm() {
   const importedCategory = searchParams.get("category") ?? "Macro";
   const importedExpiry = searchParams.get("expiry") ?? "";
   const importedProbability = searchParams.get("probability") ?? "";
+  const importedExternalId = searchParams.get("externalId") ?? "";
   const importedSource = searchParams.get("source");
   const importedSourceLabel = searchParams.get("sourceLabel") ?? "External market metadata";
   const importedSourceUrl = searchParams.get("sourceUrl") ?? "";
@@ -133,8 +135,11 @@ export function CreateMarketForm() {
           category,
           description,
           importedProbability,
+          importedExternalId,
           importedSourceLabel,
           importedSourceUrl,
+          question,
+          externalEndDate: importedExpiry,
           resolutionCriteria:
             document.getElementById(resolutionCriteriaId) instanceof HTMLTextAreaElement
               ? (document.getElementById(resolutionCriteriaId) as HTMLTextAreaElement).value
@@ -164,6 +169,7 @@ export function CreateMarketForm() {
               </p>
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                 <ReferenceMetric label="Source" value={importedSourceLabel} />
+                {importedExternalId && <ReferenceMetric label="External ID" value={importedExternalId} />}
                 {importedSourceUrl && <ReferenceMetric label="External URL" value={importedSourceUrl} />}
                 <ReferenceMetric
                   label="Initial YES probability"
@@ -283,9 +289,23 @@ export function CreateMarketForm() {
               prefill the draft, but the created market is a separate PredictionMarket deployed by
               Probity on the configured chain.
             </p>
+            {!isApprovedCreator && isConnected && (
+              <p className="mt-3 text-sm text-amber-200">
+                Public market proposals are not enabled yet. Connect an approved creator wallet to
+                create an Arc-native market.
+              </p>
+            )}
             <p className="mt-3 text-sm text-slate-500">
               {createDisabledReason ??
                 "Connected wallet is approved to create markets with the selected resolver."}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-sm font-medium text-white">Suggest Market</div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Public market proposals are not enabled yet. For now, market creation is restricted
+              to approved creator wallets.
             </p>
           </div>
 
@@ -520,21 +540,34 @@ function getCreateDisabledReason({
 function buildMetadataURI({
   category,
   description,
+  externalEndDate,
+  importedExternalId,
   importedProbability,
   importedSourceLabel,
   importedSourceUrl,
+  question,
   resolutionCriteria
 }: {
   category: string;
   description: string;
+  externalEndDate: string;
+  importedExternalId: string;
   importedProbability: string;
   importedSourceLabel: string;
   importedSourceUrl: string;
+  question: string;
   resolutionCriteria: string;
 }) {
+  const isExternalReference = Boolean(importedExternalId || importedSourceUrl);
   const params = new URLSearchParams({
     category,
     description,
+    externalEndDate,
+    externalId: importedExternalId,
+    externalQuestion: isExternalReference ? question.trim() : "",
+    externalSourceLabel: isExternalReference ? importedSourceLabel : "",
+    externalSourceUrl: importedSourceUrl,
+    normalizedQuestionHash: normalizedQuestionHash(question),
     resolutionCriteria,
     source: importedSourceUrl ? importedSourceLabel : "Probity Create",
     sourceUrl: importedSourceUrl

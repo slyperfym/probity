@@ -7,6 +7,8 @@ import { ArrowRight, DatabaseZap, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocalContractMarkets } from "@/features/contracts/hooks";
+import { findProbityMarketForExternalSignal } from "@/features/discovery/lib/external-reference-matching";
 import type { ExternalMarketReference } from "@/features/discovery/types";
 import { formatExpiry, formatUsd } from "@/features/markets/lib/formatters";
 import { cn } from "@/lib/utils";
@@ -20,6 +22,7 @@ export function ExternalSignals() {
   const [markets, setMarkets] = React.useState<ExternalMarketReference[]>([]);
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
+  const contractMarkets = useLocalContractMarkets();
 
   React.useEffect(() => {
     let active = true;
@@ -79,18 +82,35 @@ export function ExternalSignals() {
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          {markets.map((market) => (
-            <ExternalSignalCard key={market.id} market={market} />
-          ))}
+          {markets.map((market) => {
+            const listedMarket = contractMarkets.isUsingMockFallback
+              ? undefined
+              : findProbityMarketForExternalSignal(market, contractMarkets.markets);
+
+            return (
+              <ExternalSignalCard
+                key={market.id}
+                listedMarketId={listedMarket?.id}
+                market={market}
+              />
+            );
+          })}
         </div>
       )}
     </section>
   );
 }
 
-function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
+function ExternalSignalCard({
+  listedMarketId,
+  market
+}: {
+  listedMarketId: string | undefined;
+  market: ExternalMarketReference;
+}) {
   const importHref = `/create?${new URLSearchParams({
     category: market.category,
+    externalId: market.id,
     expiry: market.endDate ?? "",
     probability: market.probability === null ? "" : String(market.probability),
     question: market.question,
@@ -103,13 +123,16 @@ function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
     <Card className="bg-slate-950/80">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
-          <Badge variant="muted">External reference</Badge>
+          <Badge variant={listedMarketId ? "yes" : "muted"}>
+            {listedMarketId ? "Already listed on Probity" : "External reference"}
+          </Badge>
           <Badge>{market.category}</Badge>
         </div>
         <CardTitle className="leading-6">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
-          Not a live Probity market. Use this reference to draft a separate Arc-native market with
-          independent USDC settlement.
+          {listedMarketId
+            ? "This external reference already maps to a Probity onchain demo market."
+            : "Use this reference to draft a separate Arc-native Probity market."}
         </p>
       </CardHeader>
       <CardContent>
@@ -120,10 +143,20 @@ function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
           <Metric label="Ends" value={market.endDate ? formatExpiry(market.endDate) : "N/A"} />
         </div>
         <div className="mt-5 grid gap-2">
-          <Link className={cn(buttonVariants({ variant: "default" }), "w-full")} href={importHref}>
-            Draft Probity Market
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          {listedMarketId ? (
+            <Link
+              className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+              href={`/markets/${listedMarketId}`}
+            >
+              Open Probity Market
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <Link className={cn(buttonVariants({ variant: "default" }), "w-full")} href={importHref}>
+              Draft Probity Market
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
           {market.url && (
             <a
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full text-slate-400")}

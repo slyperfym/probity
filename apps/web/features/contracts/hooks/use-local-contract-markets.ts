@@ -5,6 +5,7 @@ import type { Address } from "viem";
 import { useReadContracts } from "wagmi";
 
 import { contractAbis, deploymentConfig } from "@/config/contracts";
+import { parseExternalReferenceMetadata } from "@/features/discovery/lib/external-reference-matching";
 import { useMarketFactoryMarkets } from "@/features/contracts/hooks/use-market-factory";
 import type { Market, MarketCategory, MarketOutcome, MarketStatus } from "@/features/markets/types";
 
@@ -132,8 +133,10 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
     change24h: 0,
     description: buildDescription(metadataURI),
     expiresAt,
+    externalReference: parseExternalReferenceMetadata(metadataURI),
     id: address,
     liquidityUsd: marketStatus === "resolved" ? 0 : volumeUsd,
+    metadataURI,
     outcome,
     participants: 0,
     resolver: resolver ? `${resolver.slice(0, 6)}...${resolver.slice(-4)}` : "Configured resolver",
