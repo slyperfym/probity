@@ -50,11 +50,16 @@ export function MarketCard({ market }: { market: Market }) {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between rounded-md border border-white/10 bg-white/[0.025] px-3 py-2 text-xs">
-            <span className="text-slate-500">24h signal</span>
-            <span className={cn("font-medium", changeColor)}>
-              {market.change24h >= 0 ? "+" : ""}
-              {market.change24h.toFixed(1)}%
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.025] px-3 py-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500">24h signal</span>
+              <span className={cn("font-medium", changeColor)}>
+                {market.change24h >= 0 ? "+" : ""}
+                {market.change24h.toFixed(1)}%
+              </span>
+            </div>
+            <span className="shrink-0 font-medium text-cyan-300/80 transition group-hover:text-cyan-200">
+              Open Market →
             </span>
           </div>
         </CardContent>

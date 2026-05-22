@@ -55,37 +55,40 @@ export function MarketsBoard() {
         />
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-white/[0.025] px-4 py-3">
-        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-sm font-medium text-slate-200">
+      <div className="rounded-md border border-white/10 bg-white/[0.02] px-3 py-2">
+        <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
+            <span className="font-medium text-slate-300">
               {localMarkets.isUsingMockFallback
                 ? "Mock fallback active"
-                : `${contractSourceLabel} MarketFactory connected`}
-            </div>
-            <p className="mt-1 max-w-4xl text-xs leading-5 text-slate-500">
+                : deploymentConfig.isArcTestnet
+                  ? "Arc MarketFactory connected"
+                  : "Local MarketFactory connected"}
+            </span>
+            <span className="hidden text-slate-700 sm:inline">·</span>
+            <span>
               {localMarkets.isUsingMockFallback
                 ? localMarkets.fallbackReason
                 : hasConnectedFactoryWithoutMarkets
-                  ? "The configured MarketFactory is reachable, but it has not created any markets yet. Run the Arc seed script to publish demo markets."
+                  ? "0 markets"
                   : `${localMarkets.markets.length} market${
                       localMarkets.markets.length === 1 ? "" : "s"
-                    } rendered from deployed PredictionMarket contracts.`}
-            </p>
+                    }`}
+            </span>
           </div>
-          <div className="w-fit rounded-md border border-white/10 bg-slate-950/70 px-2.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-slate-500">
+          <div className="w-fit rounded-md border border-white/10 bg-slate-950/70 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-500">
             {localMarkets.factoryMarkets.marketDataMode}
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3 sm:p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-h-10 items-center gap-2 rounded-md border border-white/10 bg-white/[0.025] px-3 text-sm text-slate-500 lg:w-80">
+      <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-white/[0.025] px-3 text-sm text-slate-500 lg:w-80">
             <Search className="h-4 w-4 text-slate-600" />
             <span>Search coming with indexer data</span>
           </div>
-          <div className="flex flex-col gap-3 lg:items-end">
+          <div className="flex flex-col gap-2.5 lg:items-end">
             <FilterGroup
               label="Category"
               options={marketCategories}
