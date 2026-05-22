@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deploymentConfig } from "@/config/contracts";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
+import { ExternalSignals } from "@/features/discovery/components/external-signals";
 import { MarketCard } from "@/features/markets/components/market-card";
 import {
   mockMarkets,
@@ -121,6 +122,8 @@ export function MarketsBoard() {
           <p className="mt-2 text-sm text-slate-500">Adjust the category or status filters.</p>
         </div>
       )}
+
+      <ExternalSignals />
     </div>
   );
 }

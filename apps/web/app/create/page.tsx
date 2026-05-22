@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { FilePlus2, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,15 @@ export default function CreatePage() {
       </section>
 
       <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8">
-        <CreateMarketForm />
+        <Suspense
+          fallback={
+            <div className="rounded-lg border border-white/10 bg-slate-950/70 p-6 text-sm text-slate-400">
+              Loading market draft...
+            </div>
+          }
+        >
+          <CreateMarketForm />
+        </Suspense>
         <aside className="space-y-4">
           <GuidelineCard
             icon={FilePlus2}
