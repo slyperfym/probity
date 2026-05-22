@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, DatabaseZap, ExternalLink } from "lucide-react";
+import { ArrowRight, ChevronDown, DatabaseZap, ExternalLink } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -18,11 +18,42 @@ type DiscoveryResponse = {
   error?: string;
 };
 
+type ListedExternalSignal = {
+  market: ExternalMarketReference;
+  probityMarketId?: string;
+};
+
 export function ExternalSignals() {
   const [markets, setMarkets] = React.useState<ExternalMarketReference[]>([]);
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
+  const [showAlreadyListed, setShowAlreadyListed] = React.useState(false);
   const contractMarkets = useLocalContractMarkets();
+
+  const { alreadyListedSignals, draftableSignals } = React.useMemo(() => {
+    return markets.reduce(
+      (accumulator, market) => {
+        const listedMarket = contractMarkets.isUsingMockFallback
+          ? undefined
+          : findProbityMarketForExternalSignal(market, contractMarkets.markets);
+
+        if (listedMarket) {
+          accumulator.alreadyListedSignals.push({
+            market,
+            probityMarketId: listedMarket.id
+          });
+          return accumulator;
+        }
+
+        accumulator.draftableSignals.push({ market });
+        return accumulator;
+      },
+      {
+        alreadyListedSignals: [] as ListedExternalSignal[],
+        draftableSignals: [] as ListedExternalSignal[]
+      }
+    );
+  }, [contractMarkets.isUsingMockFallback, contractMarkets.markets, markets]);
 
   React.useEffect(() => {
     let active = true;
@@ -81,21 +112,50 @@ export function ExternalSignals() {
           {error}
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          {markets.map((market) => {
-            const listedMarket = contractMarkets.isUsingMockFallback
-              ? undefined
-              : findProbityMarketForExternalSignal(market, contractMarkets.markets);
+        <>
+          {draftableSignals.length > 0 ? (
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+              {draftableSignals.map(({ market }) => (
+                <ExternalSignalCard key={market.id} market={market} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-8 text-sm text-slate-400">
+              No new external references are available to draft right now.
+            </div>
+          )}
 
-            return (
-              <ExternalSignalCard
-                key={market.id}
-                listedMarketId={listedMarket?.id}
-                market={market}
-              />
-            );
-          })}
-        </div>
+          {alreadyListedSignals.length > 0 && (
+            <div className="rounded-lg border border-white/10 bg-slate-950/70">
+              <button
+                className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
+                onClick={() => setShowAlreadyListed((current) => !current)}
+                type="button"
+              >
+                <span className="text-sm font-medium text-slate-200">
+                  Already listed references ({alreadyListedSignals.length})
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-slate-500 transition",
+                    showAlreadyListed && "rotate-180 text-cyan-300"
+                  )}
+                />
+              </button>
+              {showAlreadyListed && (
+                <div className="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-2 xl:grid-cols-4">
+                  {alreadyListedSignals.map(({ market, probityMarketId }) => (
+                    <ExternalSignalCard
+                      key={market.id}
+                      listedMarketId={probityMarketId}
+                      market={market}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </section>
   );
@@ -105,7 +165,7 @@ function ExternalSignalCard({
   listedMarketId,
   market
 }: {
-  listedMarketId: string | undefined;
+  listedMarketId?: string;
   market: ExternalMarketReference;
 }) {
   const importHref = `/create?${new URLSearchParams({
