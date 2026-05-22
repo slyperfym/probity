@@ -31,7 +31,7 @@ const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 export function TradingPanel({ market }: { market: Market }) {
   const [side, setSide] = React.useState<"YES" | "NO">("YES");
   const [amount, setAmount] = React.useState("1000");
-  const [lastAction, setLastAction] = React.useState<"approve" | "buy" | "claim" | null>(null);
+  const [lastAction, setLastAction] = React.useState<"approve" | "buy" | "sellYes" | "sellNo" | "claim" | null>(null);
   const queryClient = useQueryClient();
   const { address: accountAddress, chainId, isConnected } = useAccount();
 
@@ -39,6 +39,8 @@ export function TradingPanel({ market }: { market: Market }) {
   const marketAddress = isLocalContractMarket ? (market.id as Address) : undefined;
   const selectedProbability = side === "YES" ? market.yesProbability : 100 - market.yesProbability;
   const estimatedShares = Number(amount || 0) / Math.max(selectedProbability / 100, 0.01);
+  const estimatedYesSellPayout = Number(amount || 0) * (market.yesProbability / 100);
+  const estimatedNoSellPayout = Number(amount || 0) * ((100 - market.yesProbability) / 100);
   const parsedAmount = parseTradeAmount(amount);
   const isMarketClosed = market.status === "expired" || market.status === "resolved";
   const tokenLabel = deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC";
@@ -72,10 +74,13 @@ export function TradingPanel({ market }: { market: Market }) {
   const hasClaimablePosition = market.status === "resolved" && winningPosition > 0n && !hasClaimed;
   const hasEnoughAllowance = parsedAmount > 0n && allowance >= parsedAmount;
   const hasEnoughBalance = parsedAmount > 0n && balance >= parsedAmount;
+  const hasEnoughYesToSell = parsedAmount > 0n && yesPosition >= parsedAmount;
+  const hasEnoughNoToSell = parsedAmount > 0n && noPosition >= parsedAmount;
   const isWrongChain = isConnected && chainId !== undefined && chainId !== probityChain.id;
 
   const approveWrite = useWriteContract();
   const buyWrite = useWriteContract();
+  const sellWrite = useWriteContract();
   const claimWrite = useWriteContract();
 
   const approveReceipt = useWaitForTransactionReceipt({
@@ -84,21 +89,25 @@ export function TradingPanel({ market }: { market: Market }) {
   const buyReceipt = useWaitForTransactionReceipt({
     hash: buyWrite.data
   });
+  const sellReceipt = useWaitForTransactionReceipt({
+    hash: sellWrite.data
+  });
   const claimReceipt = useWaitForTransactionReceipt({
     hash: claimWrite.data
   });
 
   React.useEffect(() => {
-    if (approveReceipt.isSuccess || buyReceipt.isSuccess || claimReceipt.isSuccess) {
+    if (approveReceipt.isSuccess || buyReceipt.isSuccess || sellReceipt.isSuccess || claimReceipt.isSuccess) {
       void queryClient.invalidateQueries();
     }
-  }, [approveReceipt.isSuccess, buyReceipt.isSuccess, claimReceipt.isSuccess, queryClient]);
+  }, [approveReceipt.isSuccess, buyReceipt.isSuccess, sellReceipt.isSuccess, claimReceipt.isSuccess, queryClient]);
 
   const isApproving = approveWrite.isPending || approveReceipt.isLoading;
   const isBuying = buyWrite.isPending || buyReceipt.isLoading;
+  const isSelling = sellWrite.isPending || sellReceipt.isLoading;
   const isClaiming = claimWrite.isPending || claimReceipt.isLoading;
-  const isWriting = isApproving || isBuying || isClaiming;
-  const canAttemptLocalWrite =
+  const isWriting = isApproving || isBuying || isSelling || isClaiming;
+  const canAttemptBuy =
     isLocalContractMarket &&
     isConnected &&
     Boolean(accountAddress) &&
@@ -108,8 +117,19 @@ export function TradingPanel({ market }: { market: Market }) {
     !isMarketClosed &&
     hasEnoughBalance &&
     !isWriting;
-  const canApprove = canAttemptLocalWrite && !hasEnoughAllowance;
-  const canBuy = canAttemptLocalWrite && hasEnoughAllowance;
+  const canAttemptSell =
+    isLocalContractMarket &&
+    isConnected &&
+    Boolean(accountAddress) &&
+    !isWrongChain &&
+    !hasSettlementTokenMismatch &&
+    parsedAmount > 0n &&
+    !isMarketClosed &&
+    !isWriting;
+  const canApprove = canAttemptBuy && !hasEnoughAllowance;
+  const canBuy = canAttemptBuy && hasEnoughAllowance;
+  const canSellYes = canAttemptSell && hasEnoughYesToSell;
+  const canSellNo = canAttemptSell && hasEnoughNoToSell;
   const canClaim =
     isLocalContractMarket &&
     isConnected &&
@@ -139,7 +159,7 @@ export function TradingPanel({ market }: { market: Market }) {
     !hasEnoughBalance;
 
   React.useEffect(() => {
-    const error = approveWrite.error ?? buyWrite.error ?? claimWrite.error;
+    const error = approveWrite.error ?? buyWrite.error ?? sellWrite.error ?? claimWrite.error;
 
     if (error) {
       console.error("Probity transaction error", {
@@ -147,7 +167,7 @@ export function TradingPanel({ market }: { market: Market }) {
         raw: error
       });
     }
-  }, [approveWrite.error, buyWrite.error, claimWrite.error]);
+  }, [approveWrite.error, buyWrite.error, sellWrite.error, claimWrite.error]);
 
   function handleApprove() {
     if (!marketAddress || parsedAmount <= 0n) {
@@ -173,6 +193,19 @@ export function TradingPanel({ market }: { market: Market }) {
       functionName: side === "YES" ? "buyYes" : "buyNo"
     });
     setLastAction("buy");
+  }
+
+  function handleSell(sellSide: "YES" | "NO") {
+    if (!marketAddress || parsedAmount <= 0n) {
+      return;
+    }
+
+    sellWrite.writeContract({
+      ...getPredictionMarketConfig(marketAddress),
+      args: [parsedAmount],
+      functionName: sellSide === "YES" ? "sellYes" : "sellNo"
+    });
+    setLastAction(sellSide === "YES" ? "sellYes" : "sellNo");
   }
 
   function handleClaim() {
@@ -207,6 +240,9 @@ export function TradingPanel({ market }: { market: Market }) {
             {deploymentConfig.isArcTestnet
               ? "These actions use configured Arc testnet contracts and USDC settlement. Users need Arc testnet USDC from the Circle faucet before trading."
               : "These actions are intended for Anvil and MockUSDC. They are not a production trading flow and should only be used against locally deployed Probity contracts."}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-amber-100/80">
+            Sell uses an MVP sell-back mechanism, not a production orderbook.
           </p>
         </div>
 
@@ -250,6 +286,18 @@ export function TradingPanel({ market }: { market: Market }) {
           />
           {isLocalContractMarket && (
             <>
+              <PreviewRow
+                label="Estimated YES sell-back"
+                value={`${estimatedYesSellPayout.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC`}
+              />
+              <PreviewRow
+                label="Estimated NO sell-back"
+                value={`${estimatedNoSellPayout.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC`}
+              />
+            </>
+          )}
+          {isLocalContractMarket && (
+            <>
               <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} USDC`} />
               <PreviewRow label="Market allowance" value={`${formatUsdc(allowance)} USDC`} />
               {market.settlementTokenAddress && (
@@ -270,17 +318,21 @@ export function TradingPanel({ market }: { market: Market }) {
 
         {statusMessage && <TradingNotice message={statusMessage} showFaucetLink={shouldShowFaucetLink} />}
         <TransactionState
-          error={approveWrite.error ?? buyWrite.error ?? claimWrite.error}
+          error={approveWrite.error ?? buyWrite.error ?? sellWrite.error ?? claimWrite.error}
           isPending={isWriting}
-          pendingHash={approveWrite.data ?? buyWrite.data ?? claimWrite.data}
+          pendingHash={approveWrite.data ?? buyWrite.data ?? sellWrite.data ?? claimWrite.data}
           successMessage={
             lastAction === "approve" && approveReceipt.isSuccess
               ? "Approval confirmed."
               : lastAction === "buy" && buyReceipt.isSuccess
                 ? `${side} purchase confirmed.`
-                : lastAction === "claim" && claimReceipt.isSuccess
-                  ? "Claim payout confirmed."
-                  : ""
+                : lastAction === "sellYes" && sellReceipt.isSuccess
+                  ? "YES sell-back confirmed."
+                  : lastAction === "sellNo" && sellReceipt.isSuccess
+                    ? "NO sell-back confirmed."
+                    : lastAction === "claim" && claimReceipt.isSuccess
+                      ? "Claim payout confirmed."
+                      : ""
           }
         />
 
@@ -295,6 +347,16 @@ export function TradingPanel({ market }: { market: Market }) {
                 {isBuying && <Loader2 className="h-4 w-4 animate-spin" />}
                 Buy {side}
               </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button disabled={!canSellYes} onClick={() => handleSell("YES")} type="button" variant="secondary">
+                  {isSelling && lastAction === "sellYes" && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Sell YES
+                </Button>
+                <Button disabled={!canSellNo} onClick={() => handleSell("NO")} type="button" variant="secondary">
+                  {isSelling && lastAction === "sellNo" && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Sell NO
+                </Button>
+              </div>
               <Button disabled={!canClaim} onClick={handleClaim} type="button" variant="secondary">
                 {isClaiming && <Loader2 className="h-4 w-4 animate-spin" />}
                 Claim Payout
@@ -475,6 +537,22 @@ function getFriendlyTransactionError(error: Error) {
 
   if (raw.includes("User rejected") || raw.includes("User denied")) {
     return "Transaction was rejected in the wallet.";
+  }
+
+  if (raw.includes("InsufficientPosition")) {
+    return "You do not have enough YES/NO shares to sell that amount.";
+  }
+
+  if (raw.includes("MarketExpired")) {
+    return "Sell-back is disabled after market expiration.";
+  }
+
+  if (raw.includes("MarketAlreadyResolved")) {
+    return "Sell-back is disabled after market resolution.";
+  }
+
+  if (raw.includes("InsufficientContractLiquidity")) {
+    return "The market contract does not have enough available USDC liquidity for this sell-back.";
   }
 
   return shortenError(raw);

@@ -53,6 +53,8 @@ contract PredictionMarket {
     );
     event MarketResolved(address indexed resolver, Outcome indexed outcome, uint256 totalDeposited);
     event WinningsClaimed(address indexed user, uint256 amount);
+    event YesSold(address indexed user, uint256 shares, uint256 payout);
+    event NoSold(address indexed user, uint256 shares, uint256 payout);
 
     error ZeroAddress();
     error EmptyTitle();
@@ -60,9 +62,12 @@ contract PredictionMarket {
     error MarketNotActive();
     error MarketNotExpired();
     error MarketAlreadyResolved();
+    error MarketExpired();
     error UnauthorizedResolver();
     error InvalidOutcome();
     error AmountZero();
+    error InsufficientPosition();
+    error InsufficientContractLiquidity();
     error TokenTransferFailed();
     error AlreadyClaimed();
     error NothingToClaim();
@@ -109,6 +114,14 @@ contract PredictionMarket {
 
     function buyNo(uint256 amount) external {
         _buy(Side.No, amount);
+    }
+
+    function sellYes(uint256 amount) external returns (uint256 payout) {
+        payout = _sell(Side.Yes, amount);
+    }
+
+    function sellNo(uint256 amount) external returns (uint256 payout) {
+        payout = _sell(Side.No, amount);
     }
 
     function resolve(Outcome outcome) external {
@@ -179,5 +192,42 @@ contract PredictionMarket {
         totalDeposited += amount;
 
         emit SharesPurchased(msg.sender, side, amount, amount, totalYesShares, totalNoShares);
+    }
+
+    function _sell(Side side, uint256 amount) internal nonReentrant returns (uint256 payout) {
+        if (status != Status.Active) revert MarketAlreadyResolved();
+        if (block.timestamp >= expirationTime) revert MarketExpired();
+        if (amount == 0) revert AmountZero();
+
+        uint256 totalShares = totalYesShares + totalNoShares;
+        uint256 sideShares = side == Side.Yes ? totalYesShares : totalNoShares;
+
+        if (side == Side.Yes) {
+            if (yesShares[msg.sender] < amount) revert InsufficientPosition();
+        } else {
+            if (noShares[msg.sender] < amount) revert InsufficientPosition();
+        }
+
+        // MVP sell-back pricing: pay the seller at the current pool-implied
+        // side probability. This is intentionally conservative and is not a
+        // production orderbook or CLOB pricing model.
+        payout = totalShares == 0 ? 0 : (amount * sideShares) / totalShares;
+
+        uint256 availableLiquidity = settlementToken.balanceOf(address(this));
+        if (payout > availableLiquidity) revert InsufficientContractLiquidity();
+
+        if (side == Side.Yes) {
+            yesShares[msg.sender] -= amount;
+            totalYesShares -= amount;
+            emit YesSold(msg.sender, amount, payout);
+        } else {
+            noShares[msg.sender] -= amount;
+            totalNoShares -= amount;
+            emit NoSold(msg.sender, amount, payout);
+        }
+
+        totalDeposited -= payout;
+
+        if (!settlementToken.transfer(msg.sender, payout)) revert TokenTransferFailed();
     }
 }

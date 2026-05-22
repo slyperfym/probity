@@ -68,6 +68,44 @@
   },
   {
     "type": "function",
+    "name": "sellNo",
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "payout",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "sellYes",
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "payout",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "claim",
     "inputs": [],
     "outputs": [
@@ -349,6 +387,31 @@
   },
   {
     "type": "event",
+    "name": "NoSold",
+    "inputs": [
+      {
+        "name": "user",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "shares",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "payout",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "MarketResolved",
     "inputs": [
       {
@@ -417,6 +480,31 @@
   },
   {
     "type": "event",
+    "name": "YesSold",
+    "inputs": [
+      {
+        "name": "user",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "shares",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "payout",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "WinningsClaimed",
     "inputs": [
       {
@@ -451,6 +539,16 @@
   },
   {
     "type": "error",
+    "name": "InsufficientContractLiquidity",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InsufficientPosition",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InvalidExpiration",
     "inputs": []
   },
@@ -462,6 +560,11 @@
   {
     "type": "error",
     "name": "MarketAlreadyResolved",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "MarketExpired",
     "inputs": []
   },
   {

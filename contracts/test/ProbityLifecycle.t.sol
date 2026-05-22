@@ -70,6 +70,98 @@ contract ProbityLifecycleTest is TestBase {
         assertEq(usdc.balanceOf(address(market)), 160 * USDC, "market balance");
     }
 
+    function testUserCanSellYesBeforeExpiry() public {
+        _approve(alice, 100 * USDC);
+        _approve(bob, 100 * USDC);
+
+        vm.prank(alice);
+        market.buyYes(100 * USDC);
+
+        vm.prank(bob);
+        market.buyNo(100 * USDC);
+
+        uint256 aliceBefore = usdc.balanceOf(alice);
+
+        vm.prank(alice);
+        uint256 payout = market.sellYes(40 * USDC);
+
+        assertEq(payout, 20 * USDC, "payout");
+        assertEq(market.yesShares(alice), 60 * USDC, "alice yes reduced");
+        assertEq(market.totalYesShares(), 60 * USDC, "total yes reduced");
+        assertEq(market.totalDeposited(), 180 * USDC, "deposits reduced");
+        assertEq(usdc.balanceOf(alice), aliceBefore + payout, "alice paid");
+        assertEq(usdc.balanceOf(address(market)), 180 * USDC, "market solvent");
+    }
+
+    function testUserCanSellNoBeforeExpiry() public {
+        _approve(alice, 100 * USDC);
+        _approve(bob, 100 * USDC);
+
+        vm.prank(alice);
+        market.buyYes(100 * USDC);
+
+        vm.prank(bob);
+        market.buyNo(100 * USDC);
+
+        uint256 bobBefore = usdc.balanceOf(bob);
+
+        vm.prank(bob);
+        uint256 payout = market.sellNo(40 * USDC);
+
+        assertEq(payout, 20 * USDC, "payout");
+        assertEq(market.noShares(bob), 60 * USDC, "bob no reduced");
+        assertEq(market.totalNoShares(), 60 * USDC, "total no reduced");
+        assertEq(market.totalDeposited(), 180 * USDC, "deposits reduced");
+        assertEq(usdc.balanceOf(bob), bobBefore + payout, "bob paid");
+        assertEq(usdc.balanceOf(address(market)), 180 * USDC, "market solvent");
+    }
+
+    function testCannotSellMoreThanOwned() public {
+        _approve(alice, 10 * USDC);
+
+        vm.prank(alice);
+        market.buyYes(10 * USDC);
+
+        vm.prank(alice);
+        vm.expectRevert(PredictionMarket.InsufficientPosition.selector);
+        market.sellYes(11 * USDC);
+    }
+
+    function testCannotSellZeroAmount() public {
+        vm.prank(alice);
+        vm.expectRevert(PredictionMarket.AmountZero.selector);
+        market.sellYes(0);
+    }
+
+    function testCannotSellAfterExpiration() public {
+        _approve(alice, 10 * USDC);
+
+        vm.prank(alice);
+        market.buyYes(10 * USDC);
+
+        vm.warp(expiration);
+
+        vm.prank(alice);
+        vm.expectRevert(PredictionMarket.MarketExpired.selector);
+        market.sellYes(1 * USDC);
+    }
+
+    function testCannotSellAfterResolution() public {
+        _approve(alice, 10 * USDC);
+
+        vm.prank(alice);
+        market.buyYes(10 * USDC);
+
+        vm.warp(expiration + 1);
+
+        vm.prank(resolver);
+        market.resolve(PredictionMarket.Outcome.Yes);
+
+        vm.prank(alice);
+        vm.expectRevert(PredictionMarket.MarketAlreadyResolved.selector);
+        market.sellYes(1 * USDC);
+    }
+
     function testCannotBuyAfterExpiration() public {
         _approve(alice, 10 * USDC);
 

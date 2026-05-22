@@ -125,11 +125,14 @@ Current MVP contract capabilities:
 - Create YES/NO markets
 - Buy YES shares
 - Buy NO shares
+- Sell YES or NO shares back to the market pool before expiry using conservative MVP pool-implied pricing
 - Track user positions
 - Enforce market expiration
 - Resolver-controlled resolution
 - Claim pro-rata winnings
 - Emit events for frontend/indexer consumption
+
+The MVP sell-back mechanism is not a production CLOB, orderbook, or Polymarket-style matching engine. Existing deployed Arc testnet markets must be redeployed from the updated contracts before they support `sellYes` and `sellNo`.
 
 The MVP does not include a production AMM, decentralized oracle, dispute system, or upgrade framework.
 

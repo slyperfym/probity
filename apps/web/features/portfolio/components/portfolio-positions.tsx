@@ -45,7 +45,12 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
                   className="group flex items-start justify-between gap-3 font-medium text-white transition hover:text-cyan-200"
                   href={`/markets/${position.marketId}`}
                 >
-                  <span>{position.marketTitle}</span>
+                  <span>
+                    {position.marketTitle}
+                    <span className="mt-2 block text-xs font-normal text-cyan-300">
+                      Manage position / sell
+                    </span>
+                  </span>
                   <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-600 transition group-hover:text-cyan-300" />
                 </Link>
                 <Metric label="YES" value={formatShares(position.yesShares ?? (position.side === "YES" ? position.shares : 0))} />
