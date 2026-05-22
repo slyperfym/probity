@@ -1,18 +1,5 @@
-import { BriefcaseBusiness, Coins, History } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StateCard } from "@/components/feedback/state-card";
-import { ActivityHistory } from "@/features/portfolio/components/activity-history";
-import {
-  ClaimableRewards,
-  PortfolioPositions
-} from "@/features/portfolio/components/portfolio-positions";
-import {
-  mockPortfolioActivity,
-  mockPortfolioPositions
-} from "@/features/portfolio/data/mock-portfolio";
-import { formatUsd } from "@/features/markets/lib/formatters";
+import { PortfolioDashboard } from "@/features/portfolio/components/portfolio-dashboard";
 
 export const metadata = {
   title: "Portfolio | Probity",
@@ -20,10 +7,6 @@ export const metadata = {
 };
 
 export default function PortfolioPage() {
-  const totalValue = mockPortfolioPositions.reduce((sum, position) => sum + position.notionalUsd, 0);
-  const claimable = mockPortfolioPositions.reduce((sum, position) => sum + position.claimableUsd, 0);
-  const activePositions = mockPortfolioPositions.filter((position) => position.status === "active").length;
-
   return (
     <main className="min-h-screen bg-slate-950">
       <section className="probity-grid border-b border-white/10">
@@ -33,63 +16,13 @@ export default function PortfolioPage() {
             Wallet-level exposure and rewards.
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
-            Demo positions, claimable rewards, and activity history. This page is ready for
-            indexed wallet data once Arc testnet contracts and indexing are configured.
+            Live wallet positions are read from deployed PredictionMarket contracts when available,
+            with mock fallback preserved for demo and local development.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-4 md:grid-cols-3">
-          <PortfolioMetric icon={BriefcaseBusiness} label="Portfolio value" value={formatUsd(totalValue)} />
-          <PortfolioMetric icon={Coins} label="Claimable" value={formatUsd(claimable)} />
-          <PortfolioMetric icon={History} label="Active positions" value={String(activePositions)} />
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
-          <div className="space-y-6">
-            <PortfolioPositions positions={mockPortfolioPositions} />
-            <ActivityHistory activity={mockPortfolioActivity} />
-          </div>
-          <div className="space-y-6">
-            <ClaimableRewards positions={mockPortfolioPositions} />
-            <StateCard
-              description="Loading states are available for future wallet/indexer hydration while preserving layout stability."
-              kind="loading"
-              title="Loading state preview"
-            />
-            <StateCard
-              description="Indexer or RPC errors will render here with retry actions after data fetching is implemented."
-              kind="error"
-              title="Error state preview"
-            />
-          </div>
-        </div>
-      </section>
+      <PortfolioDashboard />
     </main>
-  );
-}
-
-function PortfolioMetric({
-  icon: Icon,
-  label,
-  value
-}: {
-  icon: typeof BriefcaseBusiness;
-  label: string;
-  value: string;
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <Icon className="h-4 w-4 text-cyan-300" />
-        <CardTitle className="text-xs uppercase tracking-[0.16em] text-slate-500">
-          {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-semibold text-white">{value}</div>
-      </CardContent>
-    </Card>
   );
 }

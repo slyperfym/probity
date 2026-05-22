@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateCard } from "@/components/feedback/state-card";
 import { formatUsd } from "@/features/markets/lib/formatters";
+import { formatExpiry } from "@/features/markets/lib/formatters";
 import type { PortfolioPosition } from "@/features/portfolio/types";
 
 export function PortfolioPositions({ positions }: { positions: PortfolioPosition[] }) {
@@ -25,18 +26,19 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
       </CardHeader>
       <CardContent>
         <div className="overflow-hidden rounded-lg border border-white/10">
-          <div className="hidden grid-cols-[1.7fr_0.55fr_0.7fr_0.7fr_0.7fr_0.55fr] gap-4 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs uppercase tracking-[0.14em] text-slate-500 lg:grid">
+          <div className="hidden grid-cols-[1.7fr_0.65fr_0.65fr_0.75fr_0.75fr_0.55fr_0.6fr] gap-4 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs uppercase tracking-[0.14em] text-slate-500 lg:grid">
             <span>Market</span>
-            <span>Side</span>
-            <span>Shares</span>
-            <span>Avg</span>
-            <span>Value</span>
+            <span>YES</span>
+            <span>NO</span>
+            <span>Claim</span>
+            <span>Expiry</span>
+            <span>Token</span>
             <span>Status</span>
           </div>
           <div className="divide-y divide-white/10">
             {positions.map((position) => (
               <div
-                className="grid gap-3 p-4 text-sm lg:grid-cols-[1.7fr_0.55fr_0.7fr_0.7fr_0.7fr_0.55fr] lg:items-center lg:gap-4"
+                className="grid gap-3 p-4 text-sm lg:grid-cols-[1.7fr_0.65fr_0.65fr_0.75fr_0.75fr_0.55fr_0.6fr] lg:items-center lg:gap-4"
                 key={position.id}
               >
                 <Link
@@ -46,11 +48,14 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
                   <span>{position.marketTitle}</span>
                   <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-600 transition group-hover:text-cyan-300" />
                 </Link>
-                <Badge variant={position.side === "YES" ? "yes" : "no"}>{position.side}</Badge>
-                <Metric label="Shares" value={position.shares.toLocaleString("en-US")} />
-                <Metric label="Avg" value={`${Math.round(position.averagePrice * 100)}%`} />
-                <Metric label="Value" value={formatUsd(position.notionalUsd)} />
-                <Badge variant={position.status === "claimable" ? "yes" : "muted"}>{position.status}</Badge>
+                <Metric label="YES" value={formatShares(position.yesShares ?? (position.side === "YES" ? position.shares : 0))} />
+                <Metric label="NO" value={formatShares(position.noShares ?? (position.side === "NO" ? position.shares : 0))} />
+                <Metric label="Claim" value={position.claimStatus ?? position.status} />
+                <Metric label="Expiry" value={position.expiresAt ? formatExpiry(position.expiresAt) : "Demo"} />
+                <Metric label="Token" value={position.settlementToken ?? "USDC"} />
+                <Badge variant={position.status === "claimable" ? "yes" : "muted"}>
+                  {position.marketStatus ?? position.status}
+                </Badge>
               </div>
             ))}
           </div>
@@ -58,6 +63,12 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
       </CardContent>
     </Card>
   );
+}
+
+function formatShares(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: 2
+  });
 }
 
 export function ClaimableRewards({ positions }: { positions: PortfolioPosition[] }) {

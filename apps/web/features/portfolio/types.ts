@@ -7,10 +7,16 @@ export type PortfolioPosition = {
   category: string;
   side: PortfolioSide;
   shares: number;
+  yesShares?: number;
+  noShares?: number;
   averagePrice: number;
   currentProbability: number;
   notionalUsd: number;
   status: "active" | "claimable" | "claimed" | "expired";
+  marketStatus?: string;
+  claimStatus?: string;
+  expiresAt?: string;
+  settlementToken?: string;
   claimableUsd: number;
 };
 
