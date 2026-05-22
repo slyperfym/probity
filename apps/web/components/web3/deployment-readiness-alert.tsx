@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 
-import { isArcTestnetTarget, isMockTarget, probityChain } from "@/config/chains";
+import { isArcTestnetTarget, isMockTarget } from "@/config/chains";
 import { deploymentConfig } from "@/config/contracts";
 import { publicEnv } from "@/config/env";
 
@@ -13,9 +13,9 @@ export function DeploymentReadinessAlert() {
 
   return (
     <div className="border-b border-cyan-400/20 bg-cyan-400/10">
-      <div className="mx-auto flex w-full max-w-7xl items-start gap-3 px-4 py-3 text-sm text-cyan-100 sm:px-6 lg:px-8">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
-        <p className="leading-6">{message}</p>
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-2 text-xs text-cyan-100 sm:px-6 sm:text-sm lg:px-8">
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-cyan-300 sm:h-4 sm:w-4" />
+        <p className="truncate leading-5">{message}</p>
       </div>
     </div>
   );
@@ -35,7 +35,7 @@ function getDeploymentMessage() {
       return "Arc testnet configuration is ready for this demo. Contract addresses are not configured yet, so Probity is showing mock market data until MarketFactory and settlement token addresses are added.";
     }
 
-    return `Arc testnet onchain demo active for ${probityChain.name} (${probityChain.id}) with USDC settlement. This remains a testnet MVP, not a production deployment.`;
+    return "Arc testnet onchain demo";
   }
 
   return null;
