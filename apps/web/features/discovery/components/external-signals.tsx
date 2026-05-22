@@ -94,7 +94,9 @@ function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
     expiry: market.endDate ?? "",
     probability: market.probability === null ? "" : String(market.probability),
     question: market.question,
-    source: "polymarket"
+    source: "polymarket",
+    sourceLabel: market.source,
+    sourceUrl: market.url ?? ""
   }).toString()}`;
 
   return (
@@ -105,6 +107,10 @@ function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
           <Badge>{market.category}</Badge>
         </div>
         <CardTitle className="leading-6">{market.question}</CardTitle>
+        <p className="text-xs leading-5 text-slate-500">
+          Not a live Probity market. Use this reference to draft a separate Arc-native market with
+          independent settlement.
+        </p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -114,18 +120,18 @@ function ExternalSignalCard({ market }: { market: ExternalMarketReference }) {
           <Metric label="Ends" value={market.endDate ? formatExpiry(market.endDate) : "N/A"} />
         </div>
         <div className="mt-5 grid gap-2">
-          <Link className={cn(buttonVariants({ variant: "outline" }), "w-full")} href={importHref}>
+          <Link className={cn(buttonVariants({ variant: "default" }), "w-full")} href={importHref}>
             Draft Probity Market
             <ArrowRight className="h-4 w-4" />
           </Link>
           {market.url && (
             <a
-              className={cn(buttonVariants({ variant: "secondary" }), "w-full")}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full text-slate-400")}
               href={market.url}
               rel="noreferrer"
               target="_blank"
             >
-              View Source
+              View External Source
               <ExternalLink className="h-4 w-4" />
             </a>
           )}

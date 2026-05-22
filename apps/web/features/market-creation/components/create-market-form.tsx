@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import { CalendarClock, FileText, ShieldCheck } from "lucide-react";
+import { CalendarClock, ExternalLink, FileText, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,12 +17,15 @@ export function CreateMarketForm() {
   const importedExpiry = searchParams.get("expiry") ?? "";
   const importedProbability = searchParams.get("probability") ?? "";
   const importedSource = searchParams.get("source");
+  const importedSourceLabel = searchParams.get("sourceLabel") ?? "External market metadata";
+  const importedSourceUrl = searchParams.get("sourceUrl") ?? "";
+  const hasImportedReference = importedSource === "polymarket";
   const [category, setCategory] = React.useState(
     categories.includes(importedCategory) ? importedCategory : "Macro"
   );
   const [question, setQuestion] = React.useState(importedQuestion);
   const [description, setDescription] = React.useState(() =>
-    importedSource === "polymarket"
+    hasImportedReference
       ? "Drafted from external market reference metadata. Probity deployment, trading, settlement, and resolution remain Arc-native and independent."
       : ""
   );
@@ -33,18 +36,38 @@ export function CreateMarketForm() {
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>Create Market</CardTitle>
-          <Badge variant="info">{importedSource === "polymarket" ? "External reference draft" : "Demo draft"}</Badge>
+          <Badge variant="info">{hasImportedReference ? "External reference draft" : "Demo draft"}</Badge>
         </div>
       </CardHeader>
       <CardContent>
         <form className="space-y-5">
-          {importedSource === "polymarket" && (
+          {hasImportedReference && (
             <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
               <div className="text-sm font-medium text-cyan-100">Reference imported from public market metadata</div>
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                This draft does not create or trade on Polymarket. It only pre-fills terms for a
-                separate Probity market that would be deployed and settled on Arc.
+                This draft uses external market metadata as a reference. The created Probity market
+                will be a separate Arc-native market with independent settlement.
               </p>
+              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <ReferenceMetric label="Source" value={importedSourceLabel} />
+                <ReferenceMetric
+                  label="Initial YES probability"
+                  value={importedProbability ? `${importedProbability}%` : "Not provided"}
+                />
+                <ReferenceMetric label="Category" value={category} />
+                <ReferenceMetric label="Expiry" value={expiry || "Not provided"} />
+              </div>
+              {importedSourceUrl && (
+                <a
+                  className="mt-4 inline-flex items-center gap-2 text-sm text-cyan-200 transition hover:text-cyan-100"
+                  href={importedSourceUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  View external reference only
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
             </div>
           )}
 
@@ -125,16 +148,16 @@ export function CreateMarketForm() {
           <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
               <FileText className="h-4 w-4" />
-              Submission disabled
+              Create market transaction not enabled yet
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              This form is UI-only. Factory deployment and market creation writes will be added after
-              the contract layer is implemented.
+              MarketFactory creation writes are intentionally guarded in this public MVP. Use this
+              workspace to prepare Arc-native market terms before resolver-approved deployment.
             </p>
           </div>
 
           <div className="flex justify-end">
-            <Button disabled>Submit Market</Button>
+            <Button disabled>Create Market Not Enabled</Button>
           </div>
         </form>
       </CardContent>
@@ -148,5 +171,14 @@ function Field({ children, label }: { children: React.ReactNode; label: string }
       <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-500">{label}</span>
       {children}
     </label>
+  );
+}
+
+function ReferenceMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-cyan-400/15 bg-slate-950/50 p-3">
+      <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
+      <div className="mt-1 text-sm font-medium text-slate-100">{value}</div>
+    </div>
   );
 }
