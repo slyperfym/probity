@@ -4,6 +4,8 @@ import { isArcTestnetTarget, isMockTarget } from "@/config/chains";
 import { deploymentConfig } from "@/config/contracts";
 import { publicEnv } from "@/config/env";
 
+const ARC_TESTNET_ONCHAIN_DEMO_LABEL = "Arc testnet onchain demo";
+
 export function DeploymentReadinessAlert() {
   const message = getDeploymentMessage();
 
@@ -35,7 +37,7 @@ function getDeploymentMessage() {
       return "Arc testnet configuration is ready for this demo. Contract addresses are not configured yet, so Probity is showing mock market data until MarketFactory and settlement token addresses are added.";
     }
 
-    return "Arc testnet onchain demo";
+    return ARC_TESTNET_ONCHAIN_DEMO_LABEL;
   }
 
   return null;
