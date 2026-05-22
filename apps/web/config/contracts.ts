@@ -22,6 +22,12 @@ type DeploymentAddresses = {
     SettlementToken?: string;
     MockUSDC?: string;
   };
+  metadata?: {
+    deployer?: string;
+    resolver?: string;
+    settlementTokenStrategy?: string;
+    mode?: string;
+  };
 };
 
 export type ProbityContractName = "MarketFactory" | "MockUSDC";
@@ -110,11 +116,13 @@ export const contractAddresses: ProbityAddressMap = {
 export const deploymentConfig = {
   chainId: activeDeployment.chainId,
   deploymentBlock: activeDeployment.deploymentBlock,
+  deployerAddress: normalizeAddress(activeDeployment.metadata?.deployer),
   hasMarketFactory: Boolean(contractAddresses.MarketFactory),
   hasSettlementToken: Boolean(contractAddresses.MockUSDC),
   isArcTestnet: activeDeploymentTarget === "arc-testnet",
   isMockOnly: getMarketDataMode() === "mock",
   marketDataMode: getMarketDataMode(),
+  resolverAddress: normalizeAddress(activeDeployment.metadata?.resolver),
   target: activeDeploymentTarget
 } as const;
 

@@ -1,17 +1,40 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CalendarClock, ExternalLink, FileText, ShieldCheck } from "lucide-react";
+import {
+  CalendarClock,
+  CheckCircle2,
+  ExternalLink,
+  FileText,
+  Loader2,
+  ShieldCheck,
+  XCircle
+} from "lucide-react";
+import { decodeEventLog, getAddress, isAddress, type Address } from "viem";
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  contractAbis,
+  contractAddresses,
+  deploymentConfig,
+  getMarketFactoryConfig,
+  hasContractAddress
+} from "@/config/contracts";
 
 const categories = ["Macro", "Crypto", "Policy", "Arc", "Earnings"];
 
 export function CreateMarketForm() {
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  const { address: accountAddress, isConnected } = useAccount();
+  const createWrite = useWriteContract();
+  const createReceipt = useWaitForTransactionReceipt({ hash: createWrite.data });
   const importedQuestion = searchParams.get("question") ?? "";
   const importedCategory = searchParams.get("category") ?? "Macro";
   const importedExpiry = searchParams.get("expiry") ?? "";
@@ -30,6 +53,95 @@ export function CreateMarketForm() {
       : ""
   );
   const [expiry, setExpiry] = React.useState(importedExpiry ? importedExpiry.slice(0, 10) : "");
+  const [resolver, setResolver] = React.useState(
+    deploymentConfig.resolverAddress ?? accountAddress ?? ""
+  );
+  const resolutionCriteriaId = React.useId();
+  const isFactoryConfigured = hasContractAddress("MarketFactory");
+  const isSettlementTokenConfigured = hasContractAddress("MockUSDC");
+  const resolverAddress = isAddress(resolver) ? getAddress(resolver) : undefined;
+  const normalizedAccount = accountAddress ? getAddress(accountAddress) : undefined;
+  const shouldReadAccess = deploymentConfig.marketDataMode !== "mock" && isFactoryConfigured;
+  const factoryConfig = getMarketFactoryConfig();
+  const approvedCreator = useReadContract({
+    ...factoryConfig,
+    args: normalizedAccount ? [normalizedAccount] : undefined,
+    functionName: "approvedCreators",
+    query: {
+      enabled: shouldReadAccess && Boolean(normalizedAccount)
+    }
+  });
+  const approvedResolver = useReadContract({
+    ...factoryConfig,
+    args: resolverAddress ? [resolverAddress] : undefined,
+    functionName: "approvedResolvers",
+    query: {
+      enabled: shouldReadAccess && Boolean(resolverAddress)
+    }
+  });
+  const createdMarketAddress = React.useMemo(
+    () => parseCreatedMarketAddress(createReceipt.data?.logs),
+    [createReceipt.data?.logs]
+  );
+  const isApprovedCreator = Boolean(approvedCreator.data);
+  const isApprovedResolver = Boolean(approvedResolver.data);
+  const isCreating = createWrite.isPending || createReceipt.isLoading;
+  const createDisabledReason = getCreateDisabledReason({
+    expiry,
+    isApprovedCreator,
+    isApprovedResolver,
+    isConnected,
+    isCreating,
+    isFactoryConfigured,
+    isSettlementTokenConfigured,
+    marketDataMode: deploymentConfig.marketDataMode,
+    question,
+    resolverAddress
+  });
+
+  React.useEffect(() => {
+    if (deploymentConfig.resolverAddress || !accountAddress || resolver) {
+      return;
+    }
+
+    setResolver(accountAddress);
+  }, [accountAddress, resolver]);
+
+  React.useEffect(() => {
+    if (createReceipt.isSuccess) {
+      void queryClient.invalidateQueries();
+    }
+  }, [createReceipt.isSuccess, queryClient]);
+
+  function createMarket(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (createDisabledReason || !resolverAddress || !contractAddresses.MockUSDC) {
+      return;
+    }
+
+    createWrite.writeContract({
+      ...factoryConfig,
+      args: [
+        contractAddresses.MockUSDC,
+        resolverAddress,
+        BigInt(toExpirationTimestamp(expiry)),
+        question.trim(),
+        buildMetadataURI({
+          category,
+          description,
+          importedProbability,
+          importedSourceLabel,
+          importedSourceUrl,
+          resolutionCriteria:
+            document.getElementById(resolutionCriteriaId) instanceof HTMLTextAreaElement
+              ? (document.getElementById(resolutionCriteriaId) as HTMLTextAreaElement).value
+              : ""
+        })
+      ],
+      functionName: "createMarket"
+    });
+  }
 
   return (
     <Card>
@@ -40,7 +152,7 @@ export function CreateMarketForm() {
         </div>
       </CardHeader>
       <CardContent>
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={createMarket}>
           {hasImportedReference && (
             <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
               <div className="text-sm font-medium text-cyan-100">Reference imported from public market metadata</div>
@@ -122,19 +234,22 @@ export function CreateMarketForm() {
             <Field label="Settlement token">
               <div className="flex h-11 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200">
                 <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                USDC
+                {deploymentConfig.isArcTestnet ? "Arc testnet USDC" : "MockUSDC"}
               </div>
             </Field>
             <Field label="Resolver">
               <input
                 className="h-11 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
+                onChange={(event) => setResolver(event.target.value)}
                 placeholder="Probity Resolver Desk"
+                value={resolver}
               />
             </Field>
           </div>
 
           <Field label="Resolution criteria">
             <textarea
+              id={resolutionCriteriaId}
               className="min-h-32 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
               placeholder="Define YES, NO, invalid/cancelled cases, and acceptable source references."
               defaultValue={
@@ -148,16 +263,32 @@ export function CreateMarketForm() {
           <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
               <FileText className="h-4 w-4" />
-              Create market transaction not enabled yet
+              Arc-native MarketFactory creation
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              MarketFactory creation writes are intentionally guarded in this public MVP. Use this
-              workspace to prepare Arc-native market terms before resolver-approved deployment.
+              Only approved Probity creators can submit this transaction. External metadata can
+              prefill the draft, but the created market is a separate PredictionMarket deployed by
+              Probity on the configured chain.
+            </p>
+            <p className="mt-3 text-sm text-slate-500">
+              {createDisabledReason ??
+                "Connected wallet is approved to create markets with the selected resolver."}
             </p>
           </div>
 
+          <CreateTransactionState
+            createdMarketAddress={createdMarketAddress}
+            error={createWrite.error?.message}
+            isPending={isCreating}
+            success={createReceipt.isSuccess}
+            transactionHash={createWrite.data}
+          />
+
           <div className="flex justify-end">
-            <Button disabled>Create Market Not Enabled</Button>
+            <Button disabled={Boolean(createDisabledReason)} type="submit">
+              {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
+              Create Arc-Native Market
+            </Button>
           </div>
         </form>
       </CardContent>
@@ -181,4 +312,195 @@ function ReferenceMetric({ label, value }: { label: string; value: string }) {
       <div className="mt-1 text-sm font-medium text-slate-100">{value}</div>
     </div>
   );
+}
+
+function CreateTransactionState({
+  createdMarketAddress,
+  error,
+  isPending,
+  success,
+  transactionHash
+}: {
+  createdMarketAddress: Address | undefined;
+  error: string | undefined;
+  isPending: boolean;
+  success: boolean;
+  transactionHash: `0x${string}` | undefined;
+}) {
+  if (!error && !isPending && !success) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+      {isPending && (
+        <div className="flex items-center gap-2 text-cyan-100">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Market creation transaction pending{transactionHash ? ` (${shortHash(transactionHash)})` : ""}.
+        </div>
+      )}
+      {success && !isPending && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-emerald-200">
+            <CheckCircle2 className="h-4 w-4" />
+            Market created on the configured Probity MarketFactory.
+          </div>
+          {createdMarketAddress && (
+            <div className="flex flex-col gap-3 rounded-md border border-emerald-400/20 bg-emerald-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <span className="font-mono text-xs text-emerald-100">{createdMarketAddress}</span>
+              <Link className="text-cyan-200 transition hover:text-cyan-100" href={`/markets/${createdMarketAddress}`}>
+                Open created market
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+      {error && (
+        <div className="mt-2 flex items-start gap-2 text-rose-200">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{formatCreateError(error)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getCreateDisabledReason({
+  expiry,
+  isApprovedCreator,
+  isApprovedResolver,
+  isConnected,
+  isCreating,
+  isFactoryConfigured,
+  isSettlementTokenConfigured,
+  marketDataMode,
+  question,
+  resolverAddress
+}: {
+  expiry: string;
+  isApprovedCreator: boolean;
+  isApprovedResolver: boolean;
+  isConnected: boolean;
+  isCreating: boolean;
+  isFactoryConfigured: boolean;
+  isSettlementTokenConfigured: boolean;
+  marketDataMode: string;
+  question: string;
+  resolverAddress: Address | undefined;
+}) {
+  if (marketDataMode === "mock") {
+    return "Mock mode is active, so onchain market creation is disabled.";
+  }
+
+  if (!isFactoryConfigured || !isSettlementTokenConfigured) {
+    return "MarketFactory and settlement token addresses must be configured before creating markets.";
+  }
+
+  if (!isConnected) {
+    return "Connect an approved resolver/admin wallet to create an Arc-native market.";
+  }
+
+  if (!isApprovedCreator) {
+    return "Connected wallet is not approved as a MarketFactory creator.";
+  }
+
+  if (!resolverAddress) {
+    return "Enter a valid approved resolver address.";
+  }
+
+  if (!isApprovedResolver) {
+    return "Selected resolver address is not approved on the MarketFactory.";
+  }
+
+  if (!question.trim()) {
+    return "Enter a market question before creating the market.";
+  }
+
+  if (!expiry || toExpirationTimestamp(expiry) <= Math.floor(Date.now() / 1000)) {
+    return "Choose a future expiration date.";
+  }
+
+  if (isCreating) {
+    return "Market creation transaction is pending.";
+  }
+
+  return null;
+}
+
+function buildMetadataURI({
+  category,
+  description,
+  importedProbability,
+  importedSourceLabel,
+  importedSourceUrl,
+  resolutionCriteria
+}: {
+  category: string;
+  description: string;
+  importedProbability: string;
+  importedSourceLabel: string;
+  importedSourceUrl: string;
+  resolutionCriteria: string;
+}) {
+  const params = new URLSearchParams({
+    category,
+    description,
+    resolutionCriteria,
+    source: importedSourceUrl ? importedSourceLabel : "Probity Create",
+    sourceUrl: importedSourceUrl
+  });
+
+  if (importedProbability) {
+    params.set("initialProbability", importedProbability);
+  }
+
+  return `probity://market?${params.toString()}`;
+}
+
+function parseCreatedMarketAddress(logs: { topics: readonly `0x${string}`[]; data: `0x${string}` }[] | undefined) {
+  if (!logs) {
+    return undefined;
+  }
+
+  for (const log of logs) {
+    try {
+      const decoded = decodeEventLog({
+        abi: contractAbis.marketFactory,
+        data: log.data,
+        topics: [...log.topics] as [`0x${string}`, ...`0x${string}`[]]
+      });
+
+      if (decoded.eventName === "MarketCreated" && decoded.args && "market" in decoded.args) {
+        return getAddress(decoded.args.market as Address);
+      }
+    } catch {
+      // Ignore unrelated logs from wallets or chain middleware.
+    }
+  }
+
+  return undefined;
+}
+
+function toExpirationTimestamp(expiry: string) {
+  return Math.floor(new Date(`${expiry}T23:59:59Z`).getTime() / 1000);
+}
+
+function formatCreateError(error: string) {
+  if (error.includes("NotApprovedCreator")) {
+    return "Connected wallet is not approved to create markets.";
+  }
+
+  if (error.includes("ResolverNotApproved")) {
+    return "Selected resolver is not approved on the MarketFactory.";
+  }
+
+  if (error.includes("InvalidExpiration")) {
+    return "Expiration must be in the future.";
+  }
+
+  return error.length > 180 ? `${error.slice(0, 180)}...` : error;
+}
+
+function shortHash(value: string) {
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
