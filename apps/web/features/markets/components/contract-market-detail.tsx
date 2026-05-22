@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, CheckCircle2, Droplets, Landmark, Users } from "lucide-react";
+import { ArrowLeft, CalendarClock, CheckCircle2, Droplets, Landmark, ShieldCheck, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { Address } from "viem";
 import { getAddress } from "viem";
 import { useReadContracts } from "wagmi";
@@ -94,78 +95,95 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
   return (
     <main className="min-h-screen bg-slate-950">
       <section className="border-b border-white/10 bg-slate-950">
-        <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <Link
-            className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
+            className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-200"
             href="/markets"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to markets
+            Back to Markets
           </Link>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge>{market.category}</Badge>
-                <MarketStatusBadge status={market.status} />
-                <Badge variant="info">
-                  {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
-                </Badge>
-              </div>
-              <h1 className="mt-5 max-w-4xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                {market.title}
-              </h1>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
-                {market.description}
-              </p>
+          <div className="mt-5 max-w-5xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>{market.category}</Badge>
+              <MarketStatusBadge status={market.status} />
+              <Badge className="border-cyan-300/20 bg-cyan-400/[0.06] text-cyan-100/85" variant="info">
+                {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
+              </Badge>
             </div>
-
-            <Card className="bg-slate-950/80">
-              <CardHeader>
-                <CardTitle>Onchain Signal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  <OutcomeMetric label="YES" value={market.yesProbability} variant="yes" />
-                  <OutcomeMetric label="NO" value={noProbability} variant="no" />
-                </div>
-                <ProbabilityBar className="mt-5" yesProbability={market.yesProbability} />
-              </CardContent>
-            </Card>
+            <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
+              {market.title}
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
+              {market.description}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(market.expiresAt)} />
+              <MetaChip icon={Droplets} label="Token" value={market.settlementToken} />
+              <MetaChip icon={Users} label="Participants" value={formatInteger(market.participants)} />
+              <MetaChip icon={ShieldCheck} label="Resolver" value={shortValue(market.resolver)} />
+              <MetaChip icon={Landmark} label="Market" value={shortValue(address)} />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8">
-        <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:px-8">
+        <div className="space-y-5">
+          <Card className="bg-slate-950/75">
+            <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
+              <CardTitle className="text-slate-100">Onchain Signal</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <OutcomeMetric label="YES" value={market.yesProbability} variant="yes" />
+                <OutcomeMetric label="NO" value={noProbability} variant="no" />
+              </div>
+              <ProbabilityBar className="mt-4" yesProbability={market.yesProbability} />
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <InfoTile icon={Landmark} label="Volume" value={formatUsd(market.volumeUsd)} />
             <InfoTile icon={Droplets} label="Liquidity" value={formatUsd(market.liquidityUsd)} />
             <InfoTile icon={CalendarClock} label="Expires" value={formatExpiry(market.expiresAt)} />
             <InfoTile icon={Users} label="Participants" value={formatInteger(market.participants)} />
           </div>
 
-          <Card>
-            <CardHeader>
+          <Card className="bg-slate-950/75">
+            <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
               <CardTitle>Resolution Criteria</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
+              <div className="space-y-2">
                 {market.rules.map((rule) => (
                   <div
-                    className="flex gap-3 rounded-md border border-white/10 bg-white/[0.03] p-3"
+                    className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3"
                     key={rule}
                   >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
-                    <p className="text-sm leading-6 text-slate-300">{rule}</p>
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />
+                    <p className="text-sm leading-6 text-slate-400">{rule}</p>
                   </div>
                 ))}
+                <div className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />
+                  <p className="text-sm leading-6 text-slate-400">
+                    Balances and settlement funds are read from this deployed PredictionMarket contract.
+                  </p>
+                </div>
+                <div className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />
+                  <p className="text-sm leading-6 text-slate-400">
+                    Seeded markets are Arc testnet/demo only and are resolved by the configured resolver address.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <TradingPanel market={market} />
           <Link className={cn(buttonVariants({ variant: "outline" }), "w-full")} href="/markets">
             Browse More Markets
@@ -186,12 +204,12 @@ function OutcomeMetric({
   variant: "yes" | "no";
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+    <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
       <div className="text-xs text-slate-500">{label}</div>
       <div
         className={cn(
           "mt-2 text-3xl font-semibold",
-          variant === "yes" ? "text-emerald-200" : "text-rose-200"
+          variant === "yes" ? "text-emerald-300/85" : "text-rose-300/85"
         )}
       >
         {value}%
@@ -210,10 +228,32 @@ function InfoTile({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-      <Icon className="h-4 w-4 text-cyan-300" />
-      <div className="mt-4 text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
-      <div className="mt-2 text-sm font-semibold text-white">{value}</div>
+    <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
+      <Icon className="h-4 w-4 text-cyan-300/70" />
+      <div className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-500">{label}</div>
+      <div className="mt-2 text-sm font-semibold text-slate-200">{value}</div>
     </div>
   );
+}
+
+function MetaChip({
+  icon: Icon,
+  label,
+  value
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 py-2 text-xs">
+      <Icon className="h-3.5 w-3.5 text-slate-600" />
+      <span className="text-slate-600">{label}</span>
+      <span className="font-medium text-slate-400">{value}</span>
+    </div>
+  );
+}
+
+function shortValue(value: string) {
+  return value.length > 14 ? `${value.slice(0, 6)}...${value.slice(-4)}` : value;
 }

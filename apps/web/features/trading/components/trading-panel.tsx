@@ -30,6 +30,7 @@ const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 const QUICK_AMOUNTS = [1, 5, 10, 100] as const;
 
 export function TradingPanel({ market }: { market: Market }) {
+  const [mode, setMode] = React.useState<"buy" | "sell">("buy");
   const [side, setSide] = React.useState<"YES" | "NO">("YES");
   const [amount, setAmount] = React.useState("");
   const [lastAction, setLastAction] = React.useState<"approve" | "buy" | "sellYes" | "sellNo" | "claim" | null>(null);
@@ -132,6 +133,7 @@ export function TradingPanel({ market }: { market: Market }) {
   const canBuy = canAttemptBuy && hasEnoughAllowance;
   const canSellYes = canAttemptSell && hasEnoughYesToSell;
   const canSellNo = canAttemptSell && hasEnoughNoToSell;
+  const canSellSelectedSide = side === "YES" ? canSellYes : canSellNo;
   const canClaim =
     isLocalContractMarket &&
     isConnected &&
@@ -160,6 +162,30 @@ export function TradingPanel({ market }: { market: Market }) {
     parsedAmount > 0n &&
     !hasEnoughBalance;
   const selectedSellEstimate = side === "YES" ? estimatedYesSellPayout : estimatedNoSellPayout;
+  const primaryAction = getPrimaryAction({
+    canApprove,
+    canBuy,
+    canSellSelectedSide,
+    hasEnteredAmount,
+    hasEnoughAllowance,
+    isApproving,
+    isBuying,
+    isSelling,
+    mode,
+    side,
+    tokenLabel
+  });
+  const sellPositionMessage =
+    mode === "sell" &&
+    isLocalContractMarket &&
+    isConnected &&
+    !isWrongChain &&
+    !hasSettlementTokenMismatch &&
+    !isMarketClosed &&
+    parsedAmount > 0n &&
+    !canSellSelectedSide
+      ? `You do not have enough ${side} shares to sell this amount.`
+      : "";
 
   React.useEffect(() => {
     const error = approveWrite.error ?? buyWrite.error ?? sellWrite.error ?? claimWrite.error;
@@ -261,6 +287,27 @@ export function TradingPanel({ market }: { market: Market }) {
         </div>
 
         <section className="space-y-2.5">
+          <SectionLabel>Mode</SectionLabel>
+          <div className="grid grid-cols-2 gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] p-1">
+            {(["buy", "sell"] as const).map((option) => (
+              <button
+                className={[
+                  "h-9 rounded-[5px] text-sm font-medium capitalize transition",
+                  mode === option
+                    ? "bg-white/[0.07] text-slate-100"
+                    : "text-slate-500 hover:text-slate-300"
+                ].join(" ")}
+                key={option}
+                onClick={() => setMode(option)}
+                type="button"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-2.5">
           <SectionLabel>Side</SectionLabel>
           <div className="grid grid-cols-2 gap-2">
           {(["YES", "NO"] as const).map((option) => (
@@ -336,7 +383,7 @@ export function TradingPanel({ market }: { market: Market }) {
           />
           {isLocalContractMarket && (
             <PreviewRow
-              label={`${side} sell-back estimate`}
+              label={mode === "sell" ? `${side} sell-back estimate` : "Sell-back estimate"}
               value={
                 hasEnteredAmount
                   ? `${selectedSellEstimate.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC`
@@ -347,7 +394,9 @@ export function TradingPanel({ market }: { market: Market }) {
           {isLocalContractMarket && (
             <>
               <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} USDC`} />
-              <PreviewRow label="Market allowance" value={`${formatUsdc(allowance)} USDC`} />
+              {mode === "buy" && (
+                <PreviewRow label="Market allowance" value={`${formatUsdc(allowance)} USDC`} />
+              )}
               <PreviewRow label="YES position" value={`${formatUsdc(yesPosition)} shares`} />
               <PreviewRow label="NO position" value={`${formatUsdc(noPosition)} shares`} />
               {market.status === "resolved" && (
@@ -364,7 +413,12 @@ export function TradingPanel({ market }: { market: Market }) {
           )}
         </section>
 
-        {statusMessage && <TradingNotice message={statusMessage} showFaucetLink={shouldShowFaucetLink} />}
+        {(sellPositionMessage || statusMessage) && (
+          <TradingNotice
+            message={sellPositionMessage || statusMessage}
+            showFaucetLink={shouldShowFaucetLink}
+          />
+        )}
         <TransactionState
           error={approveWrite.error ?? buyWrite.error ?? sellWrite.error ?? claimWrite.error}
           isPending={isWriting}
@@ -388,24 +442,21 @@ export function TradingPanel({ market }: { market: Market }) {
           <SectionLabel>Actions</SectionLabel>
           {isLocalContractMarket ? (
             <>
-              <Button disabled={!canApprove} onClick={handleApprove} type="button">
-                {isApproving && <Loader2 className="h-4 w-4 animate-spin" />}
-                Approve {tokenLabel}
+              <Button
+                disabled={!primaryAction.enabled}
+                onClick={
+                  primaryAction.onClick === "approve"
+                    ? handleApprove
+                    : primaryAction.onClick === "buy"
+                      ? handleBuy
+                      : () => handleSell(side)
+                }
+                type="button"
+                variant={primaryAction.variant}
+              >
+                {primaryAction.isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {primaryAction.label}
               </Button>
-              <Button disabled={!canBuy} onClick={handleBuy} type="button" variant="outline">
-                {isBuying && <Loader2 className="h-4 w-4 animate-spin" />}
-                Buy {side}
-              </Button>
-              <div className="grid grid-cols-2 gap-2.5">
-                <Button disabled={!canSellYes} onClick={() => handleSell("YES")} type="button" variant="secondary">
-                  {isSelling && lastAction === "sellYes" && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Sell YES
-                </Button>
-                <Button disabled={!canSellNo} onClick={() => handleSell("NO")} type="button" variant="secondary">
-                  {isSelling && lastAction === "sellNo" && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Sell NO
-                </Button>
-              </div>
               <Button disabled={!canClaim} onClick={handleClaim} type="button" variant="secondary">
                 {isClaiming && <Loader2 className="h-4 w-4 animate-spin" />}
                 Claim Payout
@@ -538,7 +589,7 @@ function getStatusMessage({
   }
 
   if (parsedAmount <= 0n) {
-    return "";
+    return "Enter an amount to preview and trade.";
   }
 
   if (!hasEnoughBalance) {
@@ -573,6 +624,70 @@ function formatAmountInput(value: number) {
     maximumFractionDigits: USDC_DECIMALS,
     useGrouping: false
   });
+}
+
+function getPrimaryAction({
+  canApprove,
+  canBuy,
+  canSellSelectedSide,
+  hasEnteredAmount,
+  hasEnoughAllowance,
+  isApproving,
+  isBuying,
+  isSelling,
+  mode,
+  side,
+  tokenLabel
+}: {
+  canApprove: boolean;
+  canBuy: boolean;
+  canSellSelectedSide: boolean;
+  hasEnteredAmount: boolean;
+  hasEnoughAllowance: boolean;
+  isApproving: boolean;
+  isBuying: boolean;
+  isSelling: boolean;
+  mode: "buy" | "sell";
+  side: "YES" | "NO";
+  tokenLabel: string;
+}) {
+  if (!hasEnteredAmount) {
+    return {
+      enabled: false,
+      isLoading: false,
+      label: "Enter amount",
+      onClick: mode,
+      variant: "secondary" as const
+    };
+  }
+
+  if (mode === "sell") {
+    return {
+      enabled: canSellSelectedSide,
+      isLoading: isSelling,
+      label: `Sell ${side}`,
+      onClick: "sell" as const,
+      variant: "outline" as const
+    };
+  }
+
+  if (!hasEnoughAllowance) {
+    return {
+      enabled: canApprove,
+      isLoading: isApproving,
+      label: `Approve ${tokenLabel}`,
+      onClick: "approve" as const,
+      variant: "default" as const
+    };
+  }
+
+  return {
+    enabled: canBuy,
+    isLoading: isBuying,
+    label: `Buy ${side}`,
+    onClick: "buy" as const,
+    variant: "outline" as const
+  };
 }
 
 function shortenError(value: string) {
