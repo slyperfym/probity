@@ -5,26 +5,29 @@ Stablecoin-native prediction market infrastructure for institutional-grade forec
 **Live demo:** [https://probity-market.vercel.app](https://probity-market.vercel.app)  
 **GitHub repository:** [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
 
-Probity is a prediction market MVP designed around transparent onchain execution, deterministic resolver-controlled settlement, and a professional trading interface. It combines a Next.js frontend, local Foundry contracts, wallet connectivity, local trading flows, resolver/admin operations, and an indexing-ready data model.
+Probity is a prediction market MVP designed around transparent onchain execution, deterministic resolver-controlled settlement, and a professional trading interface. It combines a Next.js frontend, Foundry contracts, Arc testnet wallet connectivity, USDC-style trading flows, resolver/admin operations, approved-creator market creation, and an indexing-ready data model.
 
-The project is built as an Arc-ready protocol prototype. It is suitable for hackathon and ecosystem review, but it is not production-ready financial infrastructure.
+The project is built as an Arc Testnet protocol prototype. It is suitable for grant, hackathon, and ecosystem review, but it is not production-ready financial infrastructure.
 
 ## Status
 
-- **MVP:** live frontend and local protocol prototype
-- **Live deployment:** Vercel demo at [https://probity-market.vercel.app](https://probity-market.vercel.app), using mock fallback unless reachable contract addresses are configured
-- **Local trading:** enabled only with local Anvil contracts and MockUSDC
-- **Arc testnet:** configuration and deployment workflow are ready; contract-backed testnet mode requires deployed `MarketFactory` and settlement token addresses
+- **MVP:** live Arc testnet demo with onchain market reads/writes
+- **Live deployment:** Vercel demo at [https://probity-market.vercel.app](https://probity-market.vercel.app)
+- **Arc testnet:** configured for chain ID `5042002`, RPC `https://rpc.testnet.arc.network`, and USDC-style settlement
+- **Onchain flows:** deployed `MarketFactory`, approved creator market creation, YES/NO trading, portfolio reads, and resolver/admin resolution
+- **Fallback:** mock fallback remains available when contract addresses or RPC access are not configured
 - **Production readiness:** not production-ready, not audited, and not intended for real funds
 
 ## Product Overview
 
-Probity lets users browse binary YES/NO forecasting markets, inspect market probability and liquidity, connect a wallet, trade with USDC-style settlement, and claim payouts after resolution. Resolver operators can review expired markets and resolve them YES or NO through the admin dashboard when using deployed contracts.
+Probity lets users browse binary YES/NO forecasting markets, inspect market probability and liquidity, connect a wallet, trade with Arc testnet USDC, and claim payouts after resolver-controlled resolution. Resolver operators can review expired markets and resolve them YES or NO through the admin dashboard.
+
+Approved creator wallets can create Arc-native Probity markets through the configured `MarketFactory`. External Signals use public prediction market metadata only as reference material for drafting market terms; Probity does not execute Polymarket trades and is not affiliated with Polymarket.
 
 The MVP is intentionally scoped around clear protocol mechanics rather than AMM complexity or production oracle infrastructure. It demonstrates the full product loop:
 
-- Create and seed markets locally
-- Buy YES or NO shares with a USDC-style settlement token
+- Create Arc-native markets through `MarketFactory`
+- Buy YES or NO shares with Arc testnet USDC-style settlement
 - Resolve expired markets through a resolver role
 - Claim winning payouts
 - Keep frontend data compatible with future indexing infrastructure
@@ -42,16 +45,35 @@ Probity is designed for Arc's stablecoin-native infrastructure thesis:
 
 Arc is a strong fit for prediction markets because forecasting products need reliable settlement, clean accounting, and clear market lifecycle guarantees.
 
+## Circle / Arc Integration
+
+Probity is designed around Arc testnet and USDC-style settlement.
+
+- Arc Testnet chain ID: `5042002`
+- Native currency symbol: `USDC`
+- RPC: `https://rpc.testnet.arc.network`
+- Block explorer: `https://testnet.arcscan.app`
+- Faucet: `https://faucet.circle.com/`
+- Settlement model: users approve and trade with the configured Arc testnet USDC-style token
+- Market creation: approved creator wallets call the configured `MarketFactory`
+- Resolution: approved resolver/admin flow resolves expired markets onchain
+- Mobile wallets: RainbowKit, wagmi, viem, and WalletConnect/Reown Project ID support when configured
+
+USDC settlement is central to the product thesis: prediction market users need predictable collateral accounting, clear payout mechanics, and a settlement asset that maps cleanly to institutional workflows. In the current MVP, this is demonstrated with Arc testnet USDC only.
+
 ## Core Features
 
 - Institutional dark-mode market UI
 - Market exploration and market detail pages
 - Wallet connection with RainbowKit and wagmi
-- Local-only MockUSDC approval flow
-- Local-only buy YES / buy NO transaction flow
-- Local-only claim payout transaction flow
+- Arc testnet USDC approval flow
+- Arc testnet buy YES / buy NO transaction flow
+- Claim payout transaction flow
+- Approved creator market creation from `/create`
+- External Signals discovery using public reference metadata
+- Deduplication between external references and existing Probity markets
 - Resolver/admin dashboard
-- Resolver-only local market resolution
+- Resolver-only market resolution
 - Mock fallback mode when contracts are not deployed
 - Indexing-ready protocol event and entity model
 - Foundry contracts and local Anvil workflow
@@ -118,14 +140,15 @@ The frontend includes:
 - Landing page
 - `/markets` market board
 - `/markets/[id]` market detail page
-- `/portfolio` mock portfolio view
-- `/create` mock market creation UI
+- `/portfolio` wallet-aware portfolio view
+- `/create` approved-creator market creation UI
 - `/admin` resolver dashboard
 - Web3 provider boundary
 - Wallet connect button
-- Local trading panel
-- Local resolver operations
+- Arc testnet trading panel
+- Resolver operations
 - Mock fallback for undeployed contracts
+- External Signals reference feed
 
 The app is designed so mock data, local contract reads, and future indexed data can share the same UI surface.
 
@@ -262,9 +285,9 @@ NEXT_PUBLIC_MARKET_DATA_MODE=auto
 NEXT_PUBLIC_CHAIN_ID=5042002
 NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_ARC_CHAIN_NAME=Arc Testnet
-NEXT_PUBLIC_ARC_NATIVE_CURRENCY_NAME=
-NEXT_PUBLIC_ARC_NATIVE_CURRENCY_SYMBOL=
-NEXT_PUBLIC_ARC_BLOCK_EXPLORER_URL=
+NEXT_PUBLIC_ARC_NATIVE_CURRENCY_NAME=USD Coin
+NEXT_PUBLIC_ARC_NATIVE_CURRENCY_SYMBOL=USDC
+NEXT_PUBLIC_ARC_BLOCK_EXPLORER_URL=https://testnet.arcscan.app
 NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=
 NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS=
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
@@ -350,6 +373,24 @@ To deploy and refresh ABI artifacts in one step:
 pnpm contracts:bootstrap:arc-testnet
 ```
 
+## Reviewer Demo
+
+- Live demo: [https://probity-market.vercel.app](https://probity-market.vercel.app)
+- GitHub: [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
+
+Suggested reviewer path:
+
+1. Open the live demo and confirm the header shows the Arc testnet onchain demo state.
+2. Connect an Arc testnet wallet through RainbowKit. WalletConnect mobile options are available when `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is configured.
+3. Get Arc testnet USDC from the Circle faucet: [https://faucet.circle.com/](https://faucet.circle.com/).
+4. Visit `/markets` to browse seeded onchain markets and inspect External Signals.
+5. Open a market detail page and review probability, expiry, settlement token, and resolver criteria.
+6. Approve Arc testnet USDC and buy YES or NO shares.
+7. Visit `/portfolio` to view live onchain positions for the connected wallet.
+8. Use `/create` with an approved creator wallet to draft or create an Arc-native market, including from an External Signal reference.
+9. Use `/admin` with the resolver wallet to resolve eligible expired markets and make winning positions claimable.
+10. Explain that External Signals are reference metadata only. Probity does not execute Polymarket trades and has no Polymarket affiliation.
+
 ## Demo Flow
 
 Recommended MVP demo:
@@ -365,18 +406,56 @@ Recommended MVP demo:
 9. Return to the market detail page and claim winnings when eligible.
 10. Explain how emitted events map to the indexing-ready data layer.
 
+## Grant Roadmap
+
+Milestone 1: Harden Arc Testnet market creation and resolver approval flow
+
+- Improve creator/resolver role management UX
+- Add clearer admin runbooks and approval transaction history
+- Expand contract tests around creator and resolver permissions
+
+Milestone 2: Improve USDC settlement UX and mobile onboarding
+
+- Add richer faucet guidance, balance checks, and network switching affordances
+- Improve mobile wallet QA across WalletConnect/Reown, MetaMask, Rainbow, OKX, and Coinbase Wallet
+- Make settlement-token state clearer across trading, portfolio, and claim flows
+
+Milestone 3: Add public market proposal queue and external signal curation
+
+- Add a proposal workflow for non-approved public users
+- Add moderation/curation states for external signal references
+- Keep onchain creation restricted to approved creators until spam and quality controls exist
+
+Milestone 4: Add indexing, analytics, and activity feeds
+
+- Stand up a hosted indexer or subgraph-style service
+- Add historical trades, portfolio PnL, market snapshots, and resolver activity
+- Replace frontend-only derived analytics with indexed data
+
+Milestone 5: Add oracle/resolution framework and explore Circle Paymaster/Gas Station or Wallet integrations
+
+- Design resolver evidence and challenge flows
+- Explore oracle integrations for deterministic market resolution
+- Investigate Circle Paymaster/Gas Station or Wallet integrations for smoother USDC-native onboarding
+
 ## Current Limitations
 
-- MVP/local-development protocol only
+- Testnet MVP only
+- Not production financial infrastructure
+- Not financial advice
 - No production oracle integration
+- Resolver/admin flow is controlled and not decentralized
 - No dispute or challenge period
 - No AMM or order book liquidity model
 - No production database or hosted indexer
 - No production compliance/KYC layer
 - No audited smart contracts
+- Public market proposals are not enabled yet
+- External Signals are reference metadata only
+- No Polymarket trading or Polymarket affiliation
 - Local MockUSDC is not real USDC and is only for Anvil development
 - Arc testnet trading requires configured USDC settlement and user-funded testnet USDC wallets
-- Vercel deployment is primarily a frontend/product demo unless connected to reachable deployed Arc testnet contracts
+- Vercel deployment is a public Arc testnet demo, not a production deployment
 
 ## Roadmap
 
