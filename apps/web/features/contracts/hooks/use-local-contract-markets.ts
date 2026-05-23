@@ -39,9 +39,18 @@ export type MarketReadTuple = [
   Address | undefined
 ];
 
-export function useLocalContractMarkets() {
+type MarketReadResult = Array<
+  | { error?: undefined; result: unknown; status: "success" }
+  | { error: Error; result?: undefined; status: "failure" }
+>;
+
+export function useLocalContractMarkets({ limit }: { limit?: number } = {}) {
   const factoryMarkets = useMarketFactoryMarkets();
-  const marketAddresses = factoryMarkets.contractMarkets;
+  const allMarketAddresses = factoryMarkets.contractMarkets;
+  const marketAddresses = React.useMemo(
+    () => (limit === undefined ? allMarketAddresses : allMarketAddresses.slice(0, limit)),
+    [allMarketAddresses, limit]
+  );
   const shouldReadMarkets =
     factoryMarkets.isReadingContracts &&
     !factoryMarkets.isUsingMockFallback &&
@@ -68,8 +77,8 @@ export function useLocalContractMarkets() {
     contracts,
     query: {
       enabled: shouldReadMarkets,
-      placeholderData: (previousData) => previousData,
-      refetchInterval: 12_000,
+      placeholderData: (previousData: MarketReadResult | undefined) => previousData,
+      refetchInterval: 20_000,
       refetchIntervalInBackground: false,
       retry: 1
     }
@@ -118,8 +127,11 @@ export function useLocalContractMarkets() {
       Boolean((marketReads as { isFetching?: boolean }).isFetching && !marketReads.isLoading) ||
       Boolean(participantCounts.isFetching && !participantCounts.isLoading),
     isUsingMockFallback: shouldUseMockFallback,
+    loadedMarketCount: markets.length,
     markets,
-    marketSource: shouldUseMockFallback ? "mock" : "contracts"
+    marketSource: shouldUseMockFallback ? "mock" : "contracts",
+    totalContractMarketCount: allMarketAddresses.length,
+    visibleContractMarketCount: marketAddresses.length
   };
 }
 

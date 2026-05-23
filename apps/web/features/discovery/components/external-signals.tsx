@@ -7,10 +7,10 @@ import { ArrowRight, ChevronDown, DatabaseZap, ExternalLink } from "lucide-react
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { findProbityMarketForExternalSignal } from "@/features/discovery/lib/external-reference-matching";
 import type { ExternalMarketReference } from "@/features/discovery/types";
 import { formatExpiry, formatUsd } from "@/features/markets/lib/formatters";
+import type { Market } from "@/features/markets/types";
 import { cn } from "@/lib/utils";
 
 type DiscoveryResponse = {
@@ -23,19 +23,24 @@ type ListedExternalSignal = {
   probityMarketId?: string;
 };
 
-export function ExternalSignals() {
+export function ExternalSignals({
+  isUsingMockFallback,
+  probityMarkets
+}: {
+  isUsingMockFallback: boolean;
+  probityMarkets: Market[];
+}) {
   const [markets, setMarkets] = React.useState<ExternalMarketReference[]>([]);
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
   const [showAlreadyListed, setShowAlreadyListed] = React.useState(false);
-  const contractMarkets = useLocalContractMarkets();
 
   const { alreadyListedSignals, draftableSignals } = React.useMemo(() => {
     return markets.reduce(
       (accumulator, market) => {
-        const listedMarket = contractMarkets.isUsingMockFallback
+        const listedMarket = isUsingMockFallback
           ? undefined
-          : findProbityMarketForExternalSignal(market, contractMarkets.markets);
+          : findProbityMarketForExternalSignal(market, probityMarkets);
 
         if (listedMarket) {
           accumulator.alreadyListedSignals.push({
@@ -53,7 +58,7 @@ export function ExternalSignals() {
         draftableSignals: [] as ListedExternalSignal[]
       }
     );
-  }, [contractMarkets.isUsingMockFallback, contractMarkets.markets, markets]);
+  }, [isUsingMockFallback, probityMarkets, markets]);
 
   React.useEffect(() => {
     let active = true;

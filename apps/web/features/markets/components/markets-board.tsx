@@ -20,12 +20,21 @@ import { cn } from "@/lib/utils";
 type CategoryFilter = (typeof marketCategories)[number];
 type StatusFilter = (typeof marketStatuses)[number];
 
+const MARKET_PAGE_SIZE = 9;
+
 export function MarketsBoard() {
   const [category, setCategory] = React.useState<CategoryFilter>("All");
   const [status, setStatus] = React.useState<StatusFilter>("All");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const localMarkets = useLocalContractMarkets();
-  const displayedMarkets = localMarkets.isUsingMockFallback ? mockMarkets : localMarkets.markets;
+  const [visibleMarketLimit, setVisibleMarketLimit] = React.useState(MARKET_PAGE_SIZE);
+  const localMarkets = useLocalContractMarkets({ limit: visibleMarketLimit });
+  const displayedMarkets = localMarkets.isUsingMockFallback
+    ? mockMarkets.slice(0, visibleMarketLimit)
+    : localMarkets.markets;
+  const totalMarketCount = localMarkets.isUsingMockFallback
+    ? mockMarkets.length
+    : localMarkets.totalContractMarketCount;
+  const hasMoreMarkets = visibleMarketLimit < totalMarketCount;
 
   const filteredMarkets = getMarketsByFilter(
     displayedMarkets,
@@ -36,8 +45,6 @@ export function MarketsBoard() {
   const activeMarkets = filteredMarkets.filter((market) => market.status === "active").length;
   const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
   const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
-  const contractSourceLabel = deploymentConfig.isArcTestnet ? "Arc testnet" : "Local contracts";
-  const dataSourceLabel = localMarkets.isUsingMockFallback ? "Mock dataset" : contractSourceLabel;
   const dataSourceTone = localMarkets.isUsingMockFallback ? "text-amber-300/85" : "text-emerald-300/85";
   const hasConnectedFactoryWithoutMarkets =
     !localMarkets.isLoading &&
@@ -49,11 +56,11 @@ export function MarketsBoard() {
     <div className="space-y-5">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryMetric label="Filtered Volume" value={formatUsd(totalVolume)} />
-        <SummaryMetric label="Active Markets" value={String(activeMarkets)} />
+        <SummaryMetric label="Loaded Active" value={String(activeMarkets)} />
         <SummaryMetric label="Displayed Liquidity" value={formatUsd(totalLiquidity)} />
         <SummaryMetric
-          label="Data Source"
-          value={localMarkets.isLoading ? "Checking..." : dataSourceLabel}
+          label="Loaded / Total"
+          value={localMarkets.isLoading ? "Checking..." : `${displayedMarkets.length}/${totalMarketCount}`}
           valueClassName={dataSourceTone}
         />
       </div>
@@ -74,10 +81,13 @@ export function MarketsBoard() {
                 ? localMarkets.fallbackReason
                 : hasConnectedFactoryWithoutMarkets
                   ? "0 markets"
-                  : `${localMarkets.markets.length} market${
-                      localMarkets.markets.length === 1 ? "" : "s"
+                  : `${displayedMarkets.length} of ${totalMarketCount} market${
+                      totalMarketCount === 1 ? "" : "s"
                     }`}
             </span>
+            {!localMarkets.isUsingMockFallback && totalMarketCount > displayedMarkets.length && (
+              <span className="text-slate-600">Detailed reads are limited to loaded markets.</span>
+            )}
           </div>
           <div className="w-fit rounded-md border border-white/[0.07] bg-slate-950/60 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-600">
             {localMarkets.isRefreshing ? "updating" : localMarkets.factoryMarkets.marketDataMode}
@@ -99,6 +109,7 @@ export function MarketsBoard() {
             />
           </label>
           <div className="flex flex-col gap-2.5 lg:items-end">
+            <span className="text-xs text-slate-600">Search applies to loaded markets.</span>
             <FilterGroup
               label="Category"
               options={marketCategories}
@@ -116,11 +127,26 @@ export function MarketsBoard() {
       </div>
 
       {filteredMarkets.length > 0 ? (
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-          {filteredMarkets.map((market) => (
-            <MarketCard key={market.id} market={market} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {filteredMarkets.map((market) => (
+              <MarketCard key={market.id} market={market} />
+            ))}
+          </div>
+          {hasMoreMarkets && (
+            <div className="flex justify-center">
+              <Button
+                className="border-white/[0.08] text-slate-300"
+                disabled={localMarkets.isLoading}
+                onClick={() => setVisibleMarketLimit((current) => current + MARKET_PAGE_SIZE)}
+                type="button"
+                variant="outline"
+              >
+                {localMarkets.isLoading ? "Loading markets..." : "Load more markets"}
+              </Button>
+            </div>
+          )}
+        </>
       ) : hasConnectedFactoryWithoutMarkets ? (
         <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/10 p-10 text-center">
           <div className="text-sm font-medium text-white">No deployed markets found.</div>
@@ -142,7 +168,10 @@ export function MarketsBoard() {
         </div>
       )}
 
-      <ExternalSignals />
+      <ExternalSignals
+        isUsingMockFallback={localMarkets.isUsingMockFallback}
+        probityMarkets={displayedMarkets}
+      />
     </div>
   );
 }
