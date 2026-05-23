@@ -40,6 +40,9 @@ export function PortfolioDashboard() {
     })),
     query: {
       enabled: shouldReadPositions,
+      placeholderData: (previousData) => previousData,
+      refetchInterval: 12_000,
+      refetchIntervalInBackground: false,
       retry: 1
     }
   });
@@ -77,7 +80,12 @@ export function PortfolioDashboard() {
   const totalValue = positions.reduce((sum, position) => sum + position.notionalUsd, 0);
   const claimable = positions.reduce((sum, position) => sum + position.claimableUsd, 0);
   const activePositions = positions.filter((position) => position.status === "active").length;
-  const isLoading = localMarkets.isLoading || (shouldReadPositions && positionReads.isLoading);
+  const isInitialLoading =
+    (localMarkets.isLoading && localMarkets.markets.length === 0) ||
+    (shouldReadPositions && positionReads.isLoading && !positionReads.data);
+  const isRefreshing =
+    Boolean(localMarkets.isRefreshing) ||
+    Boolean((positionReads as { isFetching?: boolean }).isFetching && !positionReads.isLoading);
   const isError = !useMockFallback && positionReads.isError;
 
   return (
@@ -94,7 +102,7 @@ export function PortfolioDashboard() {
           icon={Wallet}
           title="Connect wallet to view live positions"
         />
-      ) : isLoading ? (
+      ) : isInitialLoading ? (
         <StateCard
           description="Reading deployed markets and wallet positions from the configured chain."
           kind="loading"
@@ -113,6 +121,11 @@ export function PortfolioDashboard() {
             <ActivityHistory activity={useMockFallback ? mockPortfolioActivity : []} />
           </div>
           <div className="space-y-6">
+            {isRefreshing && (
+              <div className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.035] px-3 py-2 text-xs text-cyan-100/80">
+                Updating onchain portfolio data...
+              </div>
+            )}
             <ClaimableRewards positions={positions} />
             {useMockFallback ? (
               <>

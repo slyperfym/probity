@@ -60,6 +60,8 @@ export function useMarketParticipantCounts(marketAddresses: readonly Address[], 
       normalizedAddresses.join(",")
     ],
     refetchOnWindowFocus: false,
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
     retry: 1,
     staleTime: 10_000
   });

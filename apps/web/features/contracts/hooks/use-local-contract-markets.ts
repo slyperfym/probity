@@ -68,6 +68,9 @@ export function useLocalContractMarkets() {
     contracts,
     query: {
       enabled: shouldReadMarkets,
+      placeholderData: (previousData) => previousData,
+      refetchInterval: 12_000,
+      refetchIntervalInBackground: false,
       retry: 1
     }
   });
@@ -111,6 +114,9 @@ export function useLocalContractMarkets() {
     isLoading:
       factoryMarkets.isLoading ||
       (shouldReadMarkets && (marketReads.isLoading || participantCounts.isLoading)),
+    isRefreshing:
+      Boolean((marketReads as { isFetching?: boolean }).isFetching && !marketReads.isLoading) ||
+      Boolean(participantCounts.isFetching && !participantCounts.isLoading),
     isUsingMockFallback: shouldUseMockFallback,
     markets,
     marketSource: shouldUseMockFallback ? "mock" : "contracts"

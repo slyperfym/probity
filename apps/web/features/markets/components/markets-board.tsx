@@ -80,7 +80,7 @@ export function MarketsBoard() {
             </span>
           </div>
           <div className="w-fit rounded-md border border-white/[0.07] bg-slate-950/60 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-600">
-            {localMarkets.factoryMarkets.marketDataMode}
+            {localMarkets.isRefreshing ? "updating" : localMarkets.factoryMarkets.marketDataMode}
           </div>
         </div>
       </div>

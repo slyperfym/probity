@@ -24,6 +24,7 @@ import {
   usePredictionMarketPosition
 } from "@/features/contracts/hooks";
 import type { Market } from "@/features/markets/types";
+import { refreshOnchainQueries } from "@/lib/onchain-cache";
 
 const USDC_DECIMALS = 6;
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
@@ -34,6 +35,7 @@ export function TradingPanel({ market }: { market: Market }) {
   const [side, setSide] = React.useState<"YES" | "NO">("YES");
   const [amount, setAmount] = React.useState("");
   const [lastAction, setLastAction] = React.useState<"approve" | "buy" | "sellYes" | "sellNo" | "claim" | null>(null);
+  const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const queryClient = useQueryClient();
   const { address: accountAddress, chainId, isConnected } = useAccount();
 
@@ -101,7 +103,8 @@ export function TradingPanel({ market }: { market: Market }) {
 
   React.useEffect(() => {
     if (approveReceipt.isSuccess || buyReceipt.isSuccess || sellReceipt.isSuccess || claimReceipt.isSuccess) {
-      void queryClient.invalidateQueries();
+      setIsRefreshingOnchainData(true);
+      void refreshOnchainQueries(queryClient).finally(() => setIsRefreshingOnchainData(false));
     }
   }, [approveReceipt.isSuccess, buyReceipt.isSuccess, sellReceipt.isSuccess, claimReceipt.isSuccess, queryClient]);
 
@@ -417,6 +420,7 @@ export function TradingPanel({ market }: { market: Market }) {
         <TransactionState
           error={approveWrite.error ?? buyWrite.error ?? sellWrite.error ?? claimWrite.error}
           isPending={isWriting}
+          isRefreshing={isRefreshingOnchainData}
           pendingHash={approveWrite.data ?? buyWrite.data ?? sellWrite.data ?? claimWrite.data}
           successMessage={
             lastAction === "approve" && approveReceipt.isSuccess
@@ -497,15 +501,17 @@ function TradingNotice({
 function TransactionState({
   error,
   isPending,
+  isRefreshing,
   pendingHash,
   successMessage
 }: {
   error: Error | null | undefined;
   isPending: boolean;
+  isRefreshing: boolean;
   pendingHash: string | undefined;
   successMessage: string;
 }) {
-  if (!error && !isPending && !successMessage) {
+  if (!error && !isPending && !isRefreshing && !successMessage) {
     return null;
   }
 
@@ -515,7 +521,7 @@ function TransactionState({
         <div className="flex items-center gap-2 text-cyan-100">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>
-            Waiting for wallet or chain confirmation
+            Pending confirmation
             {pendingHash ? ` (${shortAddress(pendingHash)})` : ""}...
           </span>
         </div>
@@ -524,6 +530,12 @@ function TransactionState({
         <div className="flex items-center gap-2 text-emerald-200">
           <CheckCircle2 className="h-4 w-4" />
           {successMessage}
+        </div>
+      )}
+      {isRefreshing && !isPending && (
+        <div className="mt-2 flex items-center gap-2 text-cyan-100">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Refreshing onchain data...
         </div>
       )}
       {error && (

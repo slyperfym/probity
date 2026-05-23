@@ -120,7 +120,10 @@ export function usePredictionMarketPosition({
     args: user ? [user] : undefined,
     functionName: "getPosition",
     query: {
-      enabled
+      enabled,
+      placeholderData: (previousData: unknown) => previousData,
+      refetchInterval: 8_000,
+      refetchIntervalInBackground: false
     }
   });
 }

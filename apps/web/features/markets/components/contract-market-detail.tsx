@@ -49,6 +49,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
       { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" }
     ],
     query: {
+      placeholderData: (previousData) => previousData,
+      refetchInterval: 8_000,
+      refetchIntervalInBackground: false,
       retry: 1
     }
   });
@@ -134,9 +137,14 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
               {marketWithParticipants.title}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
               {marketWithParticipants.description}
             </p>
+            {(contractReads as { isFetching?: boolean }).isFetching && !contractReads.isLoading && (
+              <p className="mt-2 text-xs text-cyan-200/70">
+                Updating onchain market data...
+              </p>
+            )}
             <div className="mt-5 flex flex-wrap gap-2">
               <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
               <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />

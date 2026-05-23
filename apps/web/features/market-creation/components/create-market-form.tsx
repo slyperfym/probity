@@ -28,6 +28,7 @@ import {
   hasContractAddress
 } from "@/config/contracts";
 import { normalizedQuestionHash } from "@/features/discovery/lib/external-reference-matching";
+import { refreshOnchainQueries } from "@/lib/onchain-cache";
 
 const categories = ["Macro", "Crypto", "Policy", "Arc", "Earnings"];
 
@@ -59,6 +60,7 @@ export function CreateMarketForm() {
   const [resolver, setResolver] = React.useState(
     deploymentConfig.resolverAddress ?? accountAddress ?? ""
   );
+  const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const resolutionCriteriaId = React.useId();
   const isFactoryConfigured = hasContractAddress("MarketFactory");
   const isSettlementTokenConfigured = hasContractAddress("MockUSDC");
@@ -113,7 +115,8 @@ export function CreateMarketForm() {
 
   React.useEffect(() => {
     if (createReceipt.isSuccess) {
-      void queryClient.invalidateQueries();
+      setIsRefreshingOnchainData(true);
+      void refreshOnchainQueries(queryClient).finally(() => setIsRefreshingOnchainData(false));
     }
   }, [createReceipt.isSuccess, queryClient]);
 
@@ -313,6 +316,7 @@ export function CreateMarketForm() {
             createdMarketAddress={createdMarketAddress}
             error={createWrite.error?.message}
             isPending={isCreating}
+            isRefreshing={isRefreshingOnchainData}
             success={createReceipt.isSuccess}
             transactionHash={createWrite.data}
           />
@@ -422,16 +426,18 @@ function CreateTransactionState({
   createdMarketAddress,
   error,
   isPending,
+  isRefreshing,
   success,
   transactionHash
 }: {
   createdMarketAddress: Address | undefined;
   error: string | undefined;
   isPending: boolean;
+  isRefreshing: boolean;
   success: boolean;
   transactionHash: `0x${string}` | undefined;
 }) {
-  if (!error && !isPending && !success) {
+  if (!error && !isPending && !isRefreshing && !success) {
     return null;
   }
 
@@ -457,6 +463,12 @@ function CreateTransactionState({
               </Link>
             </div>
           )}
+        </div>
+      )}
+      {isRefreshing && !isPending && (
+        <div className="mt-3 flex items-center gap-2 text-cyan-100">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Refreshing onchain market list.
         </div>
       )}
       {error && (

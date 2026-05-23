@@ -19,6 +19,7 @@ import { ActivityFeed } from "@/features/indexing";
 import { mockIndexerAdapter } from "@/features/indexing/adapters/mock-indexer-adapter";
 import type { Market } from "@/features/markets/types";
 import { formatExpiry, formatUsd } from "@/features/markets/lib/formatters";
+import { refreshOnchainQueries } from "@/lib/onchain-cache";
 
 export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverMarket[] }) {
   const { address: accountAddress, isConnected } = useAccount();
@@ -27,6 +28,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   const resolveWrite = useWriteContract();
   const resolveReceipt = useWaitForTransactionReceipt({ hash: resolveWrite.data });
   const [pendingMarketId, setPendingMarketId] = React.useState<string | null>(null);
+  const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const [activity, setActivity] = React.useState<ActivityFeedItem[]>([]);
 
   React.useEffect(() => {
@@ -35,7 +37,8 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
 
   React.useEffect(() => {
     if (resolveReceipt.isSuccess) {
-      void queryClient.invalidateQueries();
+      setIsRefreshingOnchainData(true);
+      void refreshOnchainQueries(queryClient).finally(() => setIsRefreshingOnchainData(false));
     }
   }, [queryClient, resolveReceipt.isSuccess]);
 
@@ -158,6 +161,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
           <ResolverTransactionState
             error={resolveWrite.error?.message}
             isPending={isResolving}
+            isRefreshing={isRefreshingOnchainData}
             success={resolveReceipt.isSuccess}
             transactionHash={resolveWrite.data}
           />
@@ -272,15 +276,17 @@ function getResolverNotice({
 function ResolverTransactionState({
   error,
   isPending,
+  isRefreshing,
   success,
   transactionHash
 }: {
   error: string | undefined;
   isPending: boolean;
+  isRefreshing: boolean;
   success: boolean;
   transactionHash: `0x${string}` | undefined;
 }) {
-  if (!error && !isPending && !success) {
+  if (!error && !isPending && !isRefreshing && !success) {
     return null;
   }
 
@@ -296,6 +302,12 @@ function ResolverTransactionState({
         <div className="flex items-center gap-2 text-emerald-200">
           <CheckCircle2 className="h-4 w-4" />
           Resolution confirmed. Winning positions are now claimable.
+        </div>
+      )}
+      {isRefreshing && !isPending && (
+        <div className="mt-2 flex items-center gap-2 text-cyan-100">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Refreshing onchain resolver data.
         </div>
       )}
       {error && (

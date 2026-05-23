@@ -25,7 +25,9 @@ export function useMarketFactoryMarketCount() {
     ...marketFactoryConfig,
     functionName: "marketCount",
     query: {
-      enabled: shouldReadContracts
+      enabled: shouldReadContracts,
+      refetchInterval: 15_000,
+      refetchIntervalInBackground: false
     }
   });
 }
@@ -38,6 +40,9 @@ export function useMarketFactoryMarkets() {
     functionName: "allMarkets",
     query: {
       enabled: shouldReadContracts,
+      placeholderData: (previousData: unknown) => previousData,
+      refetchInterval: 15_000,
+      refetchIntervalInBackground: false,
       retry: 1
     }
   });

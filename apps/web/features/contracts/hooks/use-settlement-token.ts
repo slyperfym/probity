@@ -17,7 +17,10 @@ export function useMockUsdcBalance(accountAddress: string | undefined) {
     args: account ? [account] : undefined,
     functionName: "balanceOf",
     query: {
-      enabled: isConfigured && Boolean(account)
+      enabled: isConfigured && Boolean(account),
+      placeholderData: (previousData: unknown) => previousData,
+      refetchInterval: 8_000,
+      refetchIntervalInBackground: false
     }
   });
 }
@@ -38,7 +41,10 @@ export function useMockUsdcAllowance({
     args: owner && spender ? [owner, spender] : undefined,
     functionName: "allowance",
     query: {
-      enabled: isConfigured && Boolean(owner && spender)
+      enabled: isConfigured && Boolean(owner && spender),
+      placeholderData: (previousData: unknown) => previousData,
+      refetchInterval: 8_000,
+      refetchIntervalInBackground: false
     }
   });
 }

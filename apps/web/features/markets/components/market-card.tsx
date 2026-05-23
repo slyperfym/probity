@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { memo } from "react";
 import { ArrowUpRight, Clock3, Droplets, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import { formatExpiry, formatInteger, formatUsd } from "@/features/markets/lib/f
 import type { Market } from "@/features/markets/types";
 import { cn } from "@/lib/utils";
 
-export function MarketCard({ market }: { market: Market }) {
+function MarketCardComponent({ market }: { market: Market }) {
   const changeColor = market.change24h >= 0 ? "text-emerald-300" : "text-rose-300";
   const participantLabel =
     market.participants > 0 ? formatInteger(market.participants) : "Onchain activity";
@@ -69,6 +70,8 @@ export function MarketCard({ market }: { market: Market }) {
     </Link>
   );
 }
+
+export const MarketCard = memo(MarketCardComponent);
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
