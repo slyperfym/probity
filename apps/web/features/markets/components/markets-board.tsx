@@ -23,12 +23,15 @@ type StatusFilter = (typeof marketStatuses)[number];
 export function MarketsBoard() {
   const [category, setCategory] = React.useState<CategoryFilter>("All");
   const [status, setStatus] = React.useState<StatusFilter>("All");
+  const [searchQuery, setSearchQuery] = React.useState("");
   const localMarkets = useLocalContractMarkets();
   const displayedMarkets = localMarkets.isUsingMockFallback ? mockMarkets : localMarkets.markets;
 
-  const filteredMarkets = getMarketsByFilter(displayedMarkets,
+  const filteredMarkets = getMarketsByFilter(
+    displayedMarkets,
     category as "All" | MarketCategory,
-    status as "All" | MarketStatus
+    status as "All" | MarketStatus,
+    searchQuery
   );
   const activeMarkets = filteredMarkets.filter((market) => market.status === "active").length;
   const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
@@ -84,10 +87,17 @@ export function MarketsBoard() {
 
       <div className="rounded-lg border border-white/[0.07] bg-slate-950/50 p-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-h-9 items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 text-sm text-slate-500 lg:w-80">
+          <label className="flex min-h-9 items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 text-sm text-slate-500 transition focus-within:border-cyan-300/20 lg:w-80">
             <Search className="h-4 w-4 text-slate-600" />
-            <span>Search coming with indexer data</span>
-          </div>
+            <input
+              aria-label="Search markets"
+              className="min-w-0 flex-1 bg-transparent text-slate-300 outline-none placeholder:text-slate-600"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search markets..."
+              type="search"
+              value={searchQuery}
+            />
+          </label>
           <div className="flex flex-col gap-2.5 lg:items-end">
             <FilterGroup
               label="Category"
@@ -121,8 +131,14 @@ export function MarketsBoard() {
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-10 text-center">
-          <div className="text-sm font-medium text-white">No markets match these filters.</div>
-          <p className="mt-2 text-sm text-slate-500">Adjust the category or status filters.</p>
+          <div className="text-sm font-medium text-white">
+            {searchQuery.trim() ? "No markets match your search." : "No markets match these filters."}
+          </div>
+          <p className="mt-2 text-sm text-slate-500">
+            {searchQuery.trim()
+              ? "Try another question, category, status, or token symbol."
+              : "Adjust the category or status filters."}
+          </p>
         </div>
       )}
 
@@ -134,14 +150,32 @@ export function MarketsBoard() {
 function getMarketsByFilter(
   markets: Market[],
   category: "All" | MarketCategory,
-  status: "All" | MarketStatus
+  status: "All" | MarketStatus,
+  searchQuery: string
 ) {
+  const normalizedSearch = normalizeSearch(searchQuery);
+
   return markets.filter((market) => {
     const categoryMatches = category === "All" || market.category === category;
     const statusMatches = status === "All" || market.status === status;
+    const searchMatches =
+      !normalizedSearch ||
+      normalizeSearch(
+        [
+          market.title,
+          market.category,
+          market.status,
+          market.settlementToken,
+          market.externalReference?.externalQuestion
+        ].join(" ")
+      ).includes(normalizedSearch);
 
-    return categoryMatches && statusMatches;
+    return categoryMatches && statusMatches && searchMatches;
   });
+}
+
+function normalizeSearch(value: string) {
+  return value.toLowerCase().trim().replace(/\s+/g, " ");
 }
 
 function SummaryMetric({

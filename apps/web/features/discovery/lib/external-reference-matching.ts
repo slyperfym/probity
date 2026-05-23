@@ -2,6 +2,7 @@ import type {
   ExternalMarketReference,
   ExternalReferenceMetadata
 } from "@/features/discovery/types";
+import { parseMarketMetadata } from "@/features/markets/lib/market-metadata";
 import type { Market } from "@/features/markets/types";
 
 export function normalizeQuestion(value: string) {
@@ -64,19 +65,18 @@ export function normalizedQuestionHash(value: string) {
 }
 
 export function parseExternalReferenceMetadata(metadataURI: string | undefined) {
-  if (!metadataURI?.startsWith("probity://market?")) {
+  if (!metadataURI) {
     return null;
   }
 
-  const query = metadataURI.slice("probity://market?".length);
-  const params = new URLSearchParams(query);
+  const parsed = parseMarketMetadata(metadataURI);
   const metadata: ExternalReferenceMetadata = {
-    externalEndDate: readParam(params, "externalEndDate"),
-    externalId: readParam(params, "externalId"),
-    externalQuestion: readParam(params, "externalQuestion"),
-    externalSourceLabel: readParam(params, "externalSourceLabel"),
-    externalSourceUrl: readParam(params, "externalSourceUrl"),
-    normalizedQuestionHash: readParam(params, "normalizedQuestionHash")
+    externalEndDate: parsed.externalEndDate,
+    externalId: parsed.externalId,
+    externalQuestion: parsed.externalQuestion,
+    externalSourceLabel: parsed.externalSourceLabel,
+    externalSourceUrl: parsed.externalSourceUrl,
+    normalizedQuestionHash: parsed.normalizedQuestionHash
   };
 
   return Object.values(metadata).some(Boolean) ? metadata : null;
@@ -112,10 +112,6 @@ export function findProbityMarketForExternalSignal(
 
     return Boolean(signalKey.endDate && marketKey.titleExpiry === signalKey.titleExpiry);
   });
-}
-
-function readParam(params: URLSearchParams, key: keyof ExternalReferenceMetadata) {
-  return params.get(key) ?? undefined;
 }
 
 function normalizeUrl(value: string | undefined) {

@@ -8,6 +8,12 @@ import { contractAbis, deploymentConfig } from "@/config/contracts";
 import { parseExternalReferenceMetadata } from "@/features/discovery/lib/external-reference-matching";
 import { useMarketFactoryMarkets } from "@/features/contracts/hooks/use-market-factory";
 import { useMarketParticipantCounts } from "@/features/contracts/hooks/use-market-participants";
+import {
+  getDefaultMarketDescription,
+  getDefaultResolutionCriteria,
+  parseMarketMetadata,
+  sanitizeMarketTitle
+} from "@/features/markets/lib/market-metadata";
 import type { Market, MarketCategory, MarketOutcome, MarketStatus } from "@/features/markets/types";
 
 const USDC_DECIMALS = 1_000_000;
@@ -138,11 +144,14 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
   const outcome = getOutcome(resolvedOutcome);
   const probability = totalShares > 0 ? Math.round((yesShares / totalShares) * 100) : 50;
   const volumeUsd = deposited / USDC_DECIMALS;
+  const parsedMetadata = parseMarketMetadata(metadataURI);
+  const cleanTitle = sanitizeMarketTitle(title, parsedMetadata);
+  const resolutionCriteria = getDefaultResolutionCriteria(parsedMetadata);
 
   return {
-    category: inferCategory(title, metadataURI),
+    category: parsedMetadata.category ?? inferCategory(cleanTitle, metadataURI),
     change24h: 0,
-    description: buildDescription(metadataURI),
+    description: getDefaultMarketDescription(parsedMetadata),
     expiresAt,
     externalReference: parseExternalReferenceMetadata(metadataURI),
     id: address,
@@ -153,14 +162,14 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
     resolver: resolver ? `${resolver.slice(0, 6)}...${resolver.slice(-4)}` : "Configured resolver",
     resolverAddress: resolver,
     rules: [
-      "This market resolves through the configured resolver address.",
+      resolutionCriteria,
       "YES/NO balances and settlement funds are read directly from the deployed PredictionMarket contract.",
       "Seeded markets are for testnet and local development only and do not execute production oracle logic."
     ],
     settlementToken: deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC",
     settlementTokenAddress,
     status: marketStatus,
-    title,
+    title: cleanTitle,
     volumeUsd,
     yesProbability: probability
   };
@@ -197,12 +206,4 @@ function inferCategory(title: string, metadataURI: string | undefined): MarketCa
   );
 
   return match?.[0] ?? "Macro";
-}
-
-function buildDescription(metadataURI: string | undefined) {
-  if (!metadataURI) {
-    return "Contract market seeded through the Probity Foundry workflow.";
-  }
-
-  return `Contract market seeded from ${metadataURI}.`;
 }

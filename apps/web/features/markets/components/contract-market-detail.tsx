@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, CheckCircle2, Droplets, Landmark, ShieldCheck, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  CheckCircle2,
+  Droplets,
+  ExternalLink,
+  Landmark,
+  ShieldCheck,
+  Users
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Address } from "viem";
 import { getAddress } from "viem";
@@ -100,6 +109,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
 
   const marketWithParticipants = displayedMarket;
   const noProbability = 100 - marketWithParticipants.yesProbability;
+  const externalReference = marketWithParticipants.externalReference;
 
   return (
     <main className="min-h-screen bg-slate-950">
@@ -179,11 +189,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             </CardHeader>
             <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
               <div className="space-y-2">
-                {[
-                  "This market resolves through the configured resolver address.",
-                  "Positions and settlement funds are read from the deployed PredictionMarket contract.",
-                  "This is an Arc testnet demo market, not production oracle logic."
-                ].map((rule) => (
+                {marketWithParticipants.rules.map((rule) => (
                   <div
                     className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3"
                     key={rule}
@@ -195,6 +201,46 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
               </div>
             </CardContent>
           </Card>
+
+          {externalReference && (
+            <Card className="bg-slate-950/65">
+              <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
+                <CardTitle className="text-sm text-slate-200">External reference</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
+                <div className="space-y-3 text-sm">
+                  <div className="grid gap-2 text-slate-500 sm:grid-cols-[140px_1fr]">
+                    <span className="text-xs uppercase tracking-[0.14em] text-slate-600">Source</span>
+                    <span className="text-slate-300">
+                      {externalReference.externalSourceLabel || "External market metadata"}
+                    </span>
+                  </div>
+                  {externalReference.externalQuestion && (
+                    <div className="grid gap-2 text-slate-500 sm:grid-cols-[140px_1fr]">
+                      <span className="text-xs uppercase tracking-[0.14em] text-slate-600">
+                        Original question
+                      </span>
+                      <span className="text-slate-400">{externalReference.externalQuestion}</span>
+                    </div>
+                  )}
+                  {externalReference.externalSourceUrl && (
+                    <Link
+                      className="inline-flex items-center gap-2 text-xs font-medium text-cyan-200/75 transition hover:text-cyan-100"
+                      href={externalReference.externalSourceUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      View external source
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                  <p className="border-t border-white/[0.07] pt-3 text-xs leading-5 text-slate-600">
+                    Reference metadata only. Probity market settles independently on Arc.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
