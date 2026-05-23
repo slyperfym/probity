@@ -1,101 +1,80 @@
 # Probity
 
-Stablecoin-native prediction market infrastructure for institutional-grade forecasting on Arc.
+Arc-native prediction market infrastructure with USDC-style settlement.
 
-**Live demo:** [https://probity-market.vercel.app](https://probity-market.vercel.app)  
-**GitHub repository:** [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
+Probity is a working Arc Testnet MVP for binary YES/NO prediction markets. It demonstrates an end-to-end flow for browsing markets, connecting a wallet, trading with Arc testnet USDC, using an MVP sell-back mechanism, viewing portfolio positions, and resolving markets through an admin/resolver flow.
 
-Probity is a prediction market MVP designed around transparent onchain execution, deterministic resolver-controlled settlement, and a professional trading interface. It combines a Next.js frontend, Foundry contracts, Arc testnet wallet connectivity, USDC-style trading flows, resolver/admin operations, approved-creator market creation, and an indexing-ready data model.
+The project is built for stablecoin-native forecasting markets where settlement, market state, positions, and resolution are transparent onchain. The current deployment is a public testnet demo, not production financial infrastructure.
 
-The project is built as an Arc Testnet protocol prototype. It is suitable for grant, hackathon, and ecosystem review, but it is not production-ready financial infrastructure.
+External Signals use public prediction market metadata only as reference material. Probity creates separate Arc-native markets through its own `MarketFactory`; it does not execute Polymarket trades and is not affiliated with Polymarket.
 
-## Status
+## Live Links
 
-- **MVP:** live Arc testnet demo with onchain market reads/writes
-- **Live deployment:** Vercel demo at [https://probity-market.vercel.app](https://probity-market.vercel.app)
-- **Arc testnet:** configured for chain ID `5042002`, RPC `https://rpc.testnet.arc.network`, and USDC-style settlement
-- **Onchain flows:** deployed `MarketFactory`, approved creator market creation, YES/NO trading, portfolio reads, and resolver/admin resolution
-- **Fallback:** mock fallback remains available when contract addresses or RPC access are not configured
-- **Production readiness:** not production-ready, not audited, and not intended for real funds
+- Live demo: [https://probity-market.vercel.app](https://probity-market.vercel.app)
+- GitHub: [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
+- Video demo: [https://youtu.be/EwQs5e_oorI?si=I6swYyHtJqOFeSC9](https://youtu.be/EwQs5e_oorI?si=I6swYyHtJqOFeSC9)
+- Arc Testnet explorer: [https://testnet.arcscan.app](https://testnet.arcscan.app)
+- Circle faucet: [https://faucet.circle.com](https://faucet.circle.com)
 
-## Product Overview
+## Current Status
 
-Probity lets users browse binary YES/NO forecasting markets, inspect market probability and liquidity, connect a wallet, trade with Arc testnet USDC, and claim payouts after resolver-controlled resolution. Resolver operators can review expired markets and resolve them YES or NO through the admin dashboard.
+- Working Arc Testnet MVP
+- Not production and not audited
+- Public demo frontend deployed on Vercel
+- Smart contracts deployed on Arc Testnet
+- USDC-style settlement configured
+- WalletConnect/mobile wallet support when a Reown Project ID is configured
+- Approved creator market creation
+- Resolver/admin resolution flow
+- External signal reference flow
 
-Approved creator wallets can create Arc-native Probity markets through the configured `MarketFactory`. External Signals use public prediction market metadata only as reference material for drafting market terms; Probity does not execute Polymarket trades and is not affiliated with Polymarket.
+## Features
 
-The MVP is intentionally scoped around clear protocol mechanics rather than AMM complexity or production oracle infrastructure. It demonstrates the full product loop:
+- Arc Testnet wallet connection
+- `MarketFactory`-based market creation
+- YES/NO market browsing
+- Buy YES / Buy NO
+- MVP sell-back flow
+- Portfolio tracking
+- Claim payout after resolution
+- Resolver/admin dashboard
+- External Signals as reference metadata
+- Local search and filtering
 
-- Create Arc-native markets through `MarketFactory`
-- Buy YES or NO shares with Arc testnet USDC-style settlement
-- Resolve expired markets through a resolver role
-- Claim winning payouts
-- Keep frontend data compatible with future indexing infrastructure
-
-## Why Arc
-
-Probity is designed for Arc's stablecoin-native infrastructure thesis:
-
-- Predictable stablecoin-denominated market settlement
-- Transparent onchain execution for institutional workflows
-- Deterministic market resolution and payout accounting
-- Compliance-ready architecture boundaries between trading, resolution, and indexing
-- USDC-style settlement flows that map naturally to real-world forecasting markets
-- Scalable infrastructure for macro, crypto, policy, and event-driven markets
-
-Arc is a strong fit for prediction markets because forecasting products need reliable settlement, clean accounting, and clear market lifecycle guarantees.
-
-## Circle / Arc Integration
-
-Probity is designed around Arc testnet and USDC-style settlement.
+## Arc / Circle Integration
 
 - Arc Testnet chain ID: `5042002`
-- Native currency symbol: `USDC`
 - RPC: `https://rpc.testnet.arc.network`
-- Block explorer: `https://testnet.arcscan.app`
-- Faucet: `https://faucet.circle.com/`
-- Settlement model: users approve and trade with the configured Arc testnet USDC-style token
-- Market creation: approved creator wallets call the configured `MarketFactory`
-- Resolution: approved resolver/admin flow resolves expired markets onchain
-- Mobile wallets: RainbowKit, wagmi, viem, and WalletConnect/Reown Project ID support when configured
+- Explorer: `https://testnet.arcscan.app`
+- Faucet: `https://faucet.circle.com`
+- Settlement token: `0x3600000000000000000000000000000000000000`
+- MarketFactory: `0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23`
 
-USDC settlement is central to the product thesis: prediction market users need predictable collateral accounting, clear payout mechanics, and a settlement asset that maps cleanly to institutional workflows. In the current MVP, this is demonstrated with Arc testnet USDC only.
+Probity currently uses Arc Testnet and USDC-style settlement. Users need Arc testnet USDC for gas and trading in the demo. Circle Wallets, Paymaster, Gas Station, and other Circle Developer Platform products are future roadmap integrations; they are not currently live in this MVP.
 
-## Core Features
+## Deployed Contracts
 
-- Institutional dark-mode market UI
-- Market exploration and market detail pages
-- Wallet connection with RainbowKit and wagmi
-- Arc testnet USDC approval flow
-- Arc testnet buy YES / buy NO transaction flow
-- Claim payout transaction flow
-- Approved creator market creation from `/create`
-- External Signals discovery using public reference metadata
-- Deduplication between external references and existing Probity markets
-- Resolver/admin dashboard
-- Resolver-only market resolution
-- Mock fallback mode when contracts are not deployed
-- Indexing-ready protocol event and entity model
-- Foundry contracts and local Anvil workflow
-
-## Architecture Overview
-
-Probity is organized as a pnpm workspace monorepo:
+MarketFactory:
 
 ```txt
-apps/
-  web/                 Next.js App Router frontend
-contracts/            Foundry smart contracts and scripts
-packages/
-  ui/                  Shared UI package placeholder
-  config/              Shared configuration package
-  types/               Shared protocol, indexer, and domain types
-deployments/          ABI and address artifacts by network
-docs/                 Runbooks and development notes
-scripts/              ABI export and workspace scripts
+0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23
 ```
 
-The frontend can run entirely with mock data, or it can read/write against local Anvil contracts when deployment artifacts are present. Arc testnet mode is configuration-ready and shows mock data until deployed testnet contract addresses are configured.
+Settlement token:
+
+```txt
+0x3600000000000000000000000000000000000000
+```
+
+The `MarketFactory` creates individual `PredictionMarket` contracts used by the live Arc Testnet demo. Each `PredictionMarket` tracks YES/NO positions, settlement token balances, expiration, resolver-controlled outcomes, sell-back actions, and claimable payouts.
+
+## How It Works
+
+```txt
+External Signals -> Draft Probity Market -> Approved Creator -> MarketFactory -> PredictionMarket -> USDC Trading -> Resolver Settlement -> Portfolio / Claim
+```
+
+External Signals are reference-only. They help approved creators draft market terms from public metadata, but the resulting Probity market is a separate Arc-native contract with independent USDC settlement and resolver-controlled resolution. Probity does not imply affiliation with or trading on Polymarket.
 
 ## Tech Stack
 
@@ -112,65 +91,6 @@ The frontend can run entirely with mock data, or it can read/write against local
 - pnpm workspaces
 - Vercel
 
-## Smart Contracts
-
-The Foundry contract layer includes:
-
-- `MockUSDC`: local USDC-style ERC20 settlement token
-- `MarketFactory`: creates and tracks prediction markets
-- `PredictionMarket`: binary YES/NO market with fixed-price deposit accounting
-
-Current MVP contract capabilities:
-
-- Create YES/NO markets
-- Buy YES shares
-- Buy NO shares
-- Sell YES or NO shares back to the market pool before expiry using conservative MVP pool-implied pricing
-- Track user positions
-- Enforce market expiration
-- Resolver-controlled resolution
-- Claim pro-rata winnings
-- Emit events for frontend/indexer consumption
-
-The MVP sell-back mechanism is not a production CLOB, orderbook, or Polymarket-style matching engine. Existing deployed Arc testnet markets must be redeployed from the updated contracts before they support `sellYes` and `sellNo`.
-
-The MVP does not include a production AMM, decentralized oracle, dispute system, or upgrade framework.
-
-## Frontend
-
-The frontend includes:
-
-- Landing page
-- `/markets` market board
-- `/markets/[id]` market detail page
-- `/portfolio` wallet-aware portfolio view
-- `/create` approved-creator market creation UI
-- `/admin` resolver dashboard
-- Web3 provider boundary
-- Wallet connect button
-- Arc testnet trading panel
-- Resolver operations
-- Mock fallback for undeployed contracts
-- External Signals reference feed
-
-The app is designed so mock data, local contract reads, and future indexed data can share the same UI surface.
-
-## Indexing-Ready Data Layer
-
-Probity includes typed models for future indexing:
-
-- Protocol events
-- Market entities
-- Trade history
-- Position history
-- Portfolio analytics
-- Market snapshots
-- Activity feed items
-- Indexer adapter abstraction
-- viem log parsing utilities
-
-This is currently a frontend/shared-types architecture layer only. There is no production backend or database in this MVP.
-
 ## Local Development
 
 Install dependencies:
@@ -179,315 +99,89 @@ Install dependencies:
 pnpm install
 ```
 
-Copy frontend environment defaults:
+Copy the environment template:
 
 ```txt
-cp apps/web/.env.local.example apps/web/.env.local
+cp .env.example .env
 ```
 
-Run the frontend:
+Configure the Arc testnet variables you need, then run the web app:
 
 ```txt
-pnpm --filter @probity/web dev
+pnpm dev
 ```
 
-Default local frontend environment:
+Useful validation commands:
 
 ```txt
-NEXT_PUBLIC_CHAIN_ID=31337
-NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545
-NEXT_PUBLIC_DEPLOYMENT_TARGET=local
-NEXT_PUBLIC_MARKET_DATA_MODE=auto
+pnpm typecheck
+pnpm build
 ```
 
-`NEXT_PUBLIC_MARKET_DATA_MODE=auto` uses deployed local contracts when available and falls back to mock data otherwise.
-
-## Local Blockchain Workflow
-
-Start Anvil:
+If Foundry is installed:
 
 ```txt
-pnpm chain:local
-```
-
-Deploy local contracts, seed markets, and export ABIs:
-
-```txt
-pnpm contracts:bootstrap:local
-```
-
-Or run each step manually:
-
-```txt
-pnpm contracts:deploy:local
-pnpm contracts:seed:local
-pnpm contracts:export-abis
-```
-
-Deployment scripts write:
-
-```txt
-deployments/local/addresses.json
-```
-
-The frontend reads that file automatically unless explicit address environment variables are set.
-
-## Foundry Commands
-
-From the repository root:
-
-```txt
-pnpm --filter @probity/contracts build
-pnpm --filter @probity/contracts test
-pnpm --filter @probity/contracts format
-```
-
-From `contracts/` directly:
-
-```txt
-forge build
 forge test
-forge fmt
-anvil --chain-id 31337 --block-time 1
 ```
 
-Foundry must be installed locally for contract tests and Anvil workflows.
+Never commit `.env`, `.env.local`, private keys, or real deployment secrets.
 
-## Vercel Deployment
+## Environment Variables
 
-The frontend is deployed on Vercel from GitHub:
-
-- Live demo: [https://probity-market.vercel.app](https://probity-market.vercel.app)
-- Repository: [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
-
-Recommended Vercel settings:
-
-- Root/build target: `apps/web`
-- Install command: `pnpm install`
-- Build command: `pnpm --filter @probity/web build`
-- Framework preset: Next.js
-
-For deployed preview/demo environments, keep mock fallback enabled unless a public RPC and deployed contract addresses are configured:
+Frontend/public variables:
 
 ```txt
-NEXT_PUBLIC_MARKET_DATA_MODE=auto
-NEXT_PUBLIC_DEPLOYMENT_TARGET=arc-testnet
-```
-
-Local Anvil contracts are not available to Vercel-hosted users. The live deployment should be treated as a product/interface demo unless connected to a reachable Arc testnet deployment.
-
-## Arc Testnet Deployment Path
-
-Probity is Arc testnet-ready at the configuration and deployment-workflow layer, but deployed Arc testnet contract addresses are not assumed. If `MarketFactory` and settlement token addresses are missing, the public demo intentionally remains in mock-data mode.
-
-Arc testnet configuration is environment-driven:
-
-```txt
-NEXT_PUBLIC_DEPLOYMENT_TARGET=arc-testnet
-NEXT_PUBLIC_MARKET_DATA_MODE=auto
-NEXT_PUBLIC_CHAIN_ID=5042002
-NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
-NEXT_PUBLIC_ARC_CHAIN_NAME=Arc Testnet
-NEXT_PUBLIC_ARC_NATIVE_CURRENCY_NAME=USD Coin
-NEXT_PUBLIC_ARC_NATIVE_CURRENCY_SYMBOL=USDC
-NEXT_PUBLIC_ARC_BLOCK_EXPLORER_URL=https://testnet.arcscan.app
 NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=
 NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS=
+NEXT_PUBLIC_CHAIN_ID=5042002
+NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 ```
 
-Do not hardcode private keys or unofficial token addresses in source. Use `.env.example` as the template and update Vercel environment variables once deployed Arc testnet contract addresses are available.
-
-### Mobile Wallet Connection
-
-Probity uses RainbowKit, wagmi, and WalletConnect/Reown for mobile wallet QR and deep-link connection flows. Set the Project ID in local `.env.local` and in Vercel:
-
-```txt
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your Reown project id>
-```
-
-When this value is present, the wallet modal includes mobile-friendly WalletConnect options such as Rainbow, Coinbase Wallet, OKX, MetaMask, and the generic WalletConnect QR flow. When it is missing, Probity keeps injected browser wallets working and shows a non-blocking developer warning instead of crashing the app.
-
-For Vercel, add the same variable under Project Settings -> Environment Variables for Production and Preview deployments, then redeploy the frontend.
-
-Settlement token strategy:
-
-- Local development uses `MockUSDC`.
-- Arc testnet demos should use the configured Arc testnet USDC-style settlement token.
-- Public demo wallets should obtain Arc testnet USDC from the Circle faucet before trading.
-- Arc testnet uses USDC as the gas token, so users need testnet USDC for both gas and settlement.
-- The USDC token address must come from official docs, a faucet, an explorer, or user-provided configuration.
-- Circle faucet: https://faucet.circle.com/
-
-Deployment artifact path:
-
-```txt
-deployments/arc-testnet/addresses.json
-```
-
-Detailed checklist:
-
-```txt
-docs/runbooks/arc-testnet-readiness.md
-```
-
-Arc testnet contract deployment uses Foundry:
+Local deployment-only variables:
 
 ```txt
 ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
-PRIVATE_KEY=0x...
-RESOLVER_ADDRESS=0x...
-SETTLEMENT_TOKEN_ADDRESS=0x...
-SEED_DEMO_MARKETS=0
-FORCE_SEED_MARKETS=0
-
-pnpm contracts:deploy:arc-testnet
-pnpm contracts:export-abis
+PRIVATE_KEY=
+RESOLVER_ADDRESS=
+CREATOR_ADDRESS=
+MARKET_FACTORY_ADDRESS=
 ```
 
-`SETTLEMENT_TOKEN_ADDRESS` is required for Arc testnet deployment and must point to the Arc testnet USDC-style token you intend to use. The Arc deploy script does not deploy MockUSDC. Set `SEED_DEMO_MARKETS=1` only if you want the deployment to create three presentation markets. Never commit real private keys or `.env` files.
+`NEXT_PUBLIC_*` values are exposed to the browser. Deployment-only variables are for local scripts and must not be committed.
 
-If contracts are already deployed but the market board shows zero contract markets, seed the existing factory:
-
-```txt
-SETTLEMENT_TOKEN_ADDRESS=0x...
-pnpm contracts:seed:arc-testnet
-pnpm contracts:export-abis
-```
-
-The seed command reads `deployments/arc-testnet/addresses.json`, uses the configured USDC settlement token, creates demo markets only when `marketCount()` is zero, and writes the latest market list back to the deployment artifact. Set `FORCE_SEED_MARKETS=1` only when intentionally creating another set of demo markets.
-
-Approve an Arc testnet market creator wallet:
-
-```txt
-ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
-PRIVATE_KEY=0x...
-MARKET_FACTORY_ADDRESS=0x7BCa73D2dD03924bDaC330D176760B09f17C1504
-CREATOR_ADDRESS=0x303ACa77DE86EEFAe32d7C98DA4C3e836Cc4E46F
-
-pnpm contracts:approve-creator:arc-testnet
-```
-
-This calls `MarketFactory.setCreatorApproval(CREATOR_ADDRESS, true)`. Never commit real private keys or `.env` files. See `docs/public-demo-guide.md` for the public demo checklist.
-
-To deploy and refresh ABI artifacts in one step:
-
-```txt
-pnpm contracts:bootstrap:arc-testnet
-```
-
-## Reviewer Demo
-
-- Live demo: [https://probity-market.vercel.app](https://probity-market.vercel.app)
-- GitHub: [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
-
-Suggested reviewer path:
-
-1. Open the live demo and confirm the header shows the Arc testnet onchain demo state.
-2. Connect an Arc testnet wallet through RainbowKit. WalletConnect mobile options are available when `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is configured.
-3. Get Arc testnet USDC from the Circle faucet: [https://faucet.circle.com/](https://faucet.circle.com/).
-4. Visit `/markets` to browse seeded onchain markets and inspect External Signals.
-5. Open a market detail page and review probability, expiry, settlement token, and resolver criteria.
-6. Approve Arc testnet USDC and buy YES or NO shares.
-7. Visit `/portfolio` to view live onchain positions for the connected wallet.
-8. Use `/create` with an approved creator wallet to draft or create an Arc-native market, including from an External Signal reference.
-9. Use `/admin` with the resolver wallet to resolve eligible expired markets and make winning positions claimable.
-10. Explain that External Signals are reference metadata only. Probity does not execute Polymarket trades and has no Polymarket affiliation.
-
-## Demo Flow
-
-Recommended MVP demo:
-
-1. Open the landing page and explain Probity as Arc-ready stablecoin-native prediction market infrastructure.
-2. Visit `/markets` to show the institutional market board and mock fallback behavior.
-3. Start Anvil locally and run `pnpm contracts:bootstrap:local`.
-4. Refresh `/markets` to show local contract-backed markets.
-5. Open a market detail page and connect a wallet.
-6. Approve USDC on Arc testnet, or MockUSDC in local Anvil development.
-7. Buy YES or NO shares.
-8. Use `/admin` with the resolver wallet to resolve an expired local market.
-9. Return to the market detail page and claim winnings when eligible.
-10. Explain how emitted events map to the indexing-ready data layer.
-
-## Grant Roadmap
-
-Milestone 1: Harden Arc Testnet market creation and resolver approval flow
-
-- Improve creator/resolver role management UX
-- Add clearer admin runbooks and approval transaction history
-- Expand contract tests around creator and resolver permissions
-
-Milestone 2: Improve USDC settlement UX and mobile onboarding
-
-- Add richer faucet guidance, balance checks, and network switching affordances
-- Improve mobile wallet QA across WalletConnect/Reown, MetaMask, Rainbow, OKX, and Coinbase Wallet
-- Make settlement-token state clearer across trading, portfolio, and claim flows
-
-Milestone 3: Add public market proposal queue and external signal curation
-
-- Add a proposal workflow for non-approved public users
-- Add moderation/curation states for external signal references
-- Keep onchain creation restricted to approved creators until spam and quality controls exist
-
-Milestone 4: Add indexing, analytics, and activity feeds
-
-- Stand up a hosted indexer or subgraph-style service
-- Add historical trades, portfolio PnL, market snapshots, and resolver activity
-- Replace frontend-only derived analytics with indexed data
-
-Milestone 5: Add oracle/resolution framework and explore Circle Paymaster/Gas Station or Wallet integrations
-
-- Design resolver evidence and challenge flows
-- Explore oracle integrations for deterministic market resolution
-- Investigate Circle Paymaster/Gas Station or Wallet integrations for smoother USDC-native onboarding
-
-## Current Limitations
+## Known Limitations
 
 - Testnet MVP only
-- Not production financial infrastructure
+- Not production
 - Not financial advice
-- No production oracle integration
-- Resolver/admin flow is controlled and not decentralized
-- No dispute or challenge period
-- No AMM or order book liquidity model
-- No production database or hosted indexer
-- No production compliance/KYC layer
-- No audited smart contracts
-- Public market proposals are not enabled yet
+- No production oracle yet
+- Resolver flow is currently controlled/admin-based
+- Participant indexing is being improved
+- MVP sell-back is not a production CLOB or orderbook
 - External Signals are reference metadata only
-- No Polymarket trading or Polymarket affiliation
-- Local MockUSDC is not real USDC and is only for Anvil development
-- Arc testnet trading requires configured USDC settlement and user-funded testnet USDC wallets
-- Vercel deployment is a public Arc testnet demo, not a production deployment
+- Public market proposals are not fully enabled yet
+- Smart contracts are not audited
 
 ## Roadmap
 
-- Arc testnet deployment configuration
-- Hosted indexer or subgraph integration
-- Real market creation flow
-- Resolver evidence workflow
-- Oracle/dispute module
-- Portfolio analytics from indexed events
-- Market liquidity upgrades
-- Role-based admin access
-- Compliance-oriented market metadata
-- Security review and external audit
-- Production deployment hardening
+- Stabilize Arc Testnet MVP
+- Improve USDC trading UX
+- Improve mobile wallet onboarding
+- Add reliable onchain indexing and analytics
+- Improve participant and trade history indexing
+- Expand creator and proposal workflows
+- Improve resolver/oracle framework
+- Explore Circle Wallets and Paymaster integrations
 
-## Security Notes
+## Grant Context
 
-Probity is not audited and should not be used with real funds.
+Probity was prepared for Circle / Arc grant review as a working Arc Testnet MVP demonstrating stablecoin-native prediction market infrastructure. The current demo focuses on Arc-native market creation, USDC-style trading, transparent onchain settlement, resolver-admin resolution, and a credible path toward richer indexing, analytics, market proposals, and Circle Developer Platform integrations.
 
-The current contracts are intentionally simple for MVP clarity. Before any production use, the system needs:
+## Contributing
 
-- External smart contract audit
-- Oracle and resolver threat modeling
-- Reentrancy and payout edge-case review
-- Access control review
-- Market cancellation/dispute design
-- Monitoring and incident response plan
-- Formal deployment and key-management procedures
+Contributions are welcome through issues and pull requests. Please keep changes scoped, document environment assumptions, and avoid committing generated secrets or local `.env` files.
 
 ## License
 
-License placeholder. Add the final project license before production or public reuse.
+License to be finalized.
