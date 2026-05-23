@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 
 export function MarketCard({ market }: { market: Market }) {
   const changeColor = market.change24h >= 0 ? "text-emerald-300" : "text-rose-300";
+  const participantLabel =
+    market.participants > 0 ? formatInteger(market.participants) : "Onchain activity";
 
   return (
     <Link className="group block" href={`/markets/${market.id}`}>
@@ -46,7 +48,7 @@ export function MarketCard({ market }: { market: Market }) {
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-3.5 w-3.5 text-slate-600" />
-              {formatInteger(market.participants)}
+              {participantLabel}
             </div>
           </div>
 

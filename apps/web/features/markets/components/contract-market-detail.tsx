@@ -130,7 +130,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             <div className="mt-5 flex flex-wrap gap-2">
               <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
               <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />
-              <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
+              {marketWithParticipants.participants > 0 && (
+                <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
+              )}
               <MetaChip icon={ShieldCheck} label="Resolver" value={shortValue(marketWithParticipants.resolver)} />
               <MetaChip icon={Landmark} label="Market" value={shortValue(address)} />
             </div>
@@ -157,7 +159,18 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             <InfoTile icon={Landmark} label="Volume" value={formatUsd(marketWithParticipants.volumeUsd)} />
             <InfoTile icon={Droplets} label="Liquidity" value={formatUsd(marketWithParticipants.liquidityUsd)} />
             <InfoTile icon={CalendarClock} label="Expires" value={formatExpiry(marketWithParticipants.expiresAt)} />
-            <InfoTile icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
+            {marketWithParticipants.participants > 0 ? (
+              <InfoTile icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
+            ) : (
+              <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
+                <Users className="h-4 w-4 text-cyan-300/70" />
+                <div className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-500">Activity</div>
+                <div className="mt-2 text-sm font-semibold text-slate-300">Onchain activity</div>
+                <p className="mt-1 text-xs leading-5 text-slate-600">
+                  Participant indexing is being improved.
+                </p>
+              </div>
+            )}
           </div>
 
           <Card className="bg-slate-950/75">
