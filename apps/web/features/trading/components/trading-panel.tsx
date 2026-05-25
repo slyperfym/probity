@@ -435,7 +435,9 @@ export function TradingPanel({ market }: { market: Market }) {
                   : lastAction === "sellNo" && sellReceipt.isSuccess
                     ? "NO sell-back confirmed."
                     : lastAction === "claim" && claimReceipt.isSuccess
-                      ? "Claim payout confirmed."
+                      ? deploymentConfig.isArcTestnet
+                        ? "Payout claimed on Arc Testnet."
+                        : "Claim payout confirmed."
                       : ""
           }
         />

@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { contractAbis, deploymentConfig } from "@/config/contracts";
+import { OnchainActivityList } from "@/features/activity/components/onchain-activity-list";
+import { useMarketOnchainActivity } from "@/features/activity/hooks/use-onchain-activity";
 import {
   mapPredictionMarketReadsToMarket,
   type MarketReadTuple
@@ -76,6 +78,11 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
       )
     : null;
   const participantCount = useMarketParticipantCount(address, Boolean(market));
+  const marketActivity = useMarketOnchainActivity({
+    enabled: Boolean(market),
+    marketAddress: address,
+    marketTitle: market?.title ?? "Prediction market"
+  });
   const displayedMarket = market
     ? {
         ...market,
@@ -249,6 +256,12 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
               </CardContent>
             </Card>
           )}
+
+          <OnchainActivityList
+            emptyDescription="No activity found for this market yet."
+            isLoading={marketActivity.isLoading || marketActivity.isFetching}
+            items={marketActivity.data ?? []}
+          />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">

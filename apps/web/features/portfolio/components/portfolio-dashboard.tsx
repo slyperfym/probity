@@ -8,6 +8,8 @@ import { useAccount, useReadContracts } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateCard } from "@/components/feedback/state-card";
 import { contractAbis } from "@/config/contracts";
+import { OnchainActivityList } from "@/features/activity/components/onchain-activity-list";
+import { useWalletOnchainActivity } from "@/features/activity/hooks/use-onchain-activity";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import type { Market } from "@/features/markets/types";
 import { formatUsd } from "@/features/markets/lib/formatters";
@@ -30,6 +32,19 @@ export function PortfolioDashboard() {
   const useMockFallback = localMarkets.isUsingMockFallback;
   const shouldReadPositions =
     !useMockFallback && Boolean(accountAddress) && localMarkets.markets.length > 0;
+  const activityMarkets = React.useMemo(
+    () =>
+      localMarkets.markets.map((market) => ({
+        address: market.id as `0x${string}`,
+        title: market.title
+      })),
+    [localMarkets.markets]
+  );
+  const walletActivity = useWalletOnchainActivity({
+    enabled: !useMockFallback && Boolean(accountAddress),
+    markets: activityMarkets,
+    walletAddress: accountAddress
+  });
 
   const positionReads = useReadContracts({
     contracts: localMarkets.markets.map((market) => ({
@@ -118,7 +133,16 @@ export function PortfolioDashboard() {
         <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
           <div className="space-y-6">
             <PortfolioPositions positions={positions} />
-            <ActivityHistory activity={useMockFallback ? mockPortfolioActivity : []} />
+            {useMockFallback ? (
+              <ActivityHistory activity={mockPortfolioActivity} />
+            ) : (
+              <OnchainActivityList
+                emptyDescription="No onchain activity found for this wallet yet."
+                isLoading={walletActivity.isLoading || walletActivity.isFetching}
+                items={walletActivity.data ?? []}
+                title="Recent Activity"
+              />
+            )}
           </div>
           <div className="space-y-6">
             {isRefreshing && (

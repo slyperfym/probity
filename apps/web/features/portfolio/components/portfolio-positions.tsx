@@ -179,7 +179,7 @@ export function ClaimableRewards({
             )}
             {claimReceipt.isSuccess && pendingMarketId === position.marketId && (
               <p className="mt-3 text-xs leading-5 text-emerald-200">
-                Claim confirmed. Refreshing portfolio data.
+                Payout claimed on Arc Testnet. Refreshing portfolio data.
               </p>
             )}
           </div>
