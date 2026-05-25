@@ -146,17 +146,20 @@ export function TradingPanel({ market }: { market: Market }) {
     !isWriting;
   const statusMessage = getStatusMessage({
     accountAddress,
+    hasClaimed,
     hasEnoughAllowance,
     hasEnoughBalance,
     hasClaimablePosition,
+    hasWinningPosition: winningPosition > 0n,
     isConnected,
     isLocalContractMarket,
     isMarketClosed,
     isWrongChain,
+    marketStatus: market.status,
     mode,
     parsedAmount,
-    tokenLabel,
-    hasSettlementTokenMismatch
+    hasSettlementTokenMismatch,
+    tokenLabel
   });
   const shouldShowFaucetLink =
     deploymentConfig.isArcTestnet &&
@@ -550,30 +553,36 @@ function TransactionState({
 
 function getStatusMessage({
   accountAddress,
+  hasClaimed,
   hasEnoughAllowance,
   hasEnoughBalance,
   hasClaimablePosition,
+  hasWinningPosition,
   isConnected,
   isLocalContractMarket,
   isMarketClosed,
   isWrongChain,
+  marketStatus,
   mode,
   parsedAmount,
-  tokenLabel,
-  hasSettlementTokenMismatch
+  hasSettlementTokenMismatch,
+  tokenLabel
 }: {
   accountAddress: string | undefined;
+  hasClaimed: boolean;
   hasEnoughAllowance: boolean;
   hasEnoughBalance: boolean;
   hasClaimablePosition: boolean;
+  hasWinningPosition: boolean;
   isConnected: boolean;
   isLocalContractMarket: boolean;
   isMarketClosed: boolean;
   isWrongChain: boolean;
+  marketStatus: Market["status"];
   mode: "buy" | "sell";
   parsedAmount: bigint;
-  tokenLabel: string;
   hasSettlementTokenMismatch: boolean;
+  tokenLabel: string;
 }) {
   if (!isLocalContractMarket) {
     return "This is mock fallback data, so contract writes remain disabled.";
@@ -592,9 +601,23 @@ function getStatusMessage({
   }
 
   if (isMarketClosed) {
-    return hasClaimablePosition
-      ? "Buying is disabled because this market is closed. You can claim the resolved winning position."
-      : "Buying is disabled because this market is expired or resolved. Claiming is available only after resolution for winning positions.";
+    if (marketStatus === "expired") {
+      return "Awaiting resolver settlement. Claim is available after final outcome is resolved.";
+    }
+
+    if (hasClaimed) {
+      return "Payout claimed.";
+    }
+
+    if (hasClaimablePosition) {
+      return "Resolved winning position detected. Claim Payout is available.";
+    }
+
+    if (!hasWinningPosition) {
+      return "No winning position to claim.";
+    }
+
+    return "Claiming is available after resolution for winning positions.";
   }
 
   if (parsedAmount <= 0n) {

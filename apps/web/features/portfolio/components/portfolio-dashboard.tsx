@@ -126,7 +126,7 @@ export function PortfolioDashboard() {
                 Updating onchain portfolio data...
               </div>
             )}
-            <ClaimableRewards positions={positions} />
+            <ClaimableRewards enableClaims={!useMockFallback} positions={positions} />
             {useMockFallback ? (
               <>
                 <StateCard
@@ -177,12 +177,22 @@ function mapLivePosition({
       : market.status === "expired"
         ? "expired"
         : "active";
+  const claimStatus = hasClaimed
+    ? "Claimed"
+    : isClaimable
+      ? "Claimable"
+      : market.status === "expired"
+        ? "Awaiting resolver settlement"
+        : market.status === "resolved"
+          ? "No winning position to claim"
+          : "Not claimable";
 
   return {
     averagePrice: 1,
+    canClaim: isClaimable,
     category: market.category,
     claimableUsd: isClaimable ? winningShares : 0,
-    claimStatus: hasClaimed ? "Claimed" : isClaimable ? "Claimable" : "Not claimable",
+    claimStatus,
     currentProbability: market.yesProbability / 100,
     expiresAt: market.expiresAt,
     id: `live-${market.id}`,

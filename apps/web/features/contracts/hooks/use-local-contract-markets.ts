@@ -46,7 +46,10 @@ type MarketReadResult = Array<
 
 export function useLocalContractMarkets({ limit }: { limit?: number } = {}) {
   const factoryMarkets = useMarketFactoryMarkets();
-  const allMarketAddresses = factoryMarkets.contractMarkets;
+  const allMarketAddresses = React.useMemo(
+    () => [...factoryMarkets.contractMarkets].reverse(),
+    [factoryMarkets.contractMarkets]
+  );
   const marketAddresses = React.useMemo(
     () => (limit === undefined ? allMarketAddresses : allMarketAddresses.slice(0, limit)),
     [allMarketAddresses, limit]

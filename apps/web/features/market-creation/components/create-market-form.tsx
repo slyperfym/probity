@@ -362,7 +362,7 @@ export function CreateMarketForm() {
           <div className="flex justify-end">
             <Button disabled={Boolean(createDisabledReason)} type="submit">
               {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
-              Create Arc-Native Market
+              {deploymentConfig.isArcTestnet ? "Create Market on Arc Testnet" : "Create Arc-Native Market"}
             </Button>
           </div>
         </form>
@@ -536,7 +536,9 @@ function CreateTransactionState({
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-emerald-200">
             <CheckCircle2 className="h-4 w-4" />
-            Market created on the configured Probity MarketFactory.
+            {deploymentConfig.isArcTestnet
+              ? "Market created on Arc Testnet."
+              : "Market created on the configured Probity MarketFactory."}
           </div>
           {createdMarketAddress && (
             <div className="flex flex-col gap-3 rounded-md border border-emerald-400/20 bg-emerald-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">

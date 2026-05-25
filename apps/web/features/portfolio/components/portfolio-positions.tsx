@@ -1,13 +1,22 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowUpRight, Coins } from "lucide-react";
+import * as React from "react";
+import { ArrowUpRight, Coins, Loader2 } from "lucide-react";
+import { isAddress, type Address } from "viem";
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateCard } from "@/components/feedback/state-card";
+import { probityChain } from "@/config/chains";
+import { getPredictionMarketConfig } from "@/config/contracts";
 import { formatUsd } from "@/features/markets/lib/formatters";
 import { formatExpiry } from "@/features/markets/lib/formatters";
 import type { PortfolioPosition } from "@/features/portfolio/types";
+import { refreshOnchainQueries } from "@/lib/onchain-cache";
 
 export function PortfolioPositions({ positions }: { positions: PortfolioPosition[] }) {
   if (positions.length === 0) {
@@ -76,13 +85,55 @@ function formatShares(value: number) {
   });
 }
 
-export function ClaimableRewards({ positions }: { positions: PortfolioPosition[] }) {
-  const claimablePositions = positions.filter((position) => position.claimableUsd > 0);
+export function ClaimableRewards({
+  enableClaims = false,
+  positions
+}: {
+  enableClaims?: boolean;
+  positions: PortfolioPosition[];
+}) {
+  const queryClient = useQueryClient();
+  const { chainId, isConnected } = useAccount();
+  const claimWrite = useWriteContract();
+  const claimReceipt = useWaitForTransactionReceipt({ hash: claimWrite.data });
+  const [pendingMarketId, setPendingMarketId] = React.useState("");
+  const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
+  const isWrongChain = isConnected && chainId !== undefined && chainId !== probityChain.id;
+  const isClaiming = claimWrite.isPending || claimReceipt.isLoading;
+  const claimablePositions = positions.filter(
+    (position) =>
+      position.status === "claimable" &&
+      position.canClaim !== false &&
+      position.claimableUsd > 0 &&
+      position.claimStatus === "Claimable"
+  );
+
+  React.useEffect(() => {
+    if (claimReceipt.isSuccess) {
+      setIsRefreshingOnchainData(true);
+      void refreshOnchainQueries(queryClient).finally(() => {
+        setIsRefreshingOnchainData(false);
+        setPendingMarketId("");
+      });
+    }
+  }, [claimReceipt.isSuccess, queryClient]);
+
+  function claimPosition(position: PortfolioPosition) {
+    if (!enableClaims || !isAddress(position.marketId)) {
+      return;
+    }
+
+    setPendingMarketId(position.marketId);
+    claimWrite.writeContract({
+      ...getPredictionMarketConfig(position.marketId as Address),
+      functionName: "claim"
+    });
+  }
 
   if (claimablePositions.length === 0) {
     return (
       <StateCard
-        description="Resolved winning positions will appear here with a claim action after contract integration."
+        description="Resolved winning positions will appear here when the connected wallet can claim."
         icon={Coins}
         title="No claimable rewards"
       />
@@ -108,12 +159,36 @@ export function ClaimableRewards({ positions }: { positions: PortfolioPosition[]
                   {formatUsd(position.claimableUsd)}
                 </div>
               </div>
-              <Button disabled variant="secondary">
-                Claim
+              <Button
+                disabled={!enableClaims || !isConnected || isWrongChain || isClaiming}
+                onClick={() => claimPosition(position)}
+                variant="secondary"
+              >
+                {isClaiming && pendingMarketId === position.marketId && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+                {isWrongChain ? "Wrong chain" : "Claim"}
               </Button>
             </div>
+            {claimWrite.error && pendingMarketId === position.marketId && (
+              <p className="mt-3 text-xs leading-5 text-rose-200">
+                {claimWrite.error.message.length > 160
+                  ? `${claimWrite.error.message.slice(0, 160)}...`
+                  : claimWrite.error.message}
+              </p>
+            )}
+            {claimReceipt.isSuccess && pendingMarketId === position.marketId && (
+              <p className="mt-3 text-xs leading-5 text-emerald-200">
+                Claim confirmed. Refreshing portfolio data.
+              </p>
+            )}
           </div>
         ))}
+        {isRefreshingOnchainData && (
+          <div className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.035] p-3 text-xs text-cyan-100/80">
+            Refreshing onchain claim status...
+          </div>
+        )}
       </CardContent>
     </Card>
   );

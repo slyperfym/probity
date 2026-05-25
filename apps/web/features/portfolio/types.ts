@@ -18,6 +18,7 @@ export type PortfolioPosition = {
   expiresAt?: string;
   settlementToken?: string;
   claimableUsd: number;
+  canClaim?: boolean;
 };
 
 export type PortfolioActivity = {
