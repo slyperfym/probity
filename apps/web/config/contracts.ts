@@ -120,6 +120,7 @@ export const deploymentConfig = {
   hasMarketFactory: Boolean(contractAddresses.MarketFactory),
   hasSettlementToken: Boolean(contractAddresses.MockUSDC),
   isArcTestnet: activeDeploymentTarget === "arc-testnet",
+  isMockFallbackEnabled: publicEnv.enableMockMarkets,
   isMockOnly: getMarketDataMode() === "mock",
   marketDataMode: getMarketDataMode(),
   resolverAddress: normalizeAddress(activeDeployment.metadata?.resolver),

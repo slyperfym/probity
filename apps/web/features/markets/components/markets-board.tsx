@@ -183,14 +183,14 @@ export function MarketsBoard() {
         <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-10 text-center">
           <div className="text-sm font-medium text-white">
             {summaryQuery.isError
-              ? "Market summaries are unavailable."
+              ? "Arc Testnet markets could not be loaded."
               : searchQuery.trim()
                 ? "No markets match your search."
                 : "No markets match these filters."}
           </div>
           <p className="mt-2 text-sm text-slate-500">
             {summaryQuery.isError
-              ? "Refresh onchain data or try again shortly."
+              ? "Check MarketFactory configuration or RPC availability, then refresh onchain data."
               : searchQuery.trim()
               ? "Try another question, category, status, or token symbol."
               : "Adjust the category or status filters."}
@@ -208,12 +208,13 @@ export function MarketsBoard() {
 
 async function fetchMarketSummaries(forceRefresh: boolean) {
   const response = await fetch(`/api/markets/summary${forceRefresh ? "?refresh=1" : ""}`);
+  const data = await response.json() as MarketSummaryResponse;
 
   if (!response.ok) {
-    throw new Error("Unable to load market summaries.");
+    throw new Error(data.error ?? "Arc Testnet markets could not be loaded. Check MarketFactory configuration or RPC availability.");
   }
 
-  return await response.json() as MarketSummaryResponse;
+  return data;
 }
 
 function mapSummaryToMarket(summary: MarketSummary): Market {

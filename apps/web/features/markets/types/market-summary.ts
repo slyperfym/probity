@@ -18,6 +18,7 @@ export type MarketSummary = {
 };
 
 export type MarketSummaryResponse = {
+  error?: string;
   generatedAt: string;
   isUsingMockFallback: boolean;
   markets: MarketSummary[];

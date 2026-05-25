@@ -28,22 +28,50 @@ export async function GET(request: Request) {
     return NextResponse.json(cachedSummary.response);
   }
 
-  const response =
-    deploymentConfig.marketDataMode === "mock" || !contractAddresses.MarketFactory
-      ? getMockSummaryResponse()
-      : await getContractSummaryResponse().catch(() => getMockSummaryResponse());
+  if (deploymentConfig.marketDataMode === "mock" && deploymentConfig.isMockFallbackEnabled) {
+    const response = getMockSummaryResponse();
 
-  cachedSummary = {
-    expiresAt: Date.now() + ACTIVE_CACHE_MS,
-    response
-  };
+    cachedSummary = {
+      expiresAt: Date.now() + ACTIVE_CACHE_MS,
+      response
+    };
 
-  return NextResponse.json(response);
+    return NextResponse.json(response);
+  }
+
+  if (!contractAddresses.MarketFactory) {
+    return NextResponse.json(
+      {
+        error: "Arc Testnet MarketFactory is not configured. Set NEXT_PUBLIC_MARKET_FACTORY_ADDRESS."
+      },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const response = await getContractSummaryResponse();
+
+    cachedSummary = {
+      expiresAt: Date.now() + ACTIVE_CACHE_MS,
+      response
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Probity market summary read failed", error);
+
+    return NextResponse.json(
+      {
+        error: "Arc Testnet markets could not be loaded. Check MarketFactory configuration or RPC availability."
+      },
+      { status: 502 }
+    );
+  }
 }
 
 async function getContractSummaryResponse(): Promise<MarketSummaryResponse> {
   if (!contractAddresses.MarketFactory) {
-    return getMockSummaryResponse();
+    throw new Error("MarketFactory address is not configured.");
   }
 
   const publicClient = createPublicClient({

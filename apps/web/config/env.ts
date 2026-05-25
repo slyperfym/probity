@@ -33,6 +33,7 @@ export const publicEnv = {
   marketFactoryAddress: process.env.NEXT_PUBLIC_MARKET_FACTORY_ADDRESS ?? "",
   settlementTokenAddress: process.env.NEXT_PUBLIC_SETTLEMENT_TOKEN_ADDRESS ?? "",
   deploymentTarget,
+  enableMockMarkets: process.env.NEXT_PUBLIC_ENABLE_MOCK_MARKETS === "true",
   marketDataMode: process.env.NEXT_PUBLIC_MARKET_DATA_MODE ?? "auto"
 } as const;
 
