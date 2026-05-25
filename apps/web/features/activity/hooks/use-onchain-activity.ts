@@ -133,109 +133,131 @@ async function fetchWalletActivity({
 }) {
   const entries = await Promise.all(
     markets.map(async (market) => {
-      const [buyLogs, yesSoldLogs, noSoldLogs, claimLogs, resolveLogs] = await Promise.all([
-        publicClient.getLogs({
+      const results = await Promise.all([
+        getLogsResult(() => publicClient.getLogs({
           address: market.address,
           args: { buyer: wallet },
           event: sharesPurchasedEvent,
           fromBlock: fromBlock(),
           toBlock: "latest"
-        }),
-        publicClient.getLogs({
+        }), "wallet SharesPurchased", market.address),
+        getLogsResult(() => publicClient.getLogs({
           address: market.address,
           args: { user: wallet },
           event: yesSoldEvent,
           fromBlock: fromBlock(),
           toBlock: "latest"
-        }),
-        publicClient.getLogs({
+        }), "wallet YesSold", market.address),
+        getLogsResult(() => publicClient.getLogs({
           address: market.address,
           args: { user: wallet },
           event: noSoldEvent,
           fromBlock: fromBlock(),
           toBlock: "latest"
-        }),
-        publicClient.getLogs({
+        }), "wallet NoSold", market.address),
+        getLogsResult(() => publicClient.getLogs({
           address: market.address,
           args: { user: wallet },
           event: winningsClaimedEvent,
           fromBlock: fromBlock(),
           toBlock: "latest"
-        }),
-        publicClient.getLogs({
+        }), "wallet WinningsClaimed", market.address),
+        getLogsResult(() => publicClient.getLogs({
           address: market.address,
           event: marketResolvedEvent,
           fromBlock: fromBlock(),
           toBlock: "latest"
-        })
+        }), "wallet MarketResolved", market.address)
       ]);
+      const [buyResult, yesSoldResult, noSoldResult, claimResult, resolveResult] = results;
+      const buyLogs = buyResult.logs;
+      const yesSoldLogs = yesSoldResult.logs;
+      const noSoldLogs = noSoldResult.logs;
+      const claimLogs = claimResult.logs;
+      const resolveLogs = resolveResult.logs;
 
       const userTouchedMarket =
         buyLogs.length > 0 || yesSoldLogs.length > 0 || noSoldLogs.length > 0 || claimLogs.length > 0;
 
-      return [
-        ...buyLogs.map((log) => ({
-          action: `Bought ${Number(log.args.side) === 0 ? "YES" : "NO"}`,
-          amountLabel: formatUsdc(log.args.amount),
-          blockNumber: log.blockNumber ?? 0n,
-          id: `${log.transactionHash}-${log.logIndex}`,
-          kind: "buy" as const,
-          marketAddress: market.address,
-          marketTitle: market.title,
-          status: "confirmed" as const,
-          transactionHash: log.transactionHash as `0x${string}`
-        })),
-        ...yesSoldLogs.map((log) => ({
-          action: "Sold YES",
-          amountLabel: `${formatUsdc(log.args.shares)} shares / ${formatUsdc(log.args.payout)} USDC`,
-          blockNumber: log.blockNumber ?? 0n,
-          id: `${log.transactionHash}-${log.logIndex}`,
-          kind: "sell" as const,
-          marketAddress: market.address,
-          marketTitle: market.title,
-          status: "confirmed" as const,
-          transactionHash: log.transactionHash as `0x${string}`
-        })),
-        ...noSoldLogs.map((log) => ({
-          action: "Sold NO",
-          amountLabel: `${formatUsdc(log.args.shares)} shares / ${formatUsdc(log.args.payout)} USDC`,
-          blockNumber: log.blockNumber ?? 0n,
-          id: `${log.transactionHash}-${log.logIndex}`,
-          kind: "sell" as const,
-          marketAddress: market.address,
-          marketTitle: market.title,
-          status: "confirmed" as const,
-          transactionHash: log.transactionHash as `0x${string}`
-        })),
-        ...claimLogs.map((log) => ({
-          action: "Claimed payout",
-          amountLabel: `${formatUsdc(log.args.amount)} USDC`,
-          blockNumber: log.blockNumber ?? 0n,
-          id: `${log.transactionHash}-${log.logIndex}`,
-          kind: "claim" as const,
-          marketAddress: market.address,
-          marketTitle: market.title,
-          status: "confirmed" as const,
-          transactionHash: log.transactionHash as `0x${string}`
-        })),
-        ...(userTouchedMarket
-          ? resolveLogs.map((log) => ({
-              action: `Market resolved ${Number(log.args.outcome) === 1 ? "YES" : "NO"}`,
-              amountLabel: `${formatUsdc(log.args.totalDeposited)} USDC deposited`,
-              blockNumber: log.blockNumber ?? 0n,
-              id: `${log.transactionHash}-${log.logIndex}`,
-              kind: "resolve" as const,
-              marketAddress: market.address,
-              marketTitle: market.title,
-              status: "confirmed" as const,
-              transactionHash: log.transactionHash as `0x${string}`
-            }))
-          : [])
-      ];
+      return {
+        failed: results.some((result) => result.failed),
+        items: [
+          ...buyLogs.map((log) => ({
+            action: `Bought ${Number(log.args.side) === 0 ? "YES" : "NO"}`,
+            amountLabel: formatUsdc(log.args.amount),
+            blockNumber: log.blockNumber ?? 0n,
+            id: `${log.transactionHash}-${log.logIndex}`,
+            kind: "buy" as const,
+            marketAddress: market.address,
+            marketTitle: market.title,
+            status: "confirmed" as const,
+            transactionHash: log.transactionHash as `0x${string}`
+          })),
+          ...yesSoldLogs.map((log) => ({
+            action: "Sold YES",
+            amountLabel: `${formatUsdc(log.args.shares)} shares / ${formatUsdc(log.args.payout)} USDC`,
+            blockNumber: log.blockNumber ?? 0n,
+            id: `${log.transactionHash}-${log.logIndex}`,
+            kind: "sell" as const,
+            marketAddress: market.address,
+            marketTitle: market.title,
+            status: "confirmed" as const,
+            transactionHash: log.transactionHash as `0x${string}`
+          })),
+          ...noSoldLogs.map((log) => ({
+            action: "Sold NO",
+            amountLabel: `${formatUsdc(log.args.shares)} shares / ${formatUsdc(log.args.payout)} USDC`,
+            blockNumber: log.blockNumber ?? 0n,
+            id: `${log.transactionHash}-${log.logIndex}`,
+            kind: "sell" as const,
+            marketAddress: market.address,
+            marketTitle: market.title,
+            status: "confirmed" as const,
+            transactionHash: log.transactionHash as `0x${string}`
+          })),
+          ...claimLogs.map((log) => ({
+            action: "Claimed payout",
+            amountLabel: `${formatUsdc(log.args.amount)} USDC`,
+            blockNumber: log.blockNumber ?? 0n,
+            id: `${log.transactionHash}-${log.logIndex}`,
+            kind: "claim" as const,
+            marketAddress: market.address,
+            marketTitle: market.title,
+            status: "confirmed" as const,
+            transactionHash: log.transactionHash as `0x${string}`
+          })),
+          ...(userTouchedMarket
+            ? resolveLogs.map((log) => ({
+                action: `Market resolved ${Number(log.args.outcome) === 1 ? "YES" : "NO"}`,
+                amountLabel: `${formatUsdc(log.args.totalDeposited)} USDC deposited`,
+                blockNumber: log.blockNumber ?? 0n,
+                id: `${log.transactionHash}-${log.logIndex}`,
+                kind: "resolve" as const,
+                marketAddress: market.address,
+                marketTitle: market.title,
+                status: "confirmed" as const,
+                transactionHash: log.transactionHash as `0x${string}`
+              }))
+            : [])
+        ]
+      };
     })
   );
 
-  return entries.flat();
+  const failedMarkets = entries.filter((entry) => entry.failed).length;
+  const activity = entries.flatMap((entry) => entry.items);
+  logActivityDebug("wallet activity", {
+    connectedWallet: wallet,
+    failedMarkets,
+    logsFound: activity.length,
+    marketsScanned: markets.length
+  });
+
+  if (failedMarkets > 0 && activity.length === 0) {
+    throw new Error("Could not load onchain activity logs.");
+  }
+
+  return activity;
 }
 
 async function fetchMarketActivity({
@@ -247,49 +269,62 @@ async function fetchMarketActivity({
   marketTitle: string;
   publicClient: PublicClient;
 }) {
-  const [creationLogs, buyLogs, yesSoldLogs, noSoldLogs, claimLogs, resolveLogs] = await Promise.all([
+  const results = await Promise.all([
     contractAddresses.MarketFactory
-      ? publicClient.getLogs({
+      ? getLogsResult(() => publicClient.getLogs({
           address: contractAddresses.MarketFactory,
           args: { market },
           event: marketCreatedEvent,
           fromBlock: fromBlock(),
           toBlock: "latest"
-        })
-      : Promise.resolve([]),
-    publicClient.getLogs({
+        }), "market MarketCreated", market)
+      : Promise.resolve(emptyLogsResult()),
+    getLogsResult(() => publicClient.getLogs({
       address: market,
       event: sharesPurchasedEvent,
       fromBlock: fromBlock(),
       toBlock: "latest"
-    }),
-    publicClient.getLogs({
+    }), "market SharesPurchased", market),
+    getLogsResult(() => publicClient.getLogs({
       address: market,
       event: yesSoldEvent,
       fromBlock: fromBlock(),
       toBlock: "latest"
-    }),
-    publicClient.getLogs({
+    }), "market YesSold", market),
+    getLogsResult(() => publicClient.getLogs({
       address: market,
       event: noSoldEvent,
       fromBlock: fromBlock(),
       toBlock: "latest"
-    }),
-    publicClient.getLogs({
+    }), "market NoSold", market),
+    getLogsResult(() => publicClient.getLogs({
       address: market,
       event: winningsClaimedEvent,
       fromBlock: fromBlock(),
       toBlock: "latest"
-    }),
-    publicClient.getLogs({
+    }), "market WinningsClaimed", market),
+    getLogsResult(() => publicClient.getLogs({
       address: market,
       event: marketResolvedEvent,
       fromBlock: fromBlock(),
       toBlock: "latest"
-    })
+    }), "market MarketResolved", market)
   ]);
+  const [creationResult, buyResult, yesSoldResult, noSoldResult, claimResult, resolveResult] =
+    results;
+  const creationLogs = creationResult.logs as Array<{
+    args: { title?: string };
+    blockNumber?: bigint;
+    logIndex: number;
+    transactionHash: string;
+  }>;
+  const buyLogs = buyResult.logs;
+  const yesSoldLogs = yesSoldResult.logs;
+  const noSoldLogs = noSoldResult.logs;
+  const claimLogs = claimResult.logs;
+  const resolveLogs = resolveResult.logs;
 
-  return [
+  const activity = [
     ...creationLogs.map((log) => ({
       action: "Market created",
       amountLabel: "PredictionMarket deployed",
@@ -357,10 +392,22 @@ async function fetchMarketActivity({
       transactionHash: log.transactionHash as `0x${string}`
     }))
   ];
+
+  logActivityDebug("market activity", {
+    failedReads: results.filter((result) => result.failed).length,
+    logsFound: activity.length,
+    market
+  });
+
+  if (results.some((result) => result.failed) && activity.length === 0) {
+    throw new Error("Could not load market activity logs.");
+  }
+
+  return activity;
 }
 
 function fromBlock() {
-  return BigInt(Math.max(deploymentConfig.deploymentBlock, 0));
+  return 0n;
 }
 
 function sortNewestFirst(items: OnchainActivityItem[]) {
@@ -380,4 +427,50 @@ function formatUsdc(value: bigint | undefined) {
   return amount.toLocaleString("en-US", {
     maximumFractionDigits: 2
   });
+}
+
+type LogReadResult<T> = {
+  failed: boolean;
+  logs: T[];
+};
+
+async function getLogsResult<T>(
+  readLogs: () => Promise<T[]>,
+  label: string,
+  marketAddress: Address
+): Promise<LogReadResult<T>> {
+  try {
+    return {
+      failed: false,
+      logs: await readLogs()
+    };
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Probity onchain activity log read failed", {
+        error,
+        label,
+        marketAddress
+      });
+    }
+
+    return {
+      failed: true,
+      logs: []
+    };
+  }
+}
+
+function emptyLogsResult<T>(): LogReadResult<T> {
+  return {
+    failed: false,
+    logs: []
+  };
+}
+
+function logActivityDebug(label: string, values: Record<string, unknown>) {
+  if (process.env.NODE_ENV !== "development") {
+    return;
+  }
+
+  console.info(`Probity ${label}`, values);
 }

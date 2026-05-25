@@ -13,13 +13,11 @@ import { useWalletOnchainActivity } from "@/features/activity/hooks/use-onchain-
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import type { Market } from "@/features/markets/types";
 import { formatUsd } from "@/features/markets/lib/formatters";
-import { ActivityHistory } from "@/features/portfolio/components/activity-history";
 import {
   ClaimableRewards,
   PortfolioPositions
 } from "@/features/portfolio/components/portfolio-positions";
 import {
-  mockPortfolioActivity,
   mockPortfolioPositions
 } from "@/features/portfolio/data/mock-portfolio";
 import type { PortfolioPosition } from "@/features/portfolio/types";
@@ -32,16 +30,18 @@ export function PortfolioDashboard() {
   const useMockFallback = localMarkets.isUsingMockFallback;
   const shouldReadPositions =
     !useMockFallback && Boolean(accountAddress) && localMarkets.markets.length > 0;
-  const activityMarkets = React.useMemo(
-    () =>
-      localMarkets.markets.map((market) => ({
-        address: market.id as `0x${string}`,
-        title: market.title
-      })),
-    [localMarkets.markets]
-  );
+  const activityMarkets = React.useMemo(() => {
+    const titleByAddress = new Map(
+      localMarkets.markets.map((market) => [market.id.toLowerCase(), market.title])
+    );
+
+    return [...localMarkets.factoryMarkets.contractMarkets].reverse().map((address) => ({
+      address: address as `0x${string}`,
+      title: titleByAddress.get(address.toLowerCase()) ?? `PredictionMarket ${shortHash(address)}`
+    }));
+  }, [localMarkets.factoryMarkets.contractMarkets, localMarkets.markets]);
   const walletActivity = useWalletOnchainActivity({
-    enabled: !useMockFallback && Boolean(accountAddress),
+    enabled: Boolean(accountAddress && activityMarkets.length > 0),
     markets: activityMarkets,
     walletAddress: accountAddress
   });
@@ -133,16 +133,6 @@ export function PortfolioDashboard() {
         <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
           <div className="space-y-6">
             <PortfolioPositions positions={positions} />
-            {useMockFallback ? (
-              <ActivityHistory activity={mockPortfolioActivity} />
-            ) : (
-              <OnchainActivityList
-                emptyDescription="No onchain activity found for this wallet yet."
-                isLoading={walletActivity.isLoading || walletActivity.isFetching}
-                items={walletActivity.data ?? []}
-                title="Recent Activity"
-              />
-            )}
           </div>
           <div className="space-y-6">
             {isRefreshing && (
@@ -173,6 +163,16 @@ export function PortfolioDashboard() {
           </div>
         </div>
       )}
+
+      <OnchainActivityList
+        emptyDescription="No onchain activity found for this wallet yet."
+        emptyTitle="No onchain activity"
+        error={walletActivity.isError ? "Could not load onchain activity." : null}
+        isLoading={walletActivity.isLoading || walletActivity.isFetching}
+        items={walletActivity.data ?? []}
+        loadingMessage="Reading wallet activity from Arc Testnet..."
+        title="Recent Onchain Activity"
+      />
     </section>
   );
 }
@@ -255,4 +255,8 @@ function PortfolioMetric({
       </CardContent>
     </Card>
   );
+}
+
+function shortHash(value: string) {
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }

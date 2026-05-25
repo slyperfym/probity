@@ -1,53 +1,40 @@
 "use client";
 
+import type * as React from "react";
 import Link from "next/link";
 import { Activity, ExternalLink, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StateCard } from "@/components/feedback/state-card";
 import type { OnchainActivityItem } from "@/features/activity/types";
 
 const ARC_EXPLORER_TX_URL = "https://testnet.arcscan.app/tx";
 
 export function OnchainActivityList({
   emptyDescription,
+  emptyTitle = "No onchain activity",
+  error,
   isLoading,
   items,
+  loadingMessage = "Reading onchain activity from Arc Testnet...",
   title = "Onchain Activity"
 }: {
   emptyDescription: string;
+  emptyTitle?: string;
+  error?: string | null;
   isLoading?: boolean;
   items: OnchainActivityItem[];
+  loadingMessage?: string;
   title?: string;
 }) {
-  if (isLoading && items.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex items-center gap-2 p-5 text-sm text-slate-400">
-          <Loader2 className="h-4 w-4 animate-spin text-cyan-300/80" />
-          Reading onchain activity from Arc Testnet...
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <StateCard
-        description={emptyDescription}
-        icon={Activity}
-        title={title === "Recent Activity" ? "No onchain activity" : "No market activity"}
-      />
-    );
-  }
+  const hasItems = items.length > 0;
 
   return (
     <Card className="bg-slate-950/75">
       <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
         <div className="flex items-center justify-between gap-3">
           <CardTitle>{title}</CardTitle>
-          {isLoading && (
+          {isLoading && hasItems && (
             <span className="inline-flex items-center gap-2 text-xs text-cyan-200/70">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Updating
@@ -56,6 +43,27 @@ export function OnchainActivityList({
         </div>
       </CardHeader>
       <CardContent className="space-y-2 p-4 pt-2 sm:p-5 sm:pt-2">
+        {!hasItems && isLoading && (
+          <ActivityState
+            description={loadingMessage}
+            icon={<Loader2 className="h-4 w-4 animate-spin text-cyan-300/80" />}
+            title="Loading activity"
+          />
+        )}
+        {!hasItems && !isLoading && error && (
+          <ActivityState
+            description={error}
+            icon={<Activity className="h-4 w-4 text-rose-300/80" />}
+            title="Activity unavailable"
+          />
+        )}
+        {!hasItems && !isLoading && !error && (
+          <ActivityState
+            description={emptyDescription}
+            icon={<Activity className="h-4 w-4 text-slate-500" />}
+            title={emptyTitle}
+          />
+        )}
         {items.map((item) => (
           <div
             className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-3"
@@ -95,6 +103,26 @@ export function OnchainActivityList({
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function ActivityState({
+  description,
+  icon,
+  title
+}: {
+  description: string;
+  icon: React.ReactNode;
+  title: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
+      <div className="mt-0.5">{icon}</div>
+      <div>
+        <div className="text-sm font-medium text-slate-300">{title}</div>
+        <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
+      </div>
+    </div>
   );
 }
 

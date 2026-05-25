@@ -259,8 +259,12 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
 
           <OnchainActivityList
             emptyDescription="No activity found for this market yet."
+            emptyTitle="No market activity"
+            error={marketActivity.isError ? "Could not load onchain activity." : null}
             isLoading={marketActivity.isLoading || marketActivity.isFetching}
             items={marketActivity.data ?? []}
+            loadingMessage="Reading market activity from Arc Testnet..."
+            title="Market Activity"
           />
         </div>
 
