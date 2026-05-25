@@ -17,9 +17,9 @@ export function useMarketFactoryDeployment() {
   };
 }
 
-export function useMarketFactoryMarketCount() {
+export function useMarketFactoryMarketCount({ enabled = true }: { enabled?: boolean } = {}) {
   const isConfigured = hasContractAddress("MarketFactory");
-  const shouldReadContracts = deploymentConfig.marketDataMode !== "mock" && isConfigured;
+  const shouldReadContracts = enabled && deploymentConfig.marketDataMode !== "mock" && isConfigured;
 
   return useReadContract({
     ...marketFactoryConfig,
@@ -32,9 +32,9 @@ export function useMarketFactoryMarketCount() {
   });
 }
 
-export function useMarketFactoryMarkets() {
+export function useMarketFactoryMarkets({ enabled = true }: { enabled?: boolean } = {}) {
   const isConfigured = hasContractAddress("MarketFactory");
-  const shouldReadContracts = deploymentConfig.marketDataMode !== "mock" && isConfigured;
+  const shouldReadContracts = enabled && deploymentConfig.marketDataMode !== "mock" && isConfigured;
   const query = useReadContract({
     ...marketFactoryConfig,
     functionName: "allMarkets",

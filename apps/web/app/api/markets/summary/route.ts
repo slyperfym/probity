@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { createPublicClient, http, type Address } from "viem";
+import { createPublicClient, defineChain, getAddress, http, isAddress, type Address } from "viem";
 
-import { probityChain } from "@/config/chains";
+import { ARC_TESTNET_CHAIN_ID } from "@/config/env";
 import { contractAbis, contractAddresses, deploymentConfig } from "@/config/contracts";
 import { parseExternalReferenceMetadata } from "@/features/discovery/lib/external-reference-matching";
 import { mockMarkets } from "@/features/markets/data/mock-markets";
@@ -11,6 +11,7 @@ import type { MarketCategory, MarketStatus } from "@/features/markets/types";
 
 const USDC_DECIMALS = 1_000_000;
 const ACTIVE_CACHE_MS = 30_000;
+const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network";
 
 let cachedSummary:
   | {
@@ -39,17 +40,19 @@ export async function GET(request: Request) {
     return NextResponse.json(response);
   }
 
-  if (!contractAddresses.MarketFactory) {
+  const marketFactoryAddress = getSummaryMarketFactoryAddress();
+
+  if (!marketFactoryAddress) {
     return NextResponse.json(
       {
-        error: "Arc Testnet MarketFactory is not configured. Set NEXT_PUBLIC_MARKET_FACTORY_ADDRESS."
+        error: "Arc Testnet MarketFactory is not configured. Set MARKET_FACTORY_ADDRESS or NEXT_PUBLIC_MARKET_FACTORY_ADDRESS."
       },
       { status: 503 }
     );
   }
 
   try {
-    const response = await getContractSummaryResponse();
+    const response = await getContractSummaryResponse(marketFactoryAddress);
 
     cachedSummary = {
       expiresAt: Date.now() + ACTIVE_CACHE_MS,
@@ -69,18 +72,29 @@ export async function GET(request: Request) {
   }
 }
 
-async function getContractSummaryResponse(): Promise<MarketSummaryResponse> {
-  if (!contractAddresses.MarketFactory) {
-    throw new Error("MarketFactory address is not configured.");
-  }
-
+async function getContractSummaryResponse(marketFactoryAddress: Address): Promise<MarketSummaryResponse> {
+  const rpcUrl = getSummaryRpcUrl();
+  const chainId = getSummaryChainId();
   const publicClient = createPublicClient({
-    chain: probityChain,
-    transport: http()
+    chain: defineChain({
+      id: chainId,
+      name: chainId === ARC_TESTNET_CHAIN_ID ? "Arc Testnet" : `Chain ${chainId}`,
+      nativeCurrency: {
+        decimals: 18,
+        name: "USD Coin",
+        symbol: "USDC"
+      },
+      rpcUrls: {
+        default: {
+          http: [rpcUrl]
+        }
+      }
+    }),
+    transport: http(rpcUrl)
   });
   const marketAddresses = await publicClient.readContract({
     abi: contractAbis.marketFactory,
-    address: contractAddresses.MarketFactory,
+    address: marketFactoryAddress,
     functionName: "allMarkets"
   }) as Address[];
   const newestFirstAddresses = [...marketAddresses].reverse();
@@ -113,6 +127,30 @@ async function getContractSummaryResponse(): Promise<MarketSummaryResponse> {
     source: "contracts",
     total: marketAddresses.length
   };
+}
+
+function getSummaryMarketFactoryAddress() {
+  const configuredAddress =
+    process.env.MARKET_FACTORY_ADDRESS ||
+    process.env.NEXT_PUBLIC_MARKET_FACTORY_ADDRESS ||
+    contractAddresses.MarketFactory;
+
+  return configuredAddress && isAddress(configuredAddress) ? getAddress(configuredAddress) : undefined;
+}
+
+function getSummaryRpcUrl() {
+  return (
+    process.env.ARC_TESTNET_RPC_URL ||
+    process.env.NEXT_PUBLIC_RPC_URL ||
+    ARC_TESTNET_RPC_URL
+  );
+}
+
+function getSummaryChainId() {
+  const rawValue = process.env.NEXT_PUBLIC_CHAIN_ID;
+  const parsed = rawValue ? Number(rawValue) : ARC_TESTNET_CHAIN_ID;
+
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : ARC_TESTNET_CHAIN_ID;
 }
 
 function mapSummaryReads(

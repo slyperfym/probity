@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { deploymentConfig } from "@/config/contracts";
+import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { ExternalSignals } from "@/features/discovery/components/external-signals";
 import { MarketCard } from "@/features/markets/components/market-card";
 import {
@@ -36,13 +37,24 @@ export function MarketsBoard() {
     refetchIntervalInBackground: false,
     staleTime: 25_000
   });
+  const clientFallbackMarkets = useLocalContractMarkets({
+    enabled: summaryQuery.isError,
+    limit: visibleMarketLimit
+  });
   const summaryData = summaryQuery.data;
   const summaryMarkets = React.useMemo(
     () => (summaryData?.markets ?? []).map(mapSummaryToMarket),
     [summaryData?.markets]
   );
-  const displayedMarkets = summaryMarkets.slice(0, visibleMarketLimit);
-  const totalMarketCount = summaryData?.total ?? 0;
+  const isUsingClientFallback =
+    summaryQuery.isError &&
+    !clientFallbackMarkets.isUsingMockFallback &&
+    clientFallbackMarkets.markets.length > 0;
+  const boardMarkets = isUsingClientFallback ? clientFallbackMarkets.markets : summaryMarkets;
+  const displayedMarkets = boardMarkets.slice(0, visibleMarketLimit);
+  const totalMarketCount = isUsingClientFallback
+    ? clientFallbackMarkets.totalContractMarketCount
+    : summaryData?.total ?? 0;
   const hasMoreMarkets = visibleMarketLimit < totalMarketCount;
 
   const filteredMarkets = getMarketsByFilter(
@@ -54,16 +66,19 @@ export function MarketsBoard() {
   const activeMarkets = filteredMarkets.filter((market) => market.status === "active").length;
   const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
   const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
-  const isUsingMockFallback = summaryData?.isUsingMockFallback ?? false;
+  const isUsingMockFallback = !isUsingClientFallback && (summaryData?.isUsingMockFallback ?? false);
   const dataSourceTone = isUsingMockFallback ? "text-amber-300/85" : "text-emerald-300/85";
   const hasConnectedFactoryWithoutMarkets =
+    !summaryQuery.isError &&
     !summaryQuery.isLoading &&
     !isUsingMockFallback &&
     totalMarketCount === 0;
   const lastUpdatedLabel = summaryData?.generatedAt
     ? formatLastUpdated(summaryData.generatedAt)
     : "Not loaded";
-  const isInitialLoading = summaryQuery.isLoading && !summaryData;
+  const isInitialLoading =
+    (summaryQuery.isLoading && !summaryData) ||
+    (summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
 
   return (
     <div className="space-y-5">
@@ -84,6 +99,8 @@ export function MarketsBoard() {
             <span className="font-medium text-slate-400">
               {isUsingMockFallback
                 ? "Mock fallback active"
+                : isUsingClientFallback
+                  ? "Arc MarketFactory connected"
                 : deploymentConfig.isArcTestnet
                   ? "Arc MarketFactory connected"
                   : "Local MarketFactory connected"}
@@ -92,6 +109,8 @@ export function MarketsBoard() {
             <span>
               {isUsingMockFallback
                 ? "Cached mock summaries are active because contracts are unavailable or mock mode is configured."
+                : isUsingClientFallback
+                  ? "Reading Arc Testnet markets from wallet RPC fallback."
                 : hasConnectedFactoryWithoutMarkets
                   ? "0 markets"
                   : `${displayedMarkets.length} of ${totalMarketCount} market${
@@ -100,6 +119,9 @@ export function MarketsBoard() {
             </span>
             {!isUsingMockFallback && totalMarketCount > displayedMarkets.length && (
               <span className="text-slate-600">Board summaries are cached; detail pages read live contracts.</span>
+            )}
+            {summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0 && (
+              <span className="text-cyan-200/75">Reading Arc Testnet markets...</span>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -183,14 +205,14 @@ export function MarketsBoard() {
         <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-10 text-center">
           <div className="text-sm font-medium text-white">
             {summaryQuery.isError
-              ? "Arc Testnet markets could not be loaded."
+              ? "Could not load Arc Testnet markets."
               : searchQuery.trim()
                 ? "No markets match your search."
                 : "No markets match these filters."}
           </div>
           <p className="mt-2 text-sm text-slate-500">
             {summaryQuery.isError
-              ? "Check MarketFactory configuration or RPC availability, then refresh onchain data."
+              ? "The summary API failed and the real onchain fallback did not return markets. Check MarketFactory configuration or RPC availability, then refresh."
               : searchQuery.trim()
               ? "Try another question, category, status, or token symbol."
               : "Adjust the category or status filters."}
@@ -200,7 +222,7 @@ export function MarketsBoard() {
 
       <ExternalSignals
         isUsingMockFallback={isUsingMockFallback}
-        probityMarkets={summaryMarkets}
+        probityMarkets={boardMarkets}
       />
     </div>
   );

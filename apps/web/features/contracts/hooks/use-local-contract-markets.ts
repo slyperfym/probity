@@ -44,8 +44,14 @@ type MarketReadResult = Array<
   | { error: Error; result?: undefined; status: "failure" }
 >;
 
-export function useLocalContractMarkets({ limit }: { limit?: number } = {}) {
-  const factoryMarkets = useMarketFactoryMarkets();
+export function useLocalContractMarkets({
+  enabled = true,
+  limit
+}: {
+  enabled?: boolean;
+  limit?: number;
+} = {}) {
+  const factoryMarkets = useMarketFactoryMarkets({ enabled });
   const allMarketAddresses = React.useMemo(
     () => [...factoryMarkets.contractMarkets].reverse(),
     [factoryMarkets.contractMarkets]
