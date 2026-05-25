@@ -60,6 +60,7 @@ export function CreateMarketForm() {
   const [resolver, setResolver] = React.useState(
     deploymentConfig.resolverAddress ?? accountAddress ?? ""
   );
+  const [hasManuallyEditedResolver, setHasManuallyEditedResolver] = React.useState(false);
   const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const resolutionCriteriaId = React.useId();
   const isFactoryConfigured = hasContractAddress("MarketFactory");
@@ -84,12 +85,23 @@ export function CreateMarketForm() {
       enabled: shouldReadAccess && Boolean(resolverAddress)
     }
   });
+  const approvedConnectedResolver = useReadContract({
+    ...factoryConfig,
+    args: normalizedAccount ? [normalizedAccount] : undefined,
+    functionName: "approvedResolvers",
+    query: {
+      enabled: shouldReadAccess && Boolean(normalizedAccount)
+    }
+  });
   const createdMarketAddress = React.useMemo(
     () => parseCreatedMarketAddress(createReceipt.data?.logs),
     [createReceipt.data?.logs]
   );
   const isApprovedCreator = Boolean(approvedCreator.data);
   const isApprovedResolver = Boolean(approvedResolver.data);
+  const isConnectedWalletApprovedResolver = Boolean(approvedConnectedResolver.data);
+  const isUsingConnectedWalletAsResolver =
+    Boolean(normalizedAccount && resolverAddress && normalizedAccount === resolverAddress);
   const isCreating = createWrite.isPending || createReceipt.isLoading;
   const createDisabledReason = getCreateDisabledReason({
     chainId: chain?.id,
@@ -106,12 +118,24 @@ export function CreateMarketForm() {
   });
 
   React.useEffect(() => {
-    if (deploymentConfig.resolverAddress || !accountAddress || resolver) {
+    setHasManuallyEditedResolver(false);
+  }, [normalizedAccount]);
+
+  React.useEffect(() => {
+    if (!normalizedAccount || !isApprovedCreator || hasManuallyEditedResolver) {
       return;
     }
 
-    setResolver(accountAddress);
-  }, [accountAddress, resolver]);
+    const configuredResolver = deploymentConfig.resolverAddress;
+    const shouldUseCreatorWallet =
+      !resolver ||
+      (configuredResolver && resolver.toLowerCase() === configuredResolver.toLowerCase()) ||
+      !isAddress(resolver);
+
+    if (shouldUseCreatorWallet) {
+      setResolver(normalizedAccount);
+    }
+  }, [hasManuallyEditedResolver, isApprovedCreator, normalizedAccount, resolver]);
 
   React.useEffect(() => {
     if (createReceipt.isSuccess) {
@@ -252,10 +276,22 @@ export function CreateMarketForm() {
             <Field label="Resolver">
               <input
                 className="h-11 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
-                onChange={(event) => setResolver(event.target.value)}
+                onChange={(event) => {
+                  setHasManuallyEditedResolver(true);
+                  setResolver(event.target.value);
+                }}
                 placeholder="Probity Resolver Desk"
                 value={resolver}
               />
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                {getResolverHelperCopy({
+                  isApprovedCreator,
+                  isConnected,
+                  isConnectedWalletApprovedResolver,
+                  isUsingConnectedWalletAsResolver,
+                  resolverAddress
+                })}
+              </p>
             </Field>
           </div>
 
@@ -278,6 +314,8 @@ export function CreateMarketForm() {
             chainName={chain?.name}
             isApprovedCreator={isApprovedCreator}
             isApprovedResolver={isApprovedResolver}
+            isConnectedWalletApprovedResolver={isConnectedWalletApprovedResolver}
+            isUsingConnectedWalletAsResolver={isUsingConnectedWalletAsResolver}
             isConnected={isConnected}
             resolverAddress={resolverAddress}
           />
@@ -357,6 +395,8 @@ function EligibilityPanel({
   chainName,
   isApprovedCreator,
   isApprovedResolver,
+  isConnectedWalletApprovedResolver,
+  isUsingConnectedWalletAsResolver,
   isConnected,
   resolverAddress
 }: {
@@ -365,6 +405,8 @@ function EligibilityPanel({
   chainId: number | undefined;
   isApprovedCreator: boolean;
   isApprovedResolver: boolean;
+  isConnectedWalletApprovedResolver: boolean;
+  isUsingConnectedWalletAsResolver: boolean;
   isConnected: boolean;
   resolverAddress: Address | undefined;
 }) {
@@ -399,8 +441,49 @@ function EligibilityPanel({
           }
         />
       </div>
+      {isConnected && isApprovedCreator && (
+        <p className="mt-4 text-sm leading-6 text-slate-400">
+          {isConnectedWalletApprovedResolver && isUsingConnectedWalletAsResolver
+            ? "This wallet can create and resolve this market."
+            : isConnectedWalletApprovedResolver
+              ? "This wallet can resolve markets. Use it as resolver for the simplest MVP flow."
+              : "This wallet can create markets but is not approved as a resolver. Use an approved resolver address."}
+        </p>
+      )}
     </div>
   );
+}
+
+function getResolverHelperCopy({
+  isApprovedCreator,
+  isConnected,
+  isConnectedWalletApprovedResolver,
+  isUsingConnectedWalletAsResolver,
+  resolverAddress
+}: {
+  isApprovedCreator: boolean;
+  isConnected: boolean;
+  isConnectedWalletApprovedResolver: boolean;
+  isUsingConnectedWalletAsResolver: boolean;
+  resolverAddress: Address | undefined;
+}) {
+  if (!isConnected) {
+    return "Connect an approved creator wallet to set the resolver for this market.";
+  }
+
+  if (isApprovedCreator && isConnectedWalletApprovedResolver && isUsingConnectedWalletAsResolver) {
+    return "For this MVP, using your creator wallet as resolver makes it easier to resolve markets you create.";
+  }
+
+  if (isApprovedCreator && !isConnectedWalletApprovedResolver) {
+    return "This wallet can create markets but is not approved as a resolver. Use an approved resolver address.";
+  }
+
+  if (!resolverAddress) {
+    return "Enter an approved resolver wallet address.";
+  }
+
+  return "Resolver remains editable. Any custom resolver must be approved by the MarketFactory.";
 }
 
 function EligibilityMetric({
