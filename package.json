@@ -14,6 +14,7 @@
     "contracts:deploy:local": "pnpm --filter @probity/contracts deploy:local",
     "contracts:deploy:arc-testnet": "pnpm --filter @probity/contracts deploy:arc-testnet",
     "contracts:approve-creator:arc-testnet": "pnpm --filter @probity/contracts approve-creator:arc-testnet",
+    "contracts:approve-resolver:arc-testnet": "pnpm --filter @probity/contracts approve-resolver:arc-testnet",
     "contracts:seed:local": "pnpm --filter @probity/contracts seed:local",
     "contracts:seed:arc-testnet": "pnpm --filter @probity/contracts seed:arc-testnet",
     "contracts:bootstrap:local": "pnpm contracts:deploy:local && pnpm contracts:seed:local && pnpm contracts:export-abis",
