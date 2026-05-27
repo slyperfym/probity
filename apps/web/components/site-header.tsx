@@ -23,7 +23,7 @@ const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const showArcDemoMode =
+  const showArcSetupMode =
     isArcTestnetTarget &&
     (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken);
 
@@ -52,14 +52,14 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex min-w-0 shrink items-center justify-end gap-1.5 sm:gap-2">
-            {showArcDemoMode ? (
+            {showArcSetupMode ? (
               <div className="hidden items-center gap-2 rounded-md border border-cyan-400/15 bg-cyan-400/[0.06] px-3 py-2 text-xs text-cyan-100/85 lg:flex">
                 <Activity className="h-3.5 w-3.5 text-cyan-300/80" />
-                <span>Demo Mode</span>
+                <span>Setup Mode</span>
                 <span className="text-slate-600">/</span>
                 <span>Arc Testnet Ready</span>
                 <span className="text-slate-600">/</span>
-                <span>Mock Data Active</span>
+                <span>Contract Addresses Pending</span>
               </div>
             ) : null}
             <a

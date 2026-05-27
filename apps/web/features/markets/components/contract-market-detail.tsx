@@ -107,7 +107,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
           <div className="text-lg font-semibold text-white">Onchain market unavailable</div>
           <p className="mt-2 text-sm text-slate-400">
             The configured chain is unavailable, the address is not a Probity market, or the
-            market was redeployed. Return to markets to use the mock fallback.
+            market was redeployed. Return to markets to browse available Arc Testnet markets.
           </p>
           <Link className={cn(buttonVariants({ variant: "outline" }), "mt-5")} href="/markets">
             Back to markets

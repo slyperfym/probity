@@ -51,7 +51,7 @@ export function useMarketFactoryMarkets({ enabled = true }: { enabled?: boolean 
     deploymentConfig.marketDataMode === "mock" || !isConfigured || query.isError;
   const fallbackReason =
     deploymentConfig.marketDataMode === "mock"
-      ? "Mock mode is enabled by environment configuration."
+      ? "Contract reads are disabled by environment configuration."
       : !isConfigured
         ? "No MarketFactory address is configured."
         : query.isError

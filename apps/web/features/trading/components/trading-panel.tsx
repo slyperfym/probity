@@ -48,7 +48,7 @@ export function TradingPanel({ market }: { market: Market }) {
   const parsedAmount = parseTradeAmount(amount);
   const hasEnteredAmount = parsedAmount > 0n;
   const isMarketClosed = market.status === "expired" || market.status === "resolved";
-  const tokenLabel = deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC";
+  const tokenLabel = deploymentConfig.isArcTestnet ? "USDC" : "Local USDC";
   const environmentLabel = deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Test";
   const configuredSettlementToken = contractAddresses.MockUSDC?.toLowerCase();
   const marketSettlementToken = market.settlementTokenAddress?.toLowerCase();
@@ -276,7 +276,7 @@ export function TradingPanel({ market }: { market: Market }) {
             <p className="mt-1 text-xs text-slate-500">Arc-native YES/NO position entry.</p>
           </div>
           <Badge className="border-white/10 bg-white/[0.03] text-slate-300" variant={isLocalContractMarket ? "yes" : "info"}>
-            {isLocalContractMarket ? environmentLabel : "Mock"}
+            {isLocalContractMarket ? environmentLabel : "Unavailable"}
           </Badge>
         </div>
       </CardHeader>
@@ -288,8 +288,8 @@ export function TradingPanel({ market }: { market: Market }) {
           </div>
           <p className="mt-1.5 text-xs leading-5 text-slate-500">
             {deploymentConfig.isArcTestnet
-              ? "Use Arc testnet USDC for demo trades. Sell-back is MVP pool pricing, not an orderbook."
-              : "Use local contracts and MockUSDC only. Sell-back is MVP pool pricing, not an orderbook."}
+              ? "Arc testnet USDC is used for gas and settlement. Sell-back is MVP pool pricing, not an orderbook."
+              : "Use local contracts and local settlement tokens only. Sell-back is MVP pool pricing, not an orderbook."}
           </p>
         </div>
 
@@ -381,7 +381,7 @@ export function TradingPanel({ market }: { market: Market }) {
           <SectionLabel>Preview</SectionLabel>
           <PreviewRow label="Action" value={`${mode === "buy" ? "Buy" : "Sell"} ${side}`} />
           <PreviewRow
-            label={isLocalContractMarket ? "Onchain probability" : "Mock probability"}
+            label={isLocalContractMarket ? "Onchain probability" : "Reference probability"}
             value={`${selectedProbability}%`}
           />
           <PreviewRow
@@ -467,7 +467,7 @@ export function TradingPanel({ market }: { market: Market }) {
               </Button>
             </>
           ) : (
-            <Button disabled>Execute Mock Trade</Button>
+            <Button disabled>Contract writes unavailable</Button>
           )}
         </section>
       </CardContent>
@@ -496,7 +496,7 @@ function TradingNotice({
           rel="noreferrer"
           target="_blank"
         >
-          Need testnet USDC? Get Arc testnet USDC from the Circle faucet.
+          Need Arc testnet USDC for gas and settlement? Get it from the Circle faucet.
         </Link>
       )}
     </div>
@@ -587,11 +587,13 @@ function getStatusMessage({
   tokenLabel: string;
 }) {
   if (!isLocalContractMarket) {
-    return "This is mock fallback data, so contract writes remain disabled.";
+    return "Contract writes are unavailable for this market in the current deployment target.";
   }
 
   if (!isConnected || !accountAddress) {
-    return `Connect a wallet on ${probityChain.name} to approve ${tokenLabel}, buy shares, or claim payouts.`;
+    return deploymentConfig.isArcTestnet
+      ? `Connect a wallet on ${probityChain.name}. Arc testnet USDC is used for gas and settlement.`
+      : `Connect a wallet on ${probityChain.name} to approve ${tokenLabel}, buy shares, or claim payouts.`;
   }
 
   if (hasSettlementTokenMismatch) {
@@ -604,7 +606,7 @@ function getStatusMessage({
 
   if (isMarketClosed) {
     if (marketStatus === "expired") {
-      return "Awaiting resolver settlement. Claim is available after final outcome is resolved.";
+      return "Awaiting resolver settlement. Claim is available after the resolver finalizes the winning outcome.";
     }
 
     if (hasClaimed) {
@@ -619,7 +621,7 @@ function getStatusMessage({
       return "No winning position to claim.";
     }
 
-    return "Claiming is available after resolution for winning positions.";
+    return "Claim is available after the resolver finalizes the winning outcome.";
   }
 
   if (parsedAmount <= 0n) {
@@ -632,12 +634,14 @@ function getStatusMessage({
 
   if (!hasEnoughBalance) {
     return deploymentConfig.isArcTestnet
-      ? "Need testnet USDC? Get Arc testnet USDC from the Circle faucet."
+      ? "Need Arc testnet USDC for gas and settlement? Get it from the Circle faucet."
       : `Your connected wallet does not have enough ${tokenLabel} for this trade.`;
   }
 
   if (!hasEnoughAllowance) {
-    return `Approve ${tokenLabel} before buying YES or NO shares.`;
+    return deploymentConfig.isArcTestnet
+      ? "Approve USDC for this market before buying YES or NO."
+      : `Approve ${tokenLabel} for this market before buying YES or NO.`;
   }
 
   return "";

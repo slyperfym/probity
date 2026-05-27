@@ -88,7 +88,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Resolver Queue</CardTitle>
             <Badge variant={isLocalMode ? "yes" : "info"}>
-              {isLocalMode ? contractModeLabel : "Mock fallback"}
+              {isLocalMode ? contractModeLabel : "Contracts unavailable"}
             </Badge>
           </div>
         </CardHeader>
@@ -265,7 +265,7 @@ function getResolverNotice({
   isLocalMode: boolean;
 }) {
   if (!isLocalMode) {
-    return "Mock fallback is active, so resolver transactions are disabled until deployed contracts are reachable.";
+    return "Resolver transactions are disabled until deployed contracts are reachable.";
   }
 
   if (!isConnected || !accountAddress) {
@@ -303,7 +303,7 @@ function ResolverTransactionState({
       {success && !isPending && (
         <div className="flex items-center gap-2 text-emerald-200">
           <CheckCircle2 className="h-4 w-4" />
-          Resolution confirmed. Winning positions are now claimable.
+          Resolution confirmed. Winning positions can now claim payout.
         </div>
       )}
       {isRefreshing && !isPending && (

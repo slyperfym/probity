@@ -4,7 +4,7 @@ import { isArcTestnetTarget, isMockTarget } from "@/config/chains";
 import { deploymentConfig } from "@/config/contracts";
 import { publicEnv } from "@/config/env";
 
-const ARC_TESTNET_ONCHAIN_DEMO_LABEL = "Arc testnet onchain demo";
+const ARC_TESTNET_ONCHAIN_LABEL = "Arc Testnet onchain";
 
 export function DeploymentReadinessAlert() {
   const message = getDeploymentMessage();
@@ -25,7 +25,7 @@ export function DeploymentReadinessAlert() {
 
 function getDeploymentMessage() {
   if (isMockTarget) {
-    return "Demo mode is active. Probity is showing mock market data while contract reads and wallet writes remain disabled for this environment.";
+    return "Contract reads and wallet writes are disabled for this environment.";
   }
 
   if (isArcTestnetTarget) {
@@ -34,10 +34,10 @@ function getDeploymentMessage() {
     }
 
     if (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken) {
-      return "Arc testnet configuration is ready for this demo. Contract addresses are not configured yet, so Probity is showing mock market data until MarketFactory and settlement token addresses are added.";
+      return "Arc testnet configuration is ready. MarketFactory and settlement token addresses must be configured before live markets can load.";
     }
 
-    return ARC_TESTNET_ONCHAIN_DEMO_LABEL;
+    return ARC_TESTNET_ONCHAIN_LABEL;
   }
 
   return null;

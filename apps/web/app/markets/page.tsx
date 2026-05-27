@@ -5,7 +5,7 @@ import { MarketsBoard } from "@/features/markets/components/markets-board";
 
 export const metadata = {
   title: "Markets | Probity",
-  description: "Browse Probity demo prediction markets"
+  description: "Browse Probity Arc Testnet prediction markets"
 };
 
 export default function MarketsPage() {
@@ -22,12 +22,12 @@ export default function MarketsPage() {
                 Forecasting markets for institutional signal.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-                Browse Arc-native YES/NO markets with USDC settlement.
+                Browse Arc-native YES/NO markets with Arc testnet USDC for gas and settlement.
               </p>
             </div>
             <div className="flex w-fit items-center gap-2 rounded-md border border-cyan-400/14 bg-cyan-400/[0.045] px-3 py-2 text-xs font-medium text-cyan-100/80">
               <BarChart3 className="h-4 w-4 text-cyan-300/80" />
-              Arc testnet onchain demo
+              Arc Testnet onchain
             </div>
           </div>
         </div>

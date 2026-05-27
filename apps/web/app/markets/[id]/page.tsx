@@ -141,7 +141,7 @@ export default async function MarketDetailPage({
                 {[
                   "This market resolves through the configured resolver address.",
                   "Positions and settlement funds are read from the deployed PredictionMarket contract.",
-                  "This is an Arc testnet demo market, not production oracle logic."
+                  "This is an Arc Testnet MVP market, not production oracle logic."
                 ].map((rule) => (
                   <div className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3" key={rule}>
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />

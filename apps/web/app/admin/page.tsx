@@ -22,8 +22,8 @@ export default function AdminPage() {
             Resolver operations dashboard.
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 sm:text-base">
-            Resolve expired deployed markets, monitor claimable outcomes, and preserve demo
-            fallback behavior when contract addresses are unavailable.
+            Resolve expired deployed markets, monitor claimable outcomes, and keep resolver
+            actions gated to the required wallet.
           </p>
         </div>
       </section>
@@ -40,8 +40,8 @@ export default function AdminPage() {
           <AdminControlCard
             icon={TimerReset}
             label="SLA"
-            value="11m"
-            text="Demo average resolution time for dashboard composition."
+            value="Resolver"
+            text="Resolution timing depends on the configured resolver wallet finalizing each expired market."
           />
           <AdminControlCard
             icon={ShieldCheck}

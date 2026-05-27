@@ -23,7 +23,7 @@ export default function CreatePage() {
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 sm:text-base">
             Draft institutional-grade market terms, resolution criteria, resolver assignment,
-            and USDC-style settlement parameters before live factory writes are enabled.
+            and USDC settlement parameters before submitting approved MarketFactory writes.
           </p>
         </div>
       </section>

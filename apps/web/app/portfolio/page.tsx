@@ -3,7 +3,7 @@ import { PortfolioDashboard } from "@/features/portfolio/components/portfolio-da
 
 export const metadata = {
   title: "Portfolio | Probity",
-  description: "Demo user portfolio for Probity prediction markets"
+  description: "Wallet portfolio for Probity prediction markets"
 };
 
 export default function PortfolioPage() {

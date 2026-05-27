@@ -98,7 +98,7 @@ export function MarketsBoard() {
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
             <span className="font-medium text-slate-400">
               {isUsingMockFallback
-                ? "Mock fallback active"
+                ? "Contract summaries unavailable"
                 : isUsingClientFallback
                   ? "Arc MarketFactory connected"
                 : deploymentConfig.isArcTestnet
@@ -108,7 +108,7 @@ export function MarketsBoard() {
             <span className="hidden text-slate-700 sm:inline">/</span>
             <span>
               {isUsingMockFallback
-                ? "Cached mock summaries are active because contracts are unavailable or mock mode is configured."
+                ? "Live contract summaries are unavailable for this environment."
                 : isUsingClientFallback
                   ? "Reading Arc Testnet markets from wallet RPC fallback."
                 : hasConnectedFactoryWithoutMarkets
@@ -199,7 +199,7 @@ export function MarketsBoard() {
           <div className="text-sm font-medium text-white">No deployed markets found.</div>
           <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-cyan-100/80">
             Probity is connected to the configured MarketFactory, but `allMarkets()` returned an
-            empty list. Seed Arc testnet demo markets, then refresh this page.
+            empty list. Create or seed Arc Testnet markets, then refresh this page.
           </p>
         </div>
       ) : (

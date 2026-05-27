@@ -196,7 +196,7 @@ function ExternalSignalCard({
         <CardTitle className="text-[15px] leading-6 sm:text-sm">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
           {listedMarketId
-            ? "This external reference already maps to a Probity onchain demo market."
+            ? "This external reference already maps to a Probity Arc Testnet market."
             : "Use this reference to draft a separate Arc-native Probity market."}
         </p>
       </CardHeader>

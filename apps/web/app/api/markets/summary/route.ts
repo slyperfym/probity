@@ -186,7 +186,7 @@ function mapSummaryReads(
     externalReference: parseExternalReferenceMetadata(metadataURI),
     liquidityUsd: statusLabel === "resolved" ? 0 : volumeUsd,
     noProbability: 100 - yesProbability,
-    settlementTokenSymbol: deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC",
+    settlementTokenSymbol: deploymentConfig.isArcTestnet ? "USDC" : "Local USDC",
     sourceType: "contracts",
     status: statusLabel,
     title: cleanTitle,

@@ -182,7 +182,7 @@ export function CreateMarketForm() {
       <CardHeader className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>Create Market</CardTitle>
-          <Badge variant="info">{hasImportedReference ? "External reference draft" : "Demo draft"}</Badge>
+          <Badge variant="info">{hasImportedReference ? "External reference draft" : "New market draft"}</Badge>
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
@@ -271,7 +271,7 @@ export function CreateMarketForm() {
             <Field label="Settlement token">
               <div className="flex h-12 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200 sm:h-11">
                 <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                {deploymentConfig.isArcTestnet ? "Arc testnet USDC" : "MockUSDC"}
+                {deploymentConfig.isArcTestnet ? "Arc testnet USDC" : "Local settlement token"}
               </div>
             </Field>
             <Field label="Resolver">
@@ -593,7 +593,7 @@ function getCreateDisabledReason({
   resolverAddress: Address | undefined;
 }) {
   if (marketDataMode === "mock") {
-    return "Mock mode is active, so onchain market creation is disabled.";
+    return "Contract writes are disabled for this environment, so onchain market creation is unavailable.";
   }
 
   if (!isFactoryConfigured || !isSettlementTokenConfigured) {

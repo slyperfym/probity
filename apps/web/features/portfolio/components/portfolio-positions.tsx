@@ -65,7 +65,7 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
                 <Metric label="YES" value={formatShares(position.yesShares ?? (position.side === "YES" ? position.shares : 0))} />
                 <Metric label="NO" value={formatShares(position.noShares ?? (position.side === "NO" ? position.shares : 0))} />
                 <Metric label="Claim" value={position.claimStatus ?? position.status} />
-                <Metric label="Expiry" value={position.expiresAt ? formatExpiry(position.expiresAt) : "Demo"} />
+                <Metric label="Expiry" value={position.expiresAt ? formatExpiry(position.expiresAt) : "Unavailable"} />
                 <Metric label="Token" value={position.settlementToken ?? "USDC"} />
                 <Badge className="w-fit" variant={position.status === "claimable" ? "yes" : "muted"}>
                   {position.marketStatus ?? position.status}
@@ -133,7 +133,7 @@ export function ClaimableRewards({
   if (claimablePositions.length === 0) {
     return (
       <StateCard
-        description="Resolved winning positions will appear here when the connected wallet can claim."
+        description="Winning positions will appear here after the resolver finalizes the winning outcome."
         icon={Coins}
         title="No claimable rewards"
       />

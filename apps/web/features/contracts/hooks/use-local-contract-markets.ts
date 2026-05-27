@@ -126,7 +126,7 @@ export function useLocalContractMarkets({
   return {
     ...marketReads,
     fallbackReason: marketReads.isError
-      ? "Deployed market reads failed, so Probity is showing mock data."
+      ? "Deployed market reads failed, so live contract data is unavailable."
       : factoryMarkets.fallbackReason,
     factoryMarkets,
     isLoading:
@@ -193,7 +193,7 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
       "YES/NO balances and settlement funds are read directly from the deployed PredictionMarket contract.",
       "Seeded markets are for testnet and local development only and do not execute production oracle logic."
     ],
-    settlementToken: deploymentConfig.isArcTestnet ? "USDC" : "MockUSDC",
+    settlementToken: deploymentConfig.isArcTestnet ? "USDC" : "Local USDC",
     settlementTokenAddress,
     status: marketStatus,
     title: cleanTitle,

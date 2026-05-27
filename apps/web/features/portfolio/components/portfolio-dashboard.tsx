@@ -125,7 +125,7 @@ export function PortfolioDashboard() {
         />
       ) : isError ? (
         <StateCard
-          description="Position reads failed. The market board remains available, and mock fallback is preserved for demo mode."
+          description="Position reads failed. The market board remains available, but live wallet positions could not be refreshed."
           kind="error"
           title="Unable to load live positions"
         />
@@ -144,14 +144,14 @@ export function PortfolioDashboard() {
             {useMockFallback ? (
               <>
                 <StateCard
-                  description="Mock fallback is active because deployed contracts are unavailable or disabled."
+                  description="Live contract reads are unavailable in this environment, so wallet transactions remain disabled."
                   kind="loading"
-                  title="Demo fallback mode"
+                  title="Contract read fallback"
                 />
                 <StateCard
-                  description="Live wallet positions will replace mock data when deployed contract reads are available."
+                  description="Live wallet positions will appear when deployed contract reads are available."
                   kind="error"
-                  title="Live read placeholder"
+                  title="Live read unavailable"
                 />
               </>
             ) : (

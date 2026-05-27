@@ -25,7 +25,7 @@ const protocolFlow = [
   {
     label: "Trade",
     title: "Wallets buy or sell YES/NO exposure",
-    description: "Users interact with deployed markets using Arc testnet USDC-style settlement."
+    description: "Users interact with deployed markets using Arc testnet USDC for gas and settlement."
   },
   {
     label: "Resolve",
@@ -44,7 +44,7 @@ const features = [
     icon: BadgeDollarSign,
     title: "Stablecoin-native settlement",
     description:
-      "USDC-style collateral and predictable Arc execution keep market accounting clear from trade to claim."
+      "Arc testnet USDC funds wallet gas and market settlement, keeping accounting clear from trade to claim."
   },
   {
     icon: ShieldCheck,
