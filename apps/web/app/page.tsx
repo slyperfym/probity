@@ -1,16 +1,13 @@
 import {
   ArrowRight,
   BadgeDollarSign,
-  CheckCircle2,
-  Clock3,
   Database,
   Gauge,
   Landmark,
   LineChart,
   LockKeyhole,
   Network,
-  ShieldCheck,
-  TrendingUp
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 
@@ -19,33 +16,26 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const marketPreviews = [
+const protocolFlow = [
   {
-    category: "Macro",
-    title: "Will the Fed cut rates at the next FOMC meeting?",
-    yes: 64,
-    no: 36,
-    volume: "$18.4M",
-    expires: "14d 06h",
-    trend: "+3.2%"
+    label: "Create",
+    title: "Approved creator deploys a market",
+    description: "Arc-native MarketFactory creates a dedicated YES/NO PredictionMarket."
   },
   {
-    category: "Crypto",
-    title: "Will spot ETH ETF weekly inflows exceed $1B this month?",
-    yes: 41,
-    no: 59,
-    volume: "$7.8M",
-    expires: "21d 11h",
-    trend: "-1.8%"
+    label: "Trade",
+    title: "Wallets buy or sell YES/NO exposure",
+    description: "Users interact with deployed markets using Arc testnet USDC-style settlement."
   },
   {
-    category: "Policy",
-    title: "Will a US stablecoin market structure bill pass committee?",
-    yes: 72,
-    no: 28,
-    volume: "$11.2M",
-    expires: "32d 02h",
-    trend: "+5.6%"
+    label: "Resolve",
+    title: "Configured resolver finalizes outcome",
+    description: "Expired markets resolve through the resolver address stored onchain."
+  },
+  {
+    label: "Claim",
+    title: "Winning positions claim payout",
+    description: "Eligible wallets claim settlement from the deployed PredictionMarket contract."
   }
 ];
 
@@ -77,9 +67,9 @@ const features = [
 ];
 
 const metrics = [
-  { label: "Demo volume", value: "$37.4M" },
-  { label: "Active markets", value: "128" },
-  { label: "Avg. resolution", value: "11m" }
+  { label: "Network", value: "Arc Testnet" },
+  { label: "Status", value: "Live MVP" },
+  { label: "Settlement", value: "USDC-style" }
 ];
 
 export default function HomePage() {
@@ -115,7 +105,7 @@ export default function HomePage() {
                   className="rounded-lg border border-white/10 bg-white/[0.03] p-4"
                   key={metric.label}
                 >
-                  <div className="text-xl font-semibold text-white sm:text-2xl">
+                  <div className="text-lg font-semibold text-white sm:text-xl">
                     {metric.value}
                   </div>
                   <div className="mt-1 text-xs text-slate-500">{metric.label}</div>
@@ -128,17 +118,17 @@ export default function HomePage() {
             <div className="rounded-lg border border-white/10 bg-slate-950/85 p-3 shadow-2xl shadow-cyan-950/20 backdrop-blur">
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-3">
                 <div>
-                  <div className="text-sm font-medium text-white">Probity Market Terminal</div>
-                  <div className="text-xs text-slate-500">Demo market data</div>
+                  <div className="text-sm font-medium text-white">Probity Protocol Flow</div>
+                  <div className="text-xs text-slate-500">Arc Testnet MVP lifecycle</div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-emerald-300">
+                <div className="flex items-center gap-2 text-xs text-emerald-300/85">
                   <span className="probity-pulse h-2 w-2 rounded-full bg-emerald-400" />
-                  Live
+                  Onchain
                 </div>
               </div>
               <div className="space-y-3 p-3">
-                {marketPreviews.map((market) => (
-                  <MarketPreviewRow key={market.title} market={market} />
+                {protocolFlow.map((step, index) => (
+                  <ProtocolFlowRow index={index + 1} key={step.label} step={step} />
                 ))}
               </div>
             </div>
@@ -150,10 +140,14 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <Badge variant="muted">Market Preview</Badge>
+              <Badge variant="muted">Arc Testnet MVP</Badge>
               <h2 className="mt-4 text-2xl font-semibold text-white sm:text-3xl">
-                Professional event markets, built for scanning.
+                Browse real deployed markets from the Market Board.
               </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+                The homepage avoids synthetic market volume. Open the board for cached summaries
+                from the configured Arc Testnet MarketFactory and live detail reads.
+              </p>
             </div>
             <Link className={cn(buttonVariants({ variant: "outline" }))} href="/markets">
               Open Market Board
@@ -161,28 +155,20 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {marketPreviews.map((market) => (
-              <Card className="transition hover:border-cyan-300/30 hover:bg-slate-900/80" key={market.title}>
+          <div className="mt-8 grid gap-4 lg:grid-cols-4">
+            {protocolFlow.map((step, index) => (
+              <Card className="bg-slate-950/80 transition hover:border-cyan-300/18 hover:bg-slate-900/60" key={step.label}>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Badge>{market.category}</Badge>
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {market.expires}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-cyan-400/15 bg-cyan-400/[0.045] text-xs font-semibold text-cyan-100">
+                      {index + 1}
                     </div>
+                    <Badge>{step.label}</Badge>
                   </div>
-                  <CardTitle className="leading-6">{market.title}</CardTitle>
+                  <CardTitle className="leading-6">{step.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
-                    <OutcomeTile label="YES" value={market.yes} variant="yes" />
-                    <OutcomeTile label="NO" value={market.no} variant="no" />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4 text-sm">
-                    <span className="text-slate-500">Volume</span>
-                    <span className="font-medium text-slate-200">{market.volume}</span>
-                  </div>
+                  <p className="text-sm leading-6 text-slate-400">{step.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -230,21 +216,21 @@ export default function HomePage() {
         <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
           <SignalCard
             icon={Gauge}
-            label="Probability"
-            title="Implied market signal"
-            value="64%"
+            label="Markets"
+            title="YES/NO market states"
+            value="Live"
           />
           <SignalCard
             icon={Landmark}
             label="Settlement"
             title="USDC-style collateral"
-            value="1:1"
+            value="USDC"
           />
           <SignalCard
             icon={LockKeyhole}
             label="Resolution"
             title="Resolver-controlled finality"
-            value="Audit"
+            value="Claim"
           />
         </div>
       </section>
@@ -252,60 +238,24 @@ export default function HomePage() {
   );
 }
 
-function MarketPreviewRow({
-  market
+function ProtocolFlowRow({
+  index,
+  step
 }: {
-  market: (typeof marketPreviews)[number];
+  index: number;
+  step: (typeof protocolFlow)[number];
 }) {
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/20">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cyan-400/15 bg-cyan-400/[0.045] text-xs font-semibold text-cyan-100">
+          {index}
+        </div>
         <div>
-          <Badge>{market.category}</Badge>
-          <div className="mt-3 text-sm font-medium leading-6 text-white">{market.title}</div>
+          <Badge>{step.label}</Badge>
+          <div className="mt-3 text-sm font-medium leading-6 text-white">{step.title}</div>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{step.description}</p>
         </div>
-        <div className="flex items-center gap-1 text-xs text-emerald-300">
-          <TrendingUp className="h-3.5 w-3.5" />
-          {market.trend}
-        </div>
-      </div>
-      <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-4">
-        <div className="h-2 overflow-hidden rounded-full bg-rose-400/20">
-          <div
-            className="h-full rounded-full bg-emerald-400"
-            style={{ width: `${market.yes}%` }}
-          />
-        </div>
-        <div className="min-w-14 text-right text-sm font-semibold text-white">{market.yes}%</div>
-      </div>
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-        <span>{market.volume} volume</span>
-        <span>Expires {market.expires}</span>
-      </div>
-    </div>
-  );
-}
-
-function OutcomeTile({
-  label,
-  value,
-  variant
-}: {
-  label: "YES" | "NO";
-  value: number;
-  variant: "yes" | "no";
-}) {
-  const color = variant === "yes" ? "text-emerald-200" : "text-rose-200";
-  const bar = variant === "yes" ? "bg-emerald-400" : "bg-rose-400";
-
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-slate-500">{label}</span>
-        <span className={color}>{value}%</span>
-      </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-        <div className={`h-full rounded-full ${bar}`} style={{ width: `${value}%` }} />
       </div>
     </div>
   );
