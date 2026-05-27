@@ -179,13 +179,13 @@ export function CreateMarketForm() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>Create Market</CardTitle>
           <Badge variant="info">{hasImportedReference ? "External reference draft" : "Demo draft"}</Badge>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
         <form className="space-y-5" onSubmit={createMarket}>
           {hasImportedReference && (
             <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
@@ -221,7 +221,7 @@ export function CreateMarketForm() {
 
           <Field label="Market question">
             <input
-              className="h-11 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
+              className="h-12 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35 sm:h-11"
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="Will a defined event occur by a specific date?"
               value={question}
@@ -230,7 +230,7 @@ export function CreateMarketForm() {
 
           <Field label="Description">
             <textarea
-              className="min-h-28 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
+              className="min-h-28 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35"
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Describe the market and the institutional signal it is intended to capture."
               value={description}
@@ -239,9 +239,10 @@ export function CreateMarketForm() {
 
           <div className="grid gap-5 lg:grid-cols-2">
             <Field label="Category">
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 {categories.map((item) => (
                   <Button
+                    className="w-full sm:w-auto"
                     key={item}
                     onClick={() => setCategory(item)}
                     size="sm"
@@ -254,7 +255,7 @@ export function CreateMarketForm() {
               </div>
             </Field>
             <Field label="Expiration">
-              <div className="flex h-11 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-500">
+              <div className="flex h-12 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-500 sm:h-11">
                 <CalendarClock className="h-4 w-4" />
                 <input
                   className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none"
@@ -268,14 +269,14 @@ export function CreateMarketForm() {
 
           <div className="grid gap-5 lg:grid-cols-2">
             <Field label="Settlement token">
-              <div className="flex h-11 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200">
+              <div className="flex h-12 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200 sm:h-11">
                 <ShieldCheck className="h-4 w-4 text-cyan-300" />
                 {deploymentConfig.isArcTestnet ? "Arc testnet USDC" : "MockUSDC"}
               </div>
             </Field>
             <Field label="Resolver">
               <input
-                className="h-11 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
+                className="h-12 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35 sm:h-11"
                 onChange={(event) => {
                   setHasManuallyEditedResolver(true);
                   setResolver(event.target.value);
@@ -298,7 +299,7 @@ export function CreateMarketForm() {
           <Field label="Resolution criteria">
             <textarea
               id={resolutionCriteriaId}
-              className="min-h-32 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
+              className="min-h-32 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35"
               placeholder="Define YES, NO, invalid/cancelled cases, and acceptable source references."
               defaultValue={
                 importedProbability
@@ -359,8 +360,8 @@ export function CreateMarketForm() {
             transactionHash={createWrite.data}
           />
 
-          <div className="flex justify-end">
-            <Button disabled={Boolean(createDisabledReason)} type="submit">
+          <div className="sticky bottom-3 z-20 flex rounded-lg border border-white/[0.08] bg-slate-950/95 p-2.5 shadow-[0_-16px_32px_rgba(2,6,23,0.45)] backdrop-blur sm:static sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0">
+            <Button className="w-full sm:w-auto" disabled={Boolean(createDisabledReason)} type="submit">
               {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
               {deploymentConfig.isArcTestnet ? "Create Market on Arc Testnet" : "Create Arc-Native Market"}
             </Button>

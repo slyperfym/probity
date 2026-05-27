@@ -14,11 +14,11 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-slate-950">
       <section className="probity-grid border-b border-white/10">
-        <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-          <Badge className="border-cyan-300/40 bg-cyan-400/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.08)]" variant="info">
+        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+          <Badge className="border-cyan-300/20 bg-cyan-400/[0.055] text-cyan-100/85 shadow-none" variant="info">
             Resolver Admin
           </Badge>
-          <h1 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+          <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
             Resolver operations dashboard.
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 sm:text-base">
@@ -28,9 +28,9 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:px-8">
         <ResolverDashboard markets={mockResolverMarkets} />
-        <aside className="space-y-4">
+        <aside className="space-y-3 lg:space-y-4">
           <AdminControlCard
             icon={Gavel}
             label="Resolver mode"

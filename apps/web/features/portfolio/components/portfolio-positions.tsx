@@ -30,10 +30,10 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-5">
         <CardTitle>Open Positions</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="overflow-hidden rounded-lg border border-white/10">
           <div className="hidden grid-cols-[1.7fr_0.65fr_0.65fr_0.75fr_0.75fr_0.55fr_0.6fr] gap-4 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs uppercase tracking-[0.14em] text-slate-500 lg:grid">
             <span>Market</span>
@@ -47,11 +47,11 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
           <div className="divide-y divide-white/10">
             {positions.map((position) => (
               <div
-                className="grid gap-3 p-4 text-sm lg:grid-cols-[1.7fr_0.65fr_0.65fr_0.75fr_0.75fr_0.55fr_0.6fr] lg:items-center lg:gap-4"
+                className="grid gap-3 p-4 text-sm sm:grid-cols-2 lg:grid-cols-[1.7fr_0.65fr_0.65fr_0.75fr_0.75fr_0.55fr_0.6fr] lg:items-center lg:gap-4"
                 key={position.id}
               >
                 <Link
-                  className="group flex items-start justify-between gap-3 font-medium text-white transition hover:text-cyan-200"
+                  className="group flex items-start justify-between gap-3 font-medium text-slate-100 transition hover:text-cyan-200 sm:col-span-2 lg:col-span-1"
                   href={`/markets/${position.marketId}`}
                 >
                   <span>
@@ -67,7 +67,7 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
                 <Metric label="Claim" value={position.claimStatus ?? position.status} />
                 <Metric label="Expiry" value={position.expiresAt ? formatExpiry(position.expiresAt) : "Demo"} />
                 <Metric label="Token" value={position.settlementToken ?? "USDC"} />
-                <Badge variant={position.status === "claimable" ? "yes" : "muted"}>
+                <Badge className="w-fit" variant={position.status === "claimable" ? "yes" : "muted"}>
                   {position.marketStatus ?? position.status}
                 </Badge>
               </div>
@@ -142,24 +142,25 @@ export function ClaimableRewards({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-5">
         <CardTitle>Claimable Rewards</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 p-4 pt-0 sm:p-5 sm:pt-0">
         {claimablePositions.map((position) => (
           <div
             className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-4"
             key={position.id}
           >
             <div className="text-sm font-medium text-white">{position.marketTitle}</div>
-            <div className="mt-3 flex items-center justify-between gap-4">
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div>
                 <div className="text-xs text-emerald-200">Estimated reward</div>
-                <div className="mt-1 text-2xl font-semibold text-white">
+                <div className="mt-1 text-xl font-semibold text-white sm:text-2xl">
                   {formatUsd(position.claimableUsd)}
                 </div>
               </div>
               <Button
+                className="w-full sm:w-auto"
                 disabled={!enableClaims || !isConnected || isWrongChain || isClaiming}
                 onClick={() => claimPosition(position)}
                 variant="secondary"
@@ -196,9 +197,9 @@ export function ClaimableRewards({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0 rounded-md border border-white/[0.06] bg-white/[0.014] p-2.5 lg:border-0 lg:bg-transparent lg:p-0">
       <div className="text-xs text-slate-500 lg:hidden">{label}</div>
-      <div className="mt-1 text-slate-200 lg:mt-0">{value}</div>
+      <div className="mt-1 break-words text-slate-200 lg:mt-0">{value}</div>
     </div>
   );
 }

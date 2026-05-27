@@ -95,8 +95,8 @@ export function ExternalSignals({
   }, []);
 
   return (
-    <section className="space-y-5">
-      <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
+    <section className="space-y-4 sm:space-y-5">
+      <div className="rounded-lg border border-cyan-400/14 bg-cyan-400/[0.035] p-4">
         <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
           <DatabaseZap className="h-4 w-4" />
           External Signals
@@ -119,7 +119,7 @@ export function ExternalSignals({
       ) : (
         <>
           {draftableSignals.length > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-4">
               {draftableSignals.map(({ market }) => (
                 <ExternalSignalCard key={market.id} market={market} />
               ))}
@@ -148,7 +148,7 @@ export function ExternalSignals({
                 />
               </button>
               {showAlreadyListed && (
-                <div className="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 border-t border-white/10 p-4 sm:gap-4 lg:grid-cols-2 xl:grid-cols-4">
                   {alreadyListedSignals.map(({ market, probityMarketId }) => (
                     <ExternalSignalCard
                       key={market.id}
@@ -186,21 +186,21 @@ function ExternalSignalCard({
 
   return (
     <Card className="bg-slate-950/80">
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <Badge variant={listedMarketId ? "yes" : "muted"}>
             {listedMarketId ? "Already listed on Probity" : "External reference"}
           </Badge>
           <Badge>{market.category}</Badge>
         </div>
-        <CardTitle className="leading-6">{market.question}</CardTitle>
+        <CardTitle className="text-[15px] leading-6 sm:text-sm">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
           {listedMarketId
             ? "This external reference already maps to a Probity onchain demo market."
             : "Use this reference to draft a separate Arc-native Probity market."}
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="grid grid-cols-2 gap-3 text-sm">
           <Metric label="YES" value={market.probability === null ? "N/A" : `${market.probability}%`} />
           <Metric label="Volume" value={formatUsd(market.volumeUsd)} />
@@ -241,7 +241,7 @@ function ExternalSignalCard({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
+    <div className="rounded-md border border-white/[0.08] bg-white/[0.02] p-3">
       <div className="text-xs text-slate-500">{label}</div>
       <div className="mt-1 font-medium text-white">{value}</div>
     </div>

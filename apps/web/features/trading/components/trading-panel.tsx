@@ -268,7 +268,7 @@ export function TradingPanel({ market }: { market: Market }) {
   }
 
   return (
-    <Card className="bg-slate-950/85">
+    <Card className="bg-slate-950/88">
       <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -280,8 +280,8 @@ export function TradingPanel({ market }: { market: Market }) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
-        <div className="rounded-lg border border-amber-300/15 bg-amber-300/[0.035] px-3 py-2.5">
+      <CardContent className="space-y-3.5 p-4 pt-0 sm:p-5 sm:pt-0">
+        <div className="rounded-lg border border-amber-300/12 bg-amber-300/[0.03] px-3 py-2.5">
           <div className="flex items-center gap-2 text-xs font-medium text-amber-100/90">
             <AlertTriangle className="h-3.5 w-3.5" />
             {deploymentConfig.isArcTestnet ? "Arc testnet trading" : "Local test trading"}
@@ -295,11 +295,11 @@ export function TradingPanel({ market }: { market: Market }) {
 
         <section className="space-y-2.5">
           <SectionLabel>Mode</SectionLabel>
-          <div className="grid grid-cols-2 gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-md border border-white/[0.06] bg-white/[0.014] p-1">
             {(["buy", "sell"] as const).map((option) => (
               <button
                 className={[
-                  "h-9 rounded-[5px] text-sm font-medium capitalize transition",
+                  "h-10 rounded-[5px] text-sm font-medium capitalize transition sm:h-9",
                   mode === option
                     ? "bg-white/[0.07] text-slate-100"
                     : "text-slate-500 hover:text-slate-300"
@@ -320,7 +320,7 @@ export function TradingPanel({ market }: { market: Market }) {
           {(["YES", "NO"] as const).map((option) => (
               <button
                 className={[
-                  "h-10 rounded-md border px-3 text-sm font-medium transition",
+                  "h-11 rounded-md border px-3 text-sm font-medium transition sm:h-10",
                   side === option
                     ? option === "YES"
                       ? "border-emerald-300/35 bg-emerald-400/[0.08] text-emerald-100"
@@ -357,7 +357,7 @@ export function TradingPanel({ market }: { market: Market }) {
           <div className="flex flex-wrap gap-2">
             {QUICK_AMOUNTS.map((quickAmount) => (
               <button
-                className="h-8 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200"
+                className="h-9 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200 sm:h-8"
                 key={quickAmount}
                 onClick={() => incrementAmount(quickAmount)}
                 type="button"
@@ -367,7 +367,7 @@ export function TradingPanel({ market }: { market: Market }) {
             ))}
             {isLocalContractMarket && balance > 0n && (
               <button
-                className="h-8 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200"
+                className="h-9 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200 sm:h-8"
                 onClick={handleMaxAmount}
                 type="button"
               >
@@ -377,7 +377,7 @@ export function TradingPanel({ market }: { market: Market }) {
           </div>
         </section>
 
-        <section className="space-y-2.5 rounded-lg border border-white/[0.07] bg-white/[0.018] p-3 text-sm">
+        <section className="space-y-2 rounded-lg border border-white/[0.06] bg-white/[0.014] p-3 text-sm">
           <SectionLabel>Preview</SectionLabel>
           <PreviewRow label="Action" value={`${mode === "buy" ? "Buy" : "Sell"} ${side}`} />
           <PreviewRow
@@ -442,7 +442,7 @@ export function TradingPanel({ market }: { market: Market }) {
           }
         />
 
-        <section className="grid gap-2.5">
+        <section className="sticky bottom-3 z-20 grid gap-2.5 rounded-lg border border-white/[0.08] bg-slate-950/95 p-2.5 shadow-[0_-16px_32px_rgba(2,6,23,0.45)] backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-0">
           <SectionLabel>Actions</SectionLabel>
           {isLocalContractMarket ? (
             <>

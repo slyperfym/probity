@@ -26,7 +26,7 @@ export function WalletConnectButton() {
 
         if (!ready) {
           return (
-            <Button className="min-w-28 opacity-70" disabled size="sm">
+            <Button className="min-w-20 opacity-70 sm:min-w-28" disabled size="sm">
               <Wallet className="h-4 w-4" />
               Wallet
             </Button>
@@ -35,7 +35,7 @@ export function WalletConnectButton() {
 
         if (!connected) {
           return (
-            <Button className="px-3 sm:px-4" onClick={openConnectModal} size="sm" type="button">
+            <Button className="px-2.5 sm:px-4" onClick={openConnectModal} size="sm" type="button">
               <Wallet className="h-4 w-4" />
               Connect
             </Button>
@@ -44,15 +44,16 @@ export function WalletConnectButton() {
 
         if (chain.unsupported) {
           return (
-            <Button onClick={openChainModal} size="sm" type="button" variant="outline">
+            <Button className="px-2.5 sm:px-3" onClick={openChainModal} size="sm" type="button" variant="outline">
               <PlugZap className="h-4 w-4" />
-              Wrong Network
+              <span className="hidden sm:inline">Wrong Network</span>
+              <span className="sm:hidden">Network</span>
             </Button>
           );
         }
 
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             <button
               className={cn(
                 "hidden h-9 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 text-xs font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07] sm:inline-flex"
@@ -72,7 +73,7 @@ export function WalletConnectButton() {
               variant="secondary"
             >
               <Wallet className="h-4 w-4" />
-              <span className="truncate">{account.displayName || formatAddress(account.address)}</span>
+              <span className="max-w-20 truncate sm:max-w-32">{account.displayName || formatAddress(account.address)}</span>
             </Button>
           </div>
         );

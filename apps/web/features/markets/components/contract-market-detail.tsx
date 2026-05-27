@@ -124,7 +124,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
   return (
     <main className="min-h-screen bg-slate-950">
       <section className="border-b border-white/10 bg-slate-950">
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           <Link
             className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-200"
             href="/markets"
@@ -133,7 +133,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             Back to Markets
           </Link>
 
-          <div className="mt-5 max-w-5xl">
+          <div className="mt-4 max-w-5xl">
             <div className="flex flex-wrap items-center gap-2">
               <Badge>{marketWithParticipants.category}</Badge>
               <MarketStatusBadge status={marketWithParticipants.status} />
@@ -152,7 +152,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                 Updating onchain market data...
               </p>
             )}
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
               <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
               <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />
               {marketWithParticipants.participants > 0 && (
@@ -165,8 +165,8 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:px-8">
-        <div className="space-y-5">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-6 lg:px-8">
+        <div className="order-2 space-y-5 lg:order-1">
           <Card className="bg-slate-950/75">
             <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
               <CardTitle className="text-slate-100">Onchain Signal</CardTitle>
@@ -268,7 +268,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
           />
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <aside className="order-1 space-y-4 lg:sticky lg:top-20 lg:order-2 lg:self-start">
           <TradingPanel market={marketWithParticipants} />
           <Link className={cn(buttonVariants({ variant: "outline" }), "w-full")} href="/markets">
             Browse More Markets
@@ -289,7 +289,7 @@ function OutcomeMetric({
   variant: "yes" | "no";
 }) {
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
+    <div className="rounded-lg border border-white/[0.06] bg-white/[0.014] p-3.5 sm:p-4">
       <div className="text-xs text-slate-500">{label}</div>
       <div
         className={cn(
@@ -313,7 +313,7 @@ function InfoTile({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
+    <div className="rounded-lg border border-white/[0.06] bg-white/[0.014] p-3.5 sm:p-4">
       <Icon className="h-4 w-4 text-cyan-300/70" />
       <div className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-500">{label}</div>
       <div className="mt-2 text-sm font-semibold text-slate-200">{value}</div>
@@ -331,10 +331,10 @@ function MetaChip({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 py-2 text-xs">
+    <div className="flex min-w-0 items-center gap-2 rounded-md border border-white/[0.06] bg-white/[0.014] px-3 py-2 text-xs">
       <Icon className="h-3.5 w-3.5 text-slate-600" />
       <span className="text-slate-600">{label}</span>
-      <span className="font-medium text-slate-400">{value}</span>
+      <span className="min-w-0 truncate font-medium text-slate-400">{value}</span>
     </div>
   );
 }

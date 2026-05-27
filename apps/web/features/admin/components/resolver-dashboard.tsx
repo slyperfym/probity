@@ -76,15 +76,15 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-3 md:grid-cols-3">
+    <div className="space-y-5 lg:space-y-6">
+      <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-3">
         <AdminMetric label="Awaiting" value={String(awaiting)} />
         <AdminMetric label="Resolved" value={String(resolved)} />
         <AdminMetric label="Review" value={String(review)} />
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Resolver Queue</CardTitle>
             <Badge variant={isLocalMode ? "yes" : "info"}>
@@ -92,12 +92,12 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
           <div className="space-y-3">
             {markets.map((market) => (
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4" key={market.id}>
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-4" key={market.id}>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge>{market.category}</Badge>
                       <ResolverStatusBadge status={market.status} />
@@ -121,8 +121,9 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-2 lg:flex lg:shrink-0">
                     <Button
+                      className="w-full"
                       disabled={!canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market })}
                       onClick={() => resolveMarket(market, "YES")}
                       size="sm"
@@ -134,6 +135,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       Resolve YES
                     </Button>
                     <Button
+                      className="w-full"
                       disabled={!canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market })}
                       onClick={() => resolveMarket(market, "NO")}
                       size="sm"
@@ -174,7 +176,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
 
 function AdminMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+    <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-3.5 sm:p-4">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
     </div>

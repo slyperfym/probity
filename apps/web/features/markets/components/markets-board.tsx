@@ -81,8 +81,8 @@ export function MarketsBoard() {
     (summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4 sm:space-y-5">
+      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryMetric label="Filtered Volume" value={formatUsd(totalVolume)} />
         <SummaryMetric label="Loaded Active" value={String(activeMarkets)} />
         <SummaryMetric label="Displayed Liquidity" value={formatUsd(totalLiquidity)} />
@@ -93,9 +93,9 @@ export function MarketsBoard() {
         />
       </div>
 
-      <div className="rounded-md border border-white/[0.07] bg-white/[0.018] px-3 py-2">
+      <div className="rounded-md border border-white/[0.06] bg-white/[0.014] px-3 py-2">
         <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
             <span className="font-medium text-slate-400">
               {isUsingMockFallback
                 ? "Mock fallback active"
@@ -124,10 +124,10 @@ export function MarketsBoard() {
               <span className="text-cyan-200/75">Reading Arc Testnet markets...</span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <span className="text-slate-600">Last updated {lastUpdatedLabel}</span>
             <Button
-              className="h-7 border-white/[0.08] px-2 text-[10px] uppercase tracking-[0.14em] text-slate-500"
+              className="h-8 border-white/[0.08] px-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"
               disabled={summaryQuery.isFetching}
               onClick={() => setRefreshNonce((current) => current + 1)}
               size="sm"
@@ -135,15 +135,16 @@ export function MarketsBoard() {
               variant="outline"
             >
               <RefreshCw className={cn("h-3 w-3", summaryQuery.isFetching && "animate-spin")} />
-              Refresh onchain data
+              <span className="hidden sm:inline">Refresh onchain data</span>
+              <span className="sm:hidden">Refresh</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/[0.07] bg-slate-950/50 p-3">
+      <div className="rounded-lg border border-white/[0.06] bg-slate-950/55 p-3 sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <label className="flex min-h-9 items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 text-sm text-slate-500 transition focus-within:border-cyan-300/20 lg:w-80">
+          <label className="flex min-h-11 w-full items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 text-sm text-slate-500 transition focus-within:border-cyan-300/20 lg:w-80">
             <Search className="h-4 w-4 text-slate-600" />
             <input
               aria-label="Search markets"
@@ -154,7 +155,7 @@ export function MarketsBoard() {
               value={searchQuery}
             />
           </label>
-          <div className="flex flex-col gap-2.5 lg:items-end">
+          <div className="flex min-w-0 flex-col gap-2.5 lg:items-end">
             <span className="text-xs text-slate-600">Search applies to loaded markets.</span>
             <FilterGroup
               label="Category"
@@ -174,7 +175,7 @@ export function MarketsBoard() {
 
       {filteredMarkets.length > 0 ? (
         <>
-          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {filteredMarkets.map((market) => (
               <MarketCard key={market.id} market={market} />
             ))}
@@ -182,7 +183,7 @@ export function MarketsBoard() {
           {hasMoreMarkets && (
             <div className="flex justify-center">
               <Button
-                className="border-white/[0.08] text-slate-300"
+                className="w-full border-white/[0.08] text-slate-300 sm:w-auto"
                 disabled={summaryQuery.isFetching && !summaryData}
                 onClick={() => setVisibleMarketLimit((current) => current + MARKET_PAGE_SIZE)}
                 type="button"
@@ -316,9 +317,9 @@ function SummaryMetric({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] p-4 shadow-[0_1px_0_rgba(255,255,255,0.025)_inset]">
+      <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3.5 shadow-[0_1px_0_rgba(255,255,255,0.02)_inset] sm:p-4">
       <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">{label}</div>
-      <div className={cn("mt-2 truncate text-2xl font-semibold text-slate-100 sm:text-3xl", valueClassName)}>
+      <div className={cn("mt-1.5 truncate text-xl font-semibold text-slate-100 sm:mt-2 sm:text-2xl lg:text-3xl", valueClassName)}>
         {value}
       </div>
     </div>
@@ -337,13 +338,13 @@ function FilterGroup<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+    <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
       <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:mr-1">{label}</span>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
       {options.map((option) => (
         <Button
           className={cn(
-            "h-8 border-white/[0.08] px-3 text-xs text-slate-400",
+            "h-9 border-white/[0.08] px-3 text-xs text-slate-400 sm:h-8",
             value === option &&
               "border-cyan-300/30 bg-cyan-400/[0.08] text-cyan-100 shadow-none"
           )}
