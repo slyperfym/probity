@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createPublicClient, defineChain, getAddress, http, isAddress, type Address } from "viem";
+import { createPublicClient, defineChain, getAddress, http, isAddress, type Address, type PublicClient } from "viem";
 
 import { ARC_TESTNET_CHAIN_ID } from "@/config/env";
 import { contractAbis, contractAddresses, deploymentConfig } from "@/config/contracts";
@@ -12,6 +12,16 @@ import type { MarketCategory, MarketStatus } from "@/features/markets/types";
 const USDC_DECIMALS = 1_000_000;
 const ACTIVE_CACHE_MS = 30_000;
 const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network";
+const summaryFunctionNames = [
+  "title",
+  "metadataURI",
+  "expirationTime",
+  "status",
+  "resolvedOutcome",
+  "totalYesShares",
+  "totalNoShares",
+  "totalDeposited"
+] as const;
 
 let cachedSummary:
   | {
@@ -108,6 +118,7 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
       allowFailure: true,
       contracts
     });
+    const retryAddresses: Address[] = [];
 
     summaries = newestFirstAddresses.flatMap((address, index) => {
       const offset = index * 8;
@@ -115,34 +126,34 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
       const market = mapSummaryReads(address, marketReads, generatedAt);
 
       if (!market) {
-        warnings.push(`Could not read full summary for market ${address}.`);
+        retryAddresses.push(address);
       }
 
       return market ? [market] : [];
     });
+
+    if (retryAddresses.length > 0) {
+      const retriedSummaries = await retryMarketSummaries({
+        addresses: retryAddresses,
+        generatedAt,
+        publicClient
+      });
+
+      summaries = [...summaries, ...retriedSummaries.summaries];
+      warnings.push(...retriedSummaries.warnings);
+    }
   } catch (error) {
     console.warn("Probity market summary multicall failed; retrying per market", error);
     warnings.push("Batched market reads failed; returned partial summaries from per-market reads.");
 
-    const settledSummaries = await Promise.allSettled(
-      newestFirstAddresses.map(async (address) => {
-        const reads = await publicClient.multicall({
-          allowFailure: true,
-          contracts: getSummaryContracts(address)
-        });
-
-        return mapSummaryReads(address, reads, generatedAt);
-      })
-    );
-
-    summaries = settledSummaries.flatMap((result, index) => {
-      if (result.status === "rejected" || !result.value) {
-        warnings.push(`Could not read full summary for market ${newestFirstAddresses[index]}.`);
-        return [];
-      }
-
-      return [result.value];
+    const retriedSummaries = await retryMarketSummaries({
+      addresses: newestFirstAddresses,
+      generatedAt,
+      publicClient
     });
+
+    summaries = retriedSummaries.summaries;
+    warnings.push(...retriedSummaries.warnings);
   }
 
   if (warnings.length > 0) {
@@ -164,16 +175,63 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
 }
 
 function getSummaryContracts(address: Address) {
-  return [
-    { abi: contractAbis.predictionMarket, address, functionName: "title" },
-    { abi: contractAbis.predictionMarket, address, functionName: "metadataURI" },
-    { abi: contractAbis.predictionMarket, address, functionName: "expirationTime" },
-    { abi: contractAbis.predictionMarket, address, functionName: "status" },
-    { abi: contractAbis.predictionMarket, address, functionName: "resolvedOutcome" },
-    { abi: contractAbis.predictionMarket, address, functionName: "totalYesShares" },
-    { abi: contractAbis.predictionMarket, address, functionName: "totalNoShares" },
-    { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" }
-  ];
+  return summaryFunctionNames.map((functionName) => ({
+    abi: contractAbis.predictionMarket,
+    address,
+    functionName
+  }));
+}
+
+async function retryMarketSummaries({
+  addresses,
+  generatedAt,
+  publicClient
+}: {
+  addresses: Address[];
+  generatedAt: string;
+  publicClient: PublicClient;
+}) {
+  const settledSummaries = await Promise.allSettled(
+    addresses.map((address) => readMarketSummaryIndividually(publicClient, address, generatedAt))
+  );
+  const warnings: string[] = [];
+  const summaries = settledSummaries.flatMap((result, index) => {
+    if (result.status === "rejected" || !result.value) {
+      warnings.push(`Could not read full summary for market ${addresses[index]}.`);
+      return [];
+    }
+
+    return [result.value];
+  });
+
+  return { summaries, warnings };
+}
+
+async function readMarketSummaryIndividually(
+  publicClient: PublicClient,
+  address: Address,
+  generatedAt: string
+) {
+  const reads = await Promise.all(
+    summaryFunctionNames.map(async (functionName) => {
+      try {
+        return {
+          result: await publicClient.readContract({
+            abi: contractAbis.predictionMarket,
+            address,
+            functionName
+          }),
+          status: "success" as const
+        };
+      } catch {
+        return {
+          status: "failure" as const
+        };
+      }
+    })
+  );
+
+  return mapSummaryReads(address, reads, generatedAt);
 }
 
 function getSummaryMarketFactoryAddress() {

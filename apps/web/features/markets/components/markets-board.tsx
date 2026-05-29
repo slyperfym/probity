@@ -41,17 +41,20 @@ export function MarketsBoard() {
     refetchIntervalInBackground: false,
     staleTime: 25_000
   });
-  const clientFallbackMarkets = useLocalContractMarkets({
-    enabled: summaryQuery.isError,
-    limit: visibleMarketLimit
-  });
   const summaryData = summaryQuery.data;
   const summaryMarkets = React.useMemo(
     () => (summaryData?.markets ?? []).map(mapSummaryToMarket),
     [summaryData?.markets]
   );
+  const shouldUseClientFallback =
+    summaryQuery.isError ||
+    Boolean(summaryData && summaryData.total > 0 && summaryMarkets.length === 0);
+  const clientFallbackMarkets = useLocalContractMarkets({
+    enabled: shouldUseClientFallback,
+    limit: visibleMarketLimit
+  });
   const isUsingClientFallback =
-    summaryQuery.isError &&
+    shouldUseClientFallback &&
     !clientFallbackMarkets.isUsingMockFallback &&
     clientFallbackMarkets.markets.length > 0;
   const boardMarkets = isUsingClientFallback ? clientFallbackMarkets.markets : summaryMarkets;
@@ -84,7 +87,7 @@ export function MarketsBoard() {
       : "Not loaded";
   const isInitialLoading =
     (summaryQuery.isLoading && !summaryData) ||
-    (summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
+    (shouldUseClientFallback && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
   const featuredMarkets = React.useMemo(
     () =>
       isUsingMockFallback || isInitialLoading
