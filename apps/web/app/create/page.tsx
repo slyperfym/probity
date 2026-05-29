@@ -14,7 +14,7 @@ export default function CreatePage() {
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200">
-        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+        <div className="mx-auto w-full max-w-[1800px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
           <Badge variant="info">
             Create Market
           </Badge>
@@ -27,7 +27,7 @@ export default function CreatePage() {
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6 lg:px-8">
+      <section className="mx-auto grid w-full max-w-[1800px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6 lg:px-8">
         <Suspense
           fallback={
             <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">

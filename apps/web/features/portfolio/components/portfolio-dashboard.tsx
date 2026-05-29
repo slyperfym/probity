@@ -110,7 +110,7 @@ export function PortfolioDashboard() {
   const isError = !useMockFallback && positionReads.isError;
 
   return (
-    <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:gap-6 lg:px-8 lg:py-6">
+    <section className="mx-auto grid w-full max-w-[1800px] gap-5 px-4 py-5 sm:px-6 lg:gap-6 lg:px-8 lg:py-6">
       <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-4">
         <PortfolioMetric icon={BriefcaseBusiness} label="Portfolio value" value={formatUsd(totalValue)} />
         <PortfolioMetric icon={Coins} label="Claimable" value={formatUsd(claimable)} />
@@ -136,7 +136,7 @@ export function PortfolioDashboard() {
           title="Could not load positions"
         />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-6">
           <div className="space-y-6">
             <PortfolioPositions positions={positions} />
           </div>

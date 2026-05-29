@@ -14,7 +14,7 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200">
-        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+        <div className="mx-auto w-full max-w-[1800px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
           <Badge variant="info">
             Resolver Admin
           </Badge>
@@ -27,7 +27,7 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:px-8">
+      <section className="mx-auto grid w-full max-w-[1800px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6 lg:px-8">
         <ResolverDashboard markets={mockResolverMarkets} />
         <aside className="space-y-3 lg:space-y-4">
           <AdminControlCard
