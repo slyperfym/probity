@@ -127,7 +127,11 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge>{market.category}</Badge>
                       <ResolverStatusBadge status={market.status} />
-                      {market.proposedOutcome && <Badge variant="info">{market.proposedOutcome}</Badge>}
+                      {market.proposedOutcome && (
+                        <Badge variant={market.proposedOutcome === "NO" ? "no" : "yes"}>
+                          Resolved {market.proposedOutcome}
+                        </Badge>
+                      )}
                     </div>
                     <Link
                       className="group mt-3 inline-flex items-start gap-2 text-sm font-medium text-slate-950 transition hover:text-indigo-700"
@@ -137,14 +141,20 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       <ArrowUpRight className="mt-0.5 h-4 w-4 text-slate-400 transition group-hover:text-indigo-600" />
                     </Link>
                     <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2 lg:grid-cols-4">
-                      <span>Expires {formatExpiry(market.expiry)}</span>
-                      <span>Volume {formatUsd(market.volumeUsd)}</span>
-                      <span>Resolver {market.resolver}</span>
-                      <span>
-                        {isResolverEligible({ accountAddress: connectedResolverAddress, market })
-                          ? "Eligible resolver"
-                          : "Resolver wallet required"}
-                      </span>
+                      <AdminInfo label="Expires" value={formatExpiry(market.expiry)} />
+                      <AdminInfo label="Volume" value={formatUsd(market.volumeUsd)} />
+                      <AdminInfo label="Required resolver" value={market.resolverAddress ? shortHash(market.resolverAddress) : market.resolver} />
+                      <AdminInfo label="Connected wallet" value={connectedResolverAddress ? shortHash(connectedResolverAddress) : "Not connected"} />
+                      <AdminInfo
+                        label="Resolve action"
+                        value={getResolveAvailabilityLabel({
+                          accountAddress: connectedResolverAddress,
+                          isConnected,
+                          isLocalMode,
+                          isResolving,
+                          market
+                        })}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 lg:flex lg:shrink-0">
@@ -246,6 +256,15 @@ function ResolverStatusBadge({ status }: { status: ResolverMarket["status"] }) {
   return <Badge variant="muted">Review</Badge>;
 }
 
+function AdminInfo({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+      <span className="block text-[10px] uppercase tracking-[0.12em] text-slate-500">{label}</span>
+      <span className="mt-1 block truncate font-medium text-slate-700">{value}</span>
+    </span>
+  );
+}
+
 function toResolverMarket(market: Market): ResolverMarket {
   const isExpired = Date.now() >= new Date(market.expiresAt).getTime();
 
@@ -286,6 +305,46 @@ function canResolve({
   }
 
   return isResolverEligible({ accountAddress: getAddress(accountAddress), market });
+}
+
+function getResolveAvailabilityLabel({
+  accountAddress,
+  isConnected,
+  isLocalMode,
+  isResolving,
+  market
+}: {
+  accountAddress: `0x${string}` | undefined;
+  isConnected: boolean;
+  isLocalMode: boolean;
+  isResolving: boolean;
+  market: ResolverMarket;
+}) {
+  if (!isLocalMode) {
+    return "Contracts unavailable";
+  }
+
+  if (!isConnected || !accountAddress) {
+    return "Connect resolver";
+  }
+
+  if (isResolving) {
+    return "Resolving";
+  }
+
+  if (market.status === "active") {
+    return "Active";
+  }
+
+  if (market.status === "resolved") {
+    return "Resolved";
+  }
+
+  if (!isResolverEligible({ accountAddress, market })) {
+    return "Resolver wallet required";
+  }
+
+  return "Available";
 }
 
 function isResolverEligible({

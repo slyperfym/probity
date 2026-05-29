@@ -140,7 +140,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className="border-slate-200 bg-slate-50 text-slate-600">{marketWithParticipants.category}</Badge>
-                  <MarketStatusBadge status={marketWithParticipants.status} />
+                  <MarketStatusBadge outcome={marketWithParticipants.outcome} status={marketWithParticipants.status} />
                   <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700" variant="info">
                     {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
                   </Badge>
@@ -149,11 +149,16 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                   <h1 className="max-w-4xl text-3xl font-semibold leading-[1.08] tracking-[-0.01em] text-slate-950 sm:text-4xl lg:text-5xl">
                     {marketWithParticipants.title}
                   </h1>
-                  <CopyMarketLinkButton />
+                  <CopyMarketLinkButton marketTitle={marketWithParticipants.title} />
                 </div>
                 {marketWithParticipants.description && (
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
                     {marketWithParticipants.description}
+                  </p>
+                )}
+                {marketWithParticipants.status === "expired" && (
+                  <p className="mt-3 w-fit rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                    Awaiting resolver settlement
                   </p>
                 )}
               </div>
@@ -275,10 +280,10 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
           <OnchainActivityList
             emptyDescription="No activity found for this market yet."
             emptyTitle="No activity"
-            error={marketActivity.isError ? "Could not load onchain activity." : null}
+            error={marketActivity.isError ? "Could not load market activity." : null}
             isLoading={marketActivity.isLoading || marketActivity.isFetching}
             items={marketActivity.data ?? []}
-            loadingMessage="Reading Arc Testnet activity..."
+            loadingMessage="Reading market activity from Arc Testnet..."
             title="Market Activity"
           />
         </div>

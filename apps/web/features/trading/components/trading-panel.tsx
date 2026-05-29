@@ -614,7 +614,7 @@ function getStatusMessage({
     }
 
     if (hasClaimablePosition) {
-      return "Resolved winning position detected. Claim Payout is available.";
+      return "Claimable. Claim Payout is available.";
     }
 
     if (!hasWinningPosition) {

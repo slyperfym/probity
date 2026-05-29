@@ -14,6 +14,7 @@ export type PortfolioPosition = {
   notionalUsd: number;
   status: "active" | "claimable" | "claimed" | "expired";
   marketStatus?: string;
+  marketOutcome?: "yes" | "no" | null;
   claimStatus?: string;
   expiresAt?: string;
   settlementToken?: string;

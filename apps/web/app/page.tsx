@@ -73,6 +73,15 @@ const metrics = [
   { label: "Settlement", value: "USDC-style" }
 ];
 
+const testSteps = [
+  "Connect wallet",
+  "Get Arc testnet USDC",
+  "Open a market",
+  "Buy YES or NO",
+  "Wait for resolver",
+  "Claim payout"
+];
+
 export default function HomePage() {
   return (
     <main className="overflow-hidden bg-[#f7f7f2]">
@@ -129,6 +138,32 @@ export default function HomePage() {
               <div className="space-y-3 p-3">
                 {protocolFlow.map((step, index) => (
                   <ProtocolFlowRow index={index + 1} key={step.label} step={step} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white py-6">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-slate-200 bg-[#f7f7f2] p-3 shadow-sm sm:p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-slate-950">How to test Probity</div>
+                <div className="mt-1 text-xs text-slate-500">Arc Testnet flow</div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+                {testSteps.map((step, index) => (
+                  <div
+                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm"
+                    key={step}
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 text-[11px] font-semibold text-indigo-700">
+                      {index + 1}
+                    </span>
+                    <span>{step}</span>
+                  </div>
                 ))}
               </div>
             </div>

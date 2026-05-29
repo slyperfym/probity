@@ -15,6 +15,8 @@ import { probityChain } from "@/config/chains";
 import { getPredictionMarketConfig } from "@/config/contracts";
 import { formatUsd } from "@/features/markets/lib/formatters";
 import { formatExpiry } from "@/features/markets/lib/formatters";
+import { getMarketStateLabel } from "@/features/markets/components/market-status-badge";
+import type { MarketOutcome } from "@/features/markets/types";
 import type { PortfolioPosition } from "@/features/portfolio/types";
 import { refreshOnchainQueries } from "@/lib/onchain-cache";
 
@@ -64,11 +66,11 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
                 </Link>
                 <Metric label="YES" value={formatShares(position.yesShares ?? (position.side === "YES" ? position.shares : 0))} />
                 <Metric label="NO" value={formatShares(position.noShares ?? (position.side === "NO" ? position.shares : 0))} />
-                <Metric label="Claim" value={position.claimStatus ?? position.status} />
+                <Metric label="Claim" value={position.claimStatus ?? getClaimStateLabel(position)} />
                 <Metric label="Expiry" value={position.expiresAt ? formatExpiry(position.expiresAt) : "Unavailable"} />
                 <Metric label="Token" value={position.settlementToken ?? "USDC"} />
-                <Badge className="w-fit" variant={position.status === "claimable" ? "yes" : "muted"}>
-                  {position.marketStatus ?? position.status}
+                <Badge className="w-fit" variant={position.status === "claimable" ? "yes" : position.status === "claimed" ? "yes" : "muted"}>
+                  {getPositionStateLabel(position)}
                 </Badge>
               </div>
             ))}
@@ -168,7 +170,7 @@ export function ClaimableRewards({
                 {isClaiming && pendingMarketId === position.marketId && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}
-                {isWrongChain ? "Wrong chain" : "Claim"}
+                {isWrongChain ? "Wrong chain" : "Claim Payout"}
               </Button>
             </div>
             {claimWrite.error && pendingMarketId === position.marketId && (
@@ -193,6 +195,62 @@ export function ClaimableRewards({
       </CardContent>
     </Card>
   );
+}
+
+function getClaimStateLabel(position: PortfolioPosition) {
+  if (position.status === "claimable") {
+    return "Claimable";
+  }
+
+  if (position.status === "claimed") {
+    return "Claimed";
+  }
+
+  if (position.status === "expired") {
+    return "Awaiting resolver settlement";
+  }
+
+  return "Not claimable";
+}
+
+function getPositionStateLabel(position: PortfolioPosition) {
+  if (position.status === "claimable") {
+    return "Claimable";
+  }
+
+  if (position.status === "claimed") {
+    return "Claimed";
+  }
+
+  if (position.marketStatus === "resolved") {
+    return getMarketStateLabel("resolved", position.marketOutcome ?? getOutcomeFromClaimStatus(position.claimStatus));
+  }
+
+  if (position.marketStatus === "expired" || position.status === "expired") {
+    return "Awaiting resolution";
+  }
+
+  if (position.marketStatus === "active" || position.status === "active") {
+    return "Active";
+  }
+
+  return position.marketStatus ?? position.status;
+}
+
+function getOutcomeFromClaimStatus(claimStatus: string | undefined): MarketOutcome {
+  if (!claimStatus) {
+    return null;
+  }
+
+  if (claimStatus.toLowerCase().includes("yes")) {
+    return "yes";
+  }
+
+  if (claimStatus.toLowerCase().includes("no")) {
+    return "no";
+  }
+
+  return null;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

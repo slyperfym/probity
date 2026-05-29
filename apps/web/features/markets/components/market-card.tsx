@@ -27,7 +27,7 @@ function MarketCardComponent({ market, variant = "grid" }: { market: Market; var
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="border-slate-200 bg-slate-50 text-slate-600">{market.category}</Badge>
-              <MarketStatusBadge status={market.status} />
+              <MarketStatusBadge outcome={market.outcome} status={market.status} />
             </div>
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400 transition group-hover:border-indigo-200 group-hover:bg-indigo-50 group-hover:text-indigo-700">
               <ArrowUpRight className="h-4 w-4" />
@@ -48,6 +48,11 @@ function MarketCardComponent({ market, variant = "grid" }: { market: Market; var
           </div>
 
           <div className="mt-4 grid gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500 sm:grid-cols-3">
+            {market.status === "expired" && (
+              <div className="flex min-w-0 items-center gap-2 rounded-md bg-amber-50 px-2.5 py-2 text-amber-700 sm:col-span-3">
+                Awaiting resolver settlement
+              </div>
+            )}
             <div className="flex min-w-0 items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2">
               <Clock3 className="h-3.5 w-3.5 text-slate-400" />
               <span className="truncate">{formatExpiry(market.expiresAt)}</span>

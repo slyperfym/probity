@@ -165,12 +165,12 @@ export function PortfolioDashboard() {
       )}
 
       <OnchainActivityList
-        emptyDescription="Trades, claims, and resolutions will appear here."
+        emptyDescription="No onchain activity found for this wallet yet."
         emptyTitle="No activity yet"
-        error={walletActivity.isError ? "Could not load activity." : null}
+        error={walletActivity.isError ? "Could not load onchain activity." : null}
         isLoading={walletActivity.isLoading || walletActivity.isFetching}
         items={walletActivity.data ?? []}
-        loadingMessage="Reading Arc Testnet activity..."
+        loadingMessage="Reading wallet activity from Arc Testnet..."
         title="Recent Onchain Activity"
       />
     </section>
@@ -221,6 +221,7 @@ function mapLivePosition({
     expiresAt: market.expiresAt,
     id: `live-${market.id}`,
     marketId: market.id,
+    marketOutcome: market.outcome,
     marketStatus: market.status,
     marketTitle: market.title,
     noShares: no,

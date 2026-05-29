@@ -88,22 +88,22 @@ export default async function MarketDetailPage({
           <div className="mt-5 max-w-5xl">
             <div className="flex flex-wrap items-center gap-2">
               <Badge>{market.category}</Badge>
-              <MarketStatusBadge status={market.status} />
-              {market.outcome && (
-                <Badge variant={market.outcome === "yes" ? "yes" : "no"}>
-                  Outcome {market.outcome.toUpperCase()}
-                </Badge>
-              )}
+              <MarketStatusBadge outcome={market.outcome} status={market.status} />
             </div>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <h1 className="max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
                 {market.title}
               </h1>
-              <CopyMarketLinkButton />
+              <CopyMarketLinkButton marketTitle={market.title} />
             </div>
             {market.description && (
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
                 {market.description}
+              </p>
+            )}
+            {market.status === "expired" && (
+              <p className="mt-3 w-fit rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                Awaiting resolver settlement
               </p>
             )}
             <div className="mt-5 flex flex-wrap gap-2">

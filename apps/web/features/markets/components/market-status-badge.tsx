@@ -1,9 +1,42 @@
 import { Badge } from "@/components/ui/badge";
-import { getStatusLabel } from "@/features/markets/lib/formatters";
-import type { MarketStatus } from "@/features/markets/types";
+import type { MarketOutcome, MarketStatus } from "@/features/markets/types";
 
-export function MarketStatusBadge({ status }: { status: MarketStatus }) {
-  const variant = status === "active" ? "info" : status === "resolved" ? "yes" : "muted";
+export function MarketStatusBadge({
+  outcome,
+  status
+}: {
+  outcome?: MarketOutcome;
+  status: MarketStatus;
+}) {
+  const label = getMarketStateLabel(status, outcome);
+  const variant =
+    status === "active"
+      ? "info"
+      : status === "resolved" && outcome === "no"
+        ? "no"
+        : status === "resolved"
+          ? "yes"
+          : "muted";
 
-  return <Badge variant={variant}>{getStatusLabel(status)}</Badge>;
+  return <Badge variant={variant}>{label}</Badge>;
+}
+
+export function getMarketStateLabel(status: MarketStatus, outcome?: MarketOutcome) {
+  if (status === "active") {
+    return "Active";
+  }
+
+  if (status === "expired") {
+    return "Awaiting resolution";
+  }
+
+  if (outcome === "yes") {
+    return "Resolved YES";
+  }
+
+  if (outcome === "no") {
+    return "Resolved NO";
+  }
+
+  return "Resolved";
 }
