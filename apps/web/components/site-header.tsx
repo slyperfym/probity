@@ -3,29 +3,59 @@
 import Link from "next/link";
 import { Activity, Droplets } from "lucide-react";
 import { usePathname } from "next/navigation";
+import * as React from "react";
 import type { ReactNode } from "react";
+import { getAddress } from "viem";
+import { useAccount, useReadContract } from "wagmi";
 
 import { DeploymentReadinessAlert } from "@/components/web3/deployment-readiness-alert";
 import { WalletConnectionAlert } from "@/components/web3/wallet-connection-alert";
 import { WalletConnectButton } from "@/components/web3/wallet-connect-button";
 import { isArcTestnetTarget } from "@/config/chains";
-import { deploymentConfig } from "@/config/contracts";
+import { deploymentConfig, getMarketFactoryConfig, hasContractAddress } from "@/config/contracts";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const publicNavItems = [
   { label: "Markets", href: "/markets" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Create", href: "/create" },
-  { label: "Admin", href: "/admin" }
+  { label: "Portfolio", href: "/portfolio" }
 ];
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { address: accountAddress } = useAccount();
+  const normalizedAccount = accountAddress ? getAddress(accountAddress) : undefined;
   const showArcSetupMode =
     isArcTestnetTarget &&
     (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken);
+  const shouldReadAccess =
+    deploymentConfig.marketDataMode !== "mock" && hasContractAddress("MarketFactory") && Boolean(normalizedAccount);
+  const factoryConfig = getMarketFactoryConfig();
+  const approvedCreator = useReadContract({
+    ...factoryConfig,
+    args: normalizedAccount ? [normalizedAccount] : undefined,
+    functionName: "approvedCreators",
+    query: {
+      enabled: shouldReadAccess
+    }
+  });
+  const approvedResolver = useReadContract({
+    ...factoryConfig,
+    args: normalizedAccount ? [normalizedAccount] : undefined,
+    functionName: "approvedResolvers",
+    query: {
+      enabled: shouldReadAccess
+    }
+  });
+  const navItems = React.useMemo(
+    () => [
+      ...publicNavItems,
+      ...(approvedCreator.data ? [{ label: "Create", href: "/create" }] : []),
+      ...(approvedResolver.data ? [{ label: "Admin", href: "/admin" }] : [])
+    ],
+    [approvedCreator.data, approvedResolver.data]
+  );
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl">

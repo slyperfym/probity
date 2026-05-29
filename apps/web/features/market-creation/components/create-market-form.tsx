@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
+  ArrowLeft,
   CalendarClock,
   CheckCircle2,
   ExternalLink,
@@ -175,6 +176,15 @@ export function CreateMarketForm() {
       ],
       functionName: "createMarket"
     });
+  }
+
+  if (!isConnected || (shouldReadAccess && approvedCreator.isFetched && !isApprovedCreator)) {
+    return (
+      <AccessRequiredState
+        description="Connect an approved creator wallet to deploy Arc-native markets."
+        title="Creator access required"
+      />
+    );
   }
 
   return (
@@ -362,6 +372,27 @@ export function CreateMarketForm() {
             </Button>
           </div>
         </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AccessRequiredState({ description, title }: { description: string; title: string }) {
+  return (
+    <Card className="border-dashed border-slate-300 bg-white shadow-sm">
+      <CardContent className="flex flex-col items-center justify-center p-8 text-center sm:p-10">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-50 text-indigo-600">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div className="mt-4 text-base font-semibold text-slate-950">{title}</div>
+        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+        <Link
+          className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+          href="/markets"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Markets
+        </Link>
       </CardContent>
     </Card>
   );

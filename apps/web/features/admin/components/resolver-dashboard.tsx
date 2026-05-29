@@ -2,17 +2,22 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowUpRight, CheckCircle2, Gavel, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CheckCircle2, Gavel, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import type { ActivityFeedItem } from "@probity/types";
 import { getAddress } from "viem";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateCard } from "@/components/feedback/state-card";
-import { deploymentConfig, getPredictionMarketConfig } from "@/config/contracts";
+import {
+  deploymentConfig,
+  getMarketFactoryConfig,
+  getPredictionMarketConfig,
+  hasContractAddress
+} from "@/config/contracts";
 import type { ResolverMarket } from "@/features/admin/types";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { ActivityFeed } from "@/features/indexing";
@@ -24,6 +29,19 @@ import { refreshOnchainQueries } from "@/lib/onchain-cache";
 export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverMarket[] }) {
   const { address: accountAddress, isConnected } = useAccount();
   const queryClient = useQueryClient();
+  const connectedResolverAddress = accountAddress ? getAddress(accountAddress) : undefined;
+  const shouldReadAccess =
+    deploymentConfig.marketDataMode !== "mock" &&
+    hasContractAddress("MarketFactory") &&
+    Boolean(connectedResolverAddress);
+  const approvedResolver = useReadContract({
+    ...getMarketFactoryConfig(),
+    args: connectedResolverAddress ? [connectedResolverAddress] : undefined,
+    functionName: "approvedResolvers",
+    query: {
+      enabled: shouldReadAccess
+    }
+  });
   const localMarkets = useLocalContractMarkets();
   const resolveWrite = useWriteContract();
   const resolveReceipt = useWaitForTransactionReceipt({ hash: resolveWrite.data });
@@ -45,7 +63,15 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   const isLocalMode = !localMarkets.isUsingMockFallback && localMarkets.markets.length > 0;
   const contractModeLabel = deploymentConfig.isArcTestnet ? "Arc testnet" : "Local contracts";
   const markets = isLocalMode ? localMarkets.markets.map(toResolverMarket) : mockMarkets;
-  const connectedResolverAddress = accountAddress ? getAddress(accountAddress) : undefined;
+
+  if (!isConnected || (shouldReadAccess && approvedResolver.isFetched && !approvedResolver.data)) {
+    return (
+      <AccessRequiredState
+        description="Connect the configured resolver wallet to finalize outcomes."
+        title="Resolver access required"
+      />
+    );
+  }
 
   if (markets.length === 0) {
     return (
@@ -171,6 +197,27 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
       </Card>
       <ActivityFeed items={activity} />
     </div>
+  );
+}
+
+function AccessRequiredState({ description, title }: { description: string; title: string }) {
+  return (
+    <Card className="border-dashed border-slate-300 bg-white shadow-sm">
+      <CardContent className="flex flex-col items-center justify-center p-8 text-center sm:p-10">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-50 text-indigo-600">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div className="mt-4 text-base font-semibold text-slate-950">{title}</div>
+        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+        <Link
+          className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+          href="/markets"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Markets
+        </Link>
+      </CardContent>
+    </Card>
   );
 }
 
