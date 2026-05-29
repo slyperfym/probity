@@ -12,7 +12,7 @@ export default function MarketsPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+        <div className="mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           <Badge variant="info">
             Market Board
           </Badge>
@@ -33,7 +33,7 @@ export default function MarketsPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6 lg:px-8">
         <MarketsBoard />
       </section>
     </main>
