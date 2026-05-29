@@ -25,6 +25,8 @@ type CategoryFilter = (typeof marketCategories)[number];
 type StatusFilter = (typeof marketStatuses)[number];
 
 const MARKET_PAGE_SIZE = 9;
+const SUMMARY_CACHE_KEY = "probity-real-market-summaries";
+const SUMMARY_CACHE_TTL_MS = 60_000;
 
 export function MarketsBoard() {
   const [category, setCategory] = React.useState<CategoryFilter>("All");
@@ -33,6 +35,7 @@ export function MarketsBoard() {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [visibleMarketLimit, setVisibleMarketLimit] = React.useState(MARKET_PAGE_SIZE);
   const [refreshNonce, setRefreshNonce] = React.useState(0);
+  const [cachedSummaryData, setCachedSummaryData] = React.useState<MarketSummaryResponse | undefined>();
   const summaryQuery = useQuery({
     queryFn: () => fetchMarketSummaries(refreshNonce > 0),
     queryKey: ["probity", "market-summaries", refreshNonce],
@@ -41,14 +44,32 @@ export function MarketsBoard() {
     refetchIntervalInBackground: false,
     staleTime: 25_000
   });
-  const summaryData = summaryQuery.data;
+  React.useEffect(() => {
+    setCachedSummaryData(readCachedMarketSummaries());
+  }, []);
+
+  React.useEffect(() => {
+    const nextSummaryData = summaryQuery.data;
+
+    if (isCacheableSummaryResponse(nextSummaryData)) {
+      writeCachedMarketSummaries(nextSummaryData);
+      setCachedSummaryData(nextSummaryData);
+    }
+  }, [summaryQuery.data]);
+
+  const apiSummaryData = summaryQuery.data;
+  const shouldPreferApiData =
+    Boolean(apiSummaryData && apiSummaryData.markets.length > 0) ||
+    Boolean(apiSummaryData && apiSummaryData.total === 0);
+  const summaryData = shouldPreferApiData ? apiSummaryData : cachedSummaryData;
+  const isShowingCachedData = Boolean(summaryData && summaryData === cachedSummaryData && !shouldPreferApiData);
   const summaryMarkets = React.useMemo(
     () => (summaryData?.markets ?? []).map(mapSummaryToMarket),
     [summaryData?.markets]
   );
   const shouldUseClientFallback =
     summaryQuery.isError ||
-    Boolean(summaryData && summaryData.total > 0 && summaryMarkets.length === 0);
+    Boolean(apiSummaryData && apiSummaryData.total > 0 && apiSummaryData.markets.length === 0 && !cachedSummaryData);
   const clientFallbackMarkets = useLocalContractMarkets({
     enabled: shouldUseClientFallback,
     limit: visibleMarketLimit
@@ -81,7 +102,9 @@ export function MarketsBoard() {
     !isUsingMockFallback &&
     totalMarketCount === 0;
   const lastUpdatedLabel = summaryData?.generatedAt
-    ? formatLastUpdated(summaryData.generatedAt)
+    ? isShowingCachedData
+      ? formatCachedLastUpdated(summaryData.generatedAt)
+      : formatLastUpdated(summaryData.generatedAt)
     : isUsingClientFallback
       ? "from wallet RPC"
       : "Not loaded";
@@ -151,6 +174,12 @@ export function MarketsBoard() {
             {summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0 && (
               <span className="text-indigo-600">Reading markets...</span>
             )}
+            {summaryQuery.isFetching && displayedMarkets.length > 0 && (
+              <span className="text-indigo-600">Refreshing onchain data...</span>
+            )}
+            {summaryData?.warnings && summaryData.warnings.length > 0 && displayedMarkets.length > 0 && (
+              <span className="text-amber-700">Partial read</span>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <span className="text-slate-500">Last updated {lastUpdatedLabel}</span>
@@ -198,7 +227,7 @@ export function MarketsBoard() {
 
       {isInitialLoading ? (
         <BoardState
-          description="Fetching Arc Testnet market summaries."
+          description="Loading Arc Testnet markets..."
           icon={Loader2}
           kind="loading"
           title="Loading markets"
@@ -327,6 +356,57 @@ async function fetchMarketSummaries(forceRefresh: boolean) {
   return data;
 }
 
+function readCachedMarketSummaries() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(SUMMARY_CACHE_KEY);
+
+    if (!rawValue) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(rawValue) as { cachedAt?: number; response?: MarketSummaryResponse };
+
+    if (!parsed.cachedAt || !parsed.response || Date.now() - parsed.cachedAt > SUMMARY_CACHE_TTL_MS) {
+      window.localStorage.removeItem(SUMMARY_CACHE_KEY);
+      return undefined;
+    }
+
+    return isCacheableSummaryResponse(parsed.response) ? parsed.response : undefined;
+  } catch {
+    window.localStorage.removeItem(SUMMARY_CACHE_KEY);
+    return undefined;
+  }
+}
+
+function writeCachedMarketSummaries(response: MarketSummaryResponse) {
+  if (typeof window === "undefined" || !isCacheableSummaryResponse(response)) {
+    return;
+  }
+
+  window.localStorage.setItem(
+    SUMMARY_CACHE_KEY,
+    JSON.stringify({
+      cachedAt: Date.now(),
+      response
+    })
+  );
+}
+
+function isCacheableSummaryResponse(
+  response: MarketSummaryResponse | undefined
+): response is MarketSummaryResponse {
+  return Boolean(
+    response &&
+      !response.isUsingMockFallback &&
+      response.source === "contracts" &&
+      response.markets.length > 0
+  );
+}
+
 function mapSummaryToMarket(summary: MarketSummary): Market {
   return {
     category: summary.category,
@@ -361,6 +441,12 @@ function formatLastUpdated(value: string) {
   }
 
   return `${Math.floor(elapsedSeconds / 60)}m ago`;
+}
+
+function formatCachedLastUpdated(value: string) {
+  const label = formatLastUpdated(value);
+
+  return label === "just now" ? "recently" : label;
 }
 
 function getMarketsByFilter(
