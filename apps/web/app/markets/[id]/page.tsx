@@ -76,7 +76,7 @@ export default async function MarketDetailPage({
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200 bg-[#f7f7f2]">
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
           <Link
             className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-indigo-700"
             href="/markets"
@@ -85,19 +85,19 @@ export default async function MarketDetailPage({
             Back to Markets
           </Link>
 
-          <div className="mt-5 max-w-5xl">
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-white/92 p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge>{market.category}</Badge>
               <MarketStatusBadge outcome={market.outcome} status={market.status} />
             </div>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <h1 className="max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
+            <div className="mt-3 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+              <h1 className="max-w-3xl text-2xl font-semibold leading-[1.14] text-slate-950 sm:text-3xl lg:text-[2.35rem] lg:leading-[1.12]">
                 {market.title}
               </h1>
               <CopyMarketLinkButton marketTitle={market.title} />
             </div>
             {market.description && (
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
                 {market.description}
               </p>
             )}

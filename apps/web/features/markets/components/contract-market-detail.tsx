@@ -126,7 +126,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200 bg-[#f7f7f2]">
-        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
           <Link
             className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-indigo-700"
             href="/markets"
@@ -135,9 +135,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             Back to Markets
           </Link>
 
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white/92 p-4 shadow-[0_16px_48px_rgba(15,23,42,0.07)] sm:p-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-white/92 p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+              <div className="min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className="border-slate-200 bg-slate-50 text-slate-600">{marketWithParticipants.category}</Badge>
                   <MarketStatusBadge outcome={marketWithParticipants.outcome} status={marketWithParticipants.status} />
@@ -145,24 +145,24 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                     {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
                   </Badge>
                 </div>
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <h1 className="max-w-4xl text-3xl font-semibold leading-[1.08] tracking-[-0.01em] text-slate-950 sm:text-4xl lg:text-5xl">
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                  <h1 className="max-w-3xl text-2xl font-semibold leading-[1.14] tracking-normal text-slate-950 sm:text-3xl lg:text-[2.35rem] lg:leading-[1.12]">
                     {marketWithParticipants.title}
                   </h1>
                   <CopyMarketLinkButton marketTitle={marketWithParticipants.title} />
                 </div>
                 {marketWithParticipants.description && (
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                  <p className="max-w-2xl text-sm leading-6 text-slate-600">
                     {marketWithParticipants.description}
                   </p>
                 )}
                 {marketWithParticipants.status === "expired" && (
-                  <p className="mt-3 w-fit rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                  <p className="w-fit rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
                     Awaiting resolver settlement
                   </p>
                 )}
               </div>
-              <div className="grid min-w-0 gap-2 sm:grid-cols-2 lg:w-72 lg:grid-cols-1">
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-1">
                 <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
                 <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />
               </div>
@@ -172,7 +172,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                 Updating onchain data...
               </p>
             )}
-            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {marketWithParticipants.participants > 0 && (
                 <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
               )}
