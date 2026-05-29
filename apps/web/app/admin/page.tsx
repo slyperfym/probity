@@ -12,16 +12,16 @@ export const metadata = {
 
 export default function AdminPage() {
   return (
-    <main className="min-h-screen bg-slate-950">
-      <section className="probity-grid border-b border-white/10">
+    <main className="min-h-screen bg-[#f7f7f2]">
+      <section className="probity-grid border-b border-slate-200">
         <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-          <Badge className="border-cyan-300/20 bg-cyan-400/[0.055] text-cyan-100/85 shadow-none" variant="info">
+          <Badge variant="info">
             Resolver Admin
           </Badge>
-          <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
+          <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
             Resolver operations dashboard.
           </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Resolve expired deployed markets, monitor claimable outcomes, and keep resolver
             actions gated to the required wallet.
           </p>
@@ -69,14 +69,14 @@ function AdminControlCard({
   return (
     <Card>
       <CardHeader>
-        <Icon className="h-4 w-4 text-cyan-300" />
+        <Icon className="h-4 w-4 text-indigo-600" />
         <CardTitle className="text-xs uppercase tracking-[0.16em] text-slate-500">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-lg font-semibold text-white">{value}</div>
-        <p className="mt-2 text-sm leading-6 text-slate-400">{text}</p>
+        <div className="text-lg font-semibold text-slate-950">{value}</div>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
       </CardContent>
     </Card>
   );

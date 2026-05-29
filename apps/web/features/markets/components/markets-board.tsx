@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { RefreshCw, Search } from "lucide-react";
+import { LayoutGrid, List, RefreshCw, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export function MarketsBoard() {
   const [category, setCategory] = React.useState<CategoryFilter>("All");
   const [status, setStatus] = React.useState<StatusFilter>("All");
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [visibleMarketLimit, setVisibleMarketLimit] = React.useState(MARKET_PAGE_SIZE);
   const [refreshNonce, setRefreshNonce] = React.useState(0);
   const summaryQuery = useQuery({
@@ -67,7 +68,7 @@ export function MarketsBoard() {
   const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
   const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
   const isUsingMockFallback = !isUsingClientFallback && (summaryData?.isUsingMockFallback ?? false);
-  const dataSourceTone = isUsingMockFallback ? "text-amber-300/85" : "text-emerald-300/85";
+  const dataSourceTone = isUsingMockFallback ? "text-amber-700" : "text-emerald-700";
   const hasConnectedFactoryWithoutMarkets =
     !summaryQuery.isError &&
     !summaryQuery.isLoading &&
@@ -93,10 +94,10 @@ export function MarketsBoard() {
         />
       </div>
 
-      <div className="rounded-md border border-white/[0.06] bg-white/[0.014] px-3 py-2">
+      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
         <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
-            <span className="font-medium text-slate-400">
+            <span className="font-medium text-slate-700">
               {isUsingMockFallback
                 ? "Contract summaries unavailable"
                 : isUsingClientFallback
@@ -105,7 +106,7 @@ export function MarketsBoard() {
                   ? "Arc MarketFactory connected"
                   : "Local MarketFactory connected"}
             </span>
-            <span className="hidden text-slate-700 sm:inline">/</span>
+            <span className="hidden text-slate-300 sm:inline">/</span>
             <span>
               {isUsingMockFallback
                 ? "Live contract summaries are unavailable for this environment."
@@ -118,16 +119,16 @@ export function MarketsBoard() {
                     }`}
             </span>
             {!isUsingMockFallback && totalMarketCount > displayedMarkets.length && (
-              <span className="text-slate-600">Board summaries are cached; detail pages read live contracts.</span>
+              <span className="text-slate-500">Board summaries are cached; detail pages read live contracts.</span>
             )}
             {summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0 && (
-              <span className="text-cyan-200/75">Reading Arc Testnet markets...</span>
+              <span className="text-indigo-600">Reading Arc Testnet markets...</span>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <span className="text-slate-600">Last updated {lastUpdatedLabel}</span>
+            <span className="text-slate-500">Last updated {lastUpdatedLabel}</span>
             <Button
-              className="h-8 border-white/[0.08] px-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"
+              className="h-8 px-2 text-[10px] uppercase tracking-[0.12em]"
               disabled={summaryQuery.isFetching}
               onClick={() => setRefreshNonce((current) => current + 1)}
               size="sm"
@@ -142,13 +143,13 @@ export function MarketsBoard() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/[0.06] bg-slate-950/55 p-3 sm:p-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <label className="flex min-h-11 w-full items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 text-sm text-slate-500 transition focus-within:border-cyan-300/20 lg:w-80">
+          <label className="flex min-h-11 w-full items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition focus-within:border-indigo-300 focus-within:bg-white lg:w-80">
             <Search className="h-4 w-4 text-slate-600" />
             <input
               aria-label="Search markets"
-              className="min-w-0 flex-1 bg-transparent text-slate-300 outline-none placeholder:text-slate-600"
+              className="min-w-0 flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search markets..."
               type="search"
@@ -156,34 +157,32 @@ export function MarketsBoard() {
             />
           </label>
           <div className="flex min-w-0 flex-col gap-2.5 lg:items-end">
-            <span className="text-xs text-slate-600">Search applies to loaded markets.</span>
-            <FilterGroup
-              label="Category"
-              options={marketCategories}
-              value={category}
-              onChange={setCategory}
-            />
-            <FilterGroup
-              label="Status"
-              options={marketStatuses}
-              value={status}
-              onChange={setStatus}
-            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <span className="text-xs text-slate-500">Search applies to loaded markets.</span>
+              <ViewToggle value={viewMode} onChange={setViewMode} />
+            </div>
+            <FilterGroup label="Category" options={marketCategories} value={category} onChange={setCategory} />
+            <FilterGroup label="Status" options={marketStatuses} value={status} onChange={setStatus} />
           </div>
         </div>
       </div>
 
       {filteredMarkets.length > 0 ? (
         <>
-          <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <div
+            className={cn(
+              "grid gap-3 sm:gap-4",
+              viewMode === "grid" ? "lg:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
+            )}
+          >
             {filteredMarkets.map((market) => (
-              <MarketCard key={market.id} market={market} />
+              <MarketCard key={market.id} market={market} variant={viewMode} />
             ))}
           </div>
           {hasMoreMarkets && (
             <div className="flex justify-center">
               <Button
-                className="w-full border-white/[0.08] text-slate-300 sm:w-auto"
+                className="w-full sm:w-auto"
                 disabled={summaryQuery.isFetching && !summaryData}
                 onClick={() => setVisibleMarketLimit((current) => current + MARKET_PAGE_SIZE)}
                 type="button"
@@ -195,16 +194,16 @@ export function MarketsBoard() {
           )}
         </>
       ) : hasConnectedFactoryWithoutMarkets ? (
-        <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/10 p-10 text-center">
-          <div className="text-sm font-medium text-white">No deployed markets found.</div>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-cyan-100/80">
+        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-10 text-center">
+          <div className="text-sm font-medium text-slate-950">No deployed markets found.</div>
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-indigo-700">
             Probity is connected to the configured MarketFactory, but `allMarkets()` returned an
             empty list. Create or seed Arc Testnet markets, then refresh this page.
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-10 text-center">
-          <div className="text-sm font-medium text-white">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <div className="text-sm font-medium text-slate-950">
             {summaryQuery.isError
               ? "Could not load Arc Testnet markets."
               : searchQuery.trim()
@@ -317,9 +316,9 @@ function SummaryMetric({
   valueClassName?: string;
 }) {
   return (
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3.5 shadow-[0_1px_0_rgba(255,255,255,0.02)_inset] sm:p-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm sm:p-4">
       <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">{label}</div>
-      <div className={cn("mt-1.5 truncate text-xl font-semibold text-slate-100 sm:mt-2 sm:text-2xl lg:text-3xl", valueClassName)}>
+      <div className={cn("mt-1.5 truncate text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl lg:text-3xl", valueClassName)}>
         {value}
       </div>
     </div>
@@ -344,9 +343,9 @@ function FilterGroup<T extends string>({
       {options.map((option) => (
         <Button
           className={cn(
-            "h-9 border-white/[0.08] px-3 text-xs text-slate-400 sm:h-8",
+            "h-9 px-3 text-xs sm:h-8",
             value === option &&
-              "border-cyan-300/30 bg-cyan-400/[0.08] text-cyan-100 shadow-none"
+              "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-none"
           )}
           key={option}
           onClick={() => onChange(option)}
@@ -358,6 +357,43 @@ function FilterGroup<T extends string>({
         </Button>
       ))}
       </div>
+    </div>
+  );
+}
+
+function ViewToggle({
+  value,
+  onChange
+}: {
+  value: "grid" | "list";
+  onChange: (value: "grid" | "list") => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 rounded-md border border-slate-200 bg-slate-50 p-1">
+      {([
+        { icon: LayoutGrid, label: "Grid", value: "grid" },
+        { icon: List, label: "List", value: "list" }
+      ] as const).map((item) => {
+        const Icon = item.icon;
+
+        return (
+          <button
+            aria-pressed={value === item.value}
+            className={cn(
+              "inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2 text-xs font-medium transition",
+              value === item.value
+                ? "bg-white text-indigo-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            )}
+            key={item.value}
+            onClick={() => onChange(item.value)}
+            type="button"
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {item.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

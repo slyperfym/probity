@@ -12,16 +12,16 @@ export const metadata = {
 
 export default function CreatePage() {
   return (
-    <main className="min-h-screen bg-slate-950">
-      <section className="probity-grid border-b border-white/10">
+    <main className="min-h-screen bg-[#f7f7f2]">
+      <section className="probity-grid border-b border-slate-200">
         <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-          <Badge className="border-cyan-300/20 bg-cyan-400/[0.055] text-cyan-100/85 shadow-none" variant="info">
+          <Badge variant="info">
             Create Market
           </Badge>
-          <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
+          <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
             Design a deterministic YES/NO market.
           </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Draft institutional-grade market terms, resolution criteria, resolver assignment,
             and USDC settlement parameters before submitting approved MarketFactory writes.
           </p>
@@ -31,7 +31,7 @@ export default function CreatePage() {
       <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6 lg:px-8">
         <Suspense
           fallback={
-            <div className="rounded-lg border border-white/10 bg-slate-950/70 p-6 text-sm text-slate-400">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
               Loading market draft...
             </div>
           }
@@ -67,13 +67,13 @@ function GuidelineCard({
   return (
     <Card>
       <CardHeader>
-        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-indigo-200 bg-indigo-50 text-indigo-600">
           <Icon className="h-5 w-5" />
         </div>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm leading-6 text-slate-400">{text}</p>
+        <p className="text-sm leading-6 text-slate-600">{text}</p>
       </CardContent>
     </Card>
   );

@@ -268,25 +268,25 @@ export function TradingPanel({ market }: { market: Market }) {
   }
 
   return (
-    <Card className="bg-slate-950/88">
+    <Card>
       <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-slate-100">Trade</CardTitle>
+            <CardTitle>Trade</CardTitle>
             <p className="mt-1 text-xs text-slate-500">Arc-native YES/NO position entry.</p>
           </div>
-          <Badge className="border-white/10 bg-white/[0.03] text-slate-300" variant={isLocalContractMarket ? "yes" : "info"}>
+          <Badge variant={isLocalContractMarket ? "yes" : "info"}>
             {isLocalContractMarket ? environmentLabel : "Unavailable"}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3.5 p-4 pt-0 sm:p-5 sm:pt-0">
-        <div className="rounded-lg border border-amber-300/12 bg-amber-300/[0.03] px-3 py-2.5">
-          <div className="flex items-center gap-2 text-xs font-medium text-amber-100/90">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <div className="flex items-center gap-2 text-xs font-medium text-amber-800">
             <AlertTriangle className="h-3.5 w-3.5" />
             {deploymentConfig.isArcTestnet ? "Arc testnet trading" : "Local test trading"}
           </div>
-          <p className="mt-1.5 text-xs leading-5 text-slate-500">
+          <p className="mt-1.5 text-xs leading-5 text-slate-600">
             {deploymentConfig.isArcTestnet
               ? "Arc testnet USDC is used for gas and settlement. Sell-back is MVP pool pricing, not an orderbook."
               : "Use local contracts and local settlement tokens only. Sell-back is MVP pool pricing, not an orderbook."}
@@ -295,14 +295,14 @@ export function TradingPanel({ market }: { market: Market }) {
 
         <section className="space-y-2.5">
           <SectionLabel>Mode</SectionLabel>
-          <div className="grid grid-cols-2 gap-2 rounded-md border border-white/[0.06] bg-white/[0.014] p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-md border border-slate-200 bg-slate-50 p-1">
             {(["buy", "sell"] as const).map((option) => (
               <button
                 className={[
                   "h-10 rounded-[5px] text-sm font-medium capitalize transition sm:h-9",
                   mode === option
-                    ? "bg-white/[0.07] text-slate-100"
-                    : "text-slate-500 hover:text-slate-300"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "text-slate-500 hover:text-slate-900"
                 ].join(" ")}
                 key={option}
                 onClick={() => setMode(option)}
@@ -323,9 +323,9 @@ export function TradingPanel({ market }: { market: Market }) {
                   "h-11 rounded-md border px-3 text-sm font-medium transition sm:h-10",
                   side === option
                     ? option === "YES"
-                      ? "border-emerald-300/35 bg-emerald-400/[0.08] text-emerald-100"
-                      : "border-rose-300/35 bg-rose-400/[0.08] text-rose-100"
-                    : "border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/15 hover:text-slate-200"
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                      : "border-rose-300 bg-rose-50 text-rose-700"
+                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-900"
                 ].join(" ")}
                 key={option}
                 onClick={() => setSide(option)}
@@ -344,9 +344,9 @@ export function TradingPanel({ market }: { market: Market }) {
               <span className="text-xs text-slate-600">Balance {formatUsdc(balance)} {tokenLabel}</span>
             )}
           </div>
-          <div className="flex h-12 items-center rounded-md border border-white/[0.08] bg-white/[0.025] px-3 transition focus-within:border-cyan-300/25">
+          <div className="flex h-12 items-center rounded-md border border-slate-200 bg-slate-50 px-3 transition focus-within:border-indigo-300 focus-within:bg-white">
             <input
-              className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-slate-100 outline-none placeholder:text-slate-700"
+              className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-slate-950 outline-none placeholder:text-slate-400"
               inputMode="decimal"
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
@@ -357,7 +357,7 @@ export function TradingPanel({ market }: { market: Market }) {
           <div className="flex flex-wrap gap-2">
             {QUICK_AMOUNTS.map((quickAmount) => (
               <button
-                className="h-9 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200 sm:h-8"
+                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 sm:h-8"
                 key={quickAmount}
                 onClick={() => incrementAmount(quickAmount)}
                 type="button"
@@ -367,7 +367,7 @@ export function TradingPanel({ market }: { market: Market }) {
             ))}
             {isLocalContractMarket && balance > 0n && (
               <button
-                className="h-9 rounded-md border border-white/[0.08] bg-white/[0.018] px-3 text-xs font-medium text-slate-400 transition hover:border-white/15 hover:bg-white/[0.035] hover:text-slate-200 sm:h-8"
+                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 sm:h-8"
                 onClick={handleMaxAmount}
                 type="button"
               >
@@ -377,7 +377,7 @@ export function TradingPanel({ market }: { market: Market }) {
           </div>
         </section>
 
-        <section className="space-y-2 rounded-lg border border-white/[0.06] bg-white/[0.014] p-3 text-sm">
+        <section className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
           <SectionLabel>Preview</SectionLabel>
           <PreviewRow label="Action" value={`${mode === "buy" ? "Buy" : "Sell"} ${side}`} />
           <PreviewRow
@@ -442,7 +442,7 @@ export function TradingPanel({ market }: { market: Market }) {
           }
         />
 
-        <section className="sticky bottom-3 z-20 grid gap-2.5 rounded-lg border border-white/[0.08] bg-slate-950/95 p-2.5 shadow-[0_-16px_32px_rgba(2,6,23,0.45)] backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-0">
+        <section className="sticky bottom-3 z-20 grid gap-2.5 rounded-xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_-12px_32px_rgba(15,23,42,0.12)] backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-0">
           <SectionLabel>Actions</SectionLabel>
           {isLocalContractMarket ? (
             <>
@@ -483,15 +483,15 @@ function TradingNotice({
   showFaucetLink?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.035] p-3">
-      <div className="flex items-center gap-2 text-xs font-medium text-cyan-100/90">
+    <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3">
+      <div className="flex items-center gap-2 text-xs font-medium text-indigo-700">
         <ShieldCheck className="h-3.5 w-3.5" />
         Trading guardrail
       </div>
       <p className="mt-1.5 text-xs leading-5 text-slate-500">{message}</p>
       {showFaucetLink && (
         <Link
-          className="mt-2 inline-flex text-xs font-medium text-cyan-200/90 transition hover:text-cyan-100"
+          className="mt-2 inline-flex text-xs font-medium text-indigo-700 transition hover:text-indigo-900"
           href={CIRCLE_FAUCET_URL}
           rel="noreferrer"
           target="_blank"
@@ -521,9 +521,9 @@ function TransactionState({
   }
 
   return (
-    <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-3 text-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
       {isPending && (
-        <div className="flex items-center gap-2 text-cyan-100">
+        <div className="flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>
             Pending confirmation
@@ -538,13 +538,13 @@ function TransactionState({
         </div>
       )}
       {isRefreshing && !isPending && (
-        <div className="mt-2 flex items-center gap-2 text-cyan-100">
+        <div className="mt-2 flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
           Refreshing onchain data...
         </div>
       )}
       {error && (
-        <div className="mt-2 flex items-start gap-2 text-rose-200">
+        <div className="mt-2 flex items-start gap-2 text-rose-700">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{getFriendlyTransactionError(error)}</span>
         </div>
@@ -822,7 +822,7 @@ function PreviewRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-slate-500">{label}</span>
-      <span className="font-medium text-slate-200">{value}</span>
+      <span className="font-medium text-slate-950">{value}</span>
     </div>
   );
 }
@@ -837,7 +837,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SecondaryDetail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-t border-white/[0.06] pt-2 text-xs">
+    <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-2 text-xs">
       <span className="text-slate-600">{label}</span>
       <span className="font-medium text-slate-500">{value}</span>
     </div>

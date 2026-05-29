@@ -188,9 +188,9 @@ export function CreateMarketForm() {
       <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
         <form className="space-y-5" onSubmit={createMarket}>
           {hasImportedReference && (
-            <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
-              <div className="text-sm font-medium text-cyan-100">Reference imported from public market metadata</div>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
+            <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+              <div className="text-sm font-medium text-indigo-800">Reference imported from public market metadata</div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
                 This draft uses external market metadata as a reference. The created Probity market
                 will be a separate Arc-native market with independent USDC settlement.
               </p>
@@ -207,7 +207,7 @@ export function CreateMarketForm() {
               </div>
               {importedSourceUrl && (
                 <a
-                  className="mt-4 inline-flex items-center gap-2 text-sm text-cyan-200 transition hover:text-cyan-100"
+                  className="mt-4 inline-flex items-center gap-2 text-sm text-indigo-700 transition hover:text-indigo-900"
                   href={importedSourceUrl}
                   rel="noreferrer"
                   target="_blank"
@@ -221,7 +221,7 @@ export function CreateMarketForm() {
 
           <Field label="Market question">
             <input
-              className="h-12 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35 sm:h-11"
+              className="h-12 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 sm:h-11"
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="Will a defined event occur by a specific date?"
               value={question}
@@ -230,7 +230,7 @@ export function CreateMarketForm() {
 
           <Field label="Description">
             <textarea
-              className="min-h-28 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35"
+              className="min-h-28 w-full rounded-md border border-slate-200 bg-white px-3 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300"
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Describe the market and the institutional signal it is intended to capture."
               value={description}
@@ -255,10 +255,10 @@ export function CreateMarketForm() {
               </div>
             </Field>
             <Field label="Expiration">
-              <div className="flex h-12 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-500 sm:h-11">
+              <div className="flex h-12 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-500 sm:h-11">
                 <CalendarClock className="h-4 w-4" />
                 <input
-                  className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 outline-none"
                   onChange={(event) => setExpiry(event.target.value)}
                   type="date"
                   value={expiry}
@@ -269,14 +269,14 @@ export function CreateMarketForm() {
 
           <div className="grid gap-5 lg:grid-cols-2">
             <Field label="Settlement token">
-              <div className="flex h-12 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200 sm:h-11">
-                <ShieldCheck className="h-4 w-4 text-cyan-300" />
+              <div className="flex h-12 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 sm:h-11">
+                <ShieldCheck className="h-4 w-4 text-indigo-600" />
                 {deploymentConfig.isArcTestnet ? "Arc testnet USDC" : "Local settlement token"}
               </div>
             </Field>
             <Field label="Resolver">
               <input
-                className="h-12 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35 sm:h-11"
+                className="h-12 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 sm:h-11"
                 onChange={(event) => {
                   setHasManuallyEditedResolver(true);
                   setResolver(event.target.value);
@@ -299,7 +299,7 @@ export function CreateMarketForm() {
           <Field label="Resolution criteria">
             <textarea
               id={resolutionCriteriaId}
-              className="min-h-32 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/35"
+              className="min-h-32 w-full rounded-md border border-slate-200 bg-white px-3 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300"
               placeholder="Define YES, NO, invalid/cancelled cases, and acceptable source references."
               defaultValue={
                 importedProbability
@@ -321,18 +321,18 @@ export function CreateMarketForm() {
             resolverAddress={resolverAddress}
           />
 
-          <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-indigo-800">
               <FileText className="h-4 w-4" />
               Arc-native MarketFactory creation
             </div>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               Only approved Probity creators can submit this transaction. External metadata can
               prefill the draft, but the created market is a separate PredictionMarket deployed by
               Probity on the configured chain.
             </p>
             {!isApprovedCreator && isConnected && (
-              <p className="mt-3 text-sm text-amber-200">
+              <p className="mt-3 text-sm text-amber-700">
                 Public market proposals are not enabled yet. Connect an approved creator wallet to
                 create an Arc-native market.
               </p>
@@ -343,9 +343,9 @@ export function CreateMarketForm() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-sm font-medium text-white">Suggest Market</div>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="text-sm font-medium text-slate-950">Suggest Market</div>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               Public market proposals are not enabled yet. For now, market creation is restricted
               to approved creator wallets.
             </p>
@@ -360,7 +360,7 @@ export function CreateMarketForm() {
             transactionHash={createWrite.data}
           />
 
-          <div className="sticky bottom-3 z-20 flex rounded-lg border border-white/[0.08] bg-slate-950/95 p-2.5 shadow-[0_-16px_32px_rgba(2,6,23,0.45)] backdrop-blur sm:static sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0">
+          <div className="sticky bottom-3 z-20 flex rounded-xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_-12px_32px_rgba(15,23,42,0.12)] backdrop-blur sm:static sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0">
             <Button className="w-full sm:w-auto" disabled={Boolean(createDisabledReason)} type="submit">
               {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
               {deploymentConfig.isArcTestnet ? "Create Market on Arc Testnet" : "Create Arc-Native Market"}
@@ -383,9 +383,9 @@ function Field({ children, label }: { children: React.ReactNode; label: string }
 
 function ReferenceMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-cyan-400/15 bg-slate-950/50 p-3">
+    <div className="rounded-md border border-indigo-200 bg-white p-3 shadow-sm">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
-      <div className="mt-1 break-all text-sm font-medium text-slate-100">{value}</div>
+      <div className="mt-1 break-all text-sm font-medium text-slate-950">{value}</div>
     </div>
   );
 }
@@ -412,8 +412,8 @@ function EligibilityPanel({
   resolverAddress: Address | undefined;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-      <div className="text-sm font-medium text-white">Wallet eligibility</div>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="text-sm font-medium text-slate-950">Wallet eligibility</div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <EligibilityMetric
           label="Wallet"
@@ -443,7 +443,7 @@ function EligibilityPanel({
         />
       </div>
       {isConnected && isApprovedCreator && (
-        <p className="mt-4 text-sm leading-6 text-slate-400">
+        <p className="mt-4 text-sm leading-6 text-slate-600">
           {isConnectedWalletApprovedResolver && isUsingConnectedWalletAsResolver
             ? "This wallet can create and resolve this market."
             : isConnectedWalletApprovedResolver
@@ -497,9 +497,9 @@ function EligibilityMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-md border border-white/10 bg-slate-950/50 p-3">
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
-      <div className={tone === "yes" ? "mt-1 text-sm font-medium text-emerald-200" : "mt-1 text-sm font-medium text-amber-200"}>
+      <div className={tone === "yes" ? "mt-1 text-sm font-medium text-emerald-700" : "mt-1 text-sm font-medium text-amber-700"}>
         {value}
       </div>
     </div>
@@ -526,25 +526,25 @@ function CreateTransactionState({
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
       {isPending && (
-        <div className="flex items-center gap-2 text-cyan-100">
+        <div className="flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
           Market creation transaction pending{transactionHash ? ` (${shortHash(transactionHash)})` : ""}.
         </div>
       )}
       {success && !isPending && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-emerald-200">
+          <div className="flex items-center gap-2 text-emerald-700">
             <CheckCircle2 className="h-4 w-4" />
             {deploymentConfig.isArcTestnet
               ? "Market created on Arc Testnet."
               : "Market created on the configured Probity MarketFactory."}
           </div>
           {createdMarketAddress && (
-            <div className="flex flex-col gap-3 rounded-md border border-emerald-400/20 bg-emerald-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">
-              <span className="font-mono text-xs text-emerald-100">{createdMarketAddress}</span>
-              <Link className="text-cyan-200 transition hover:text-cyan-100" href={`/markets/${createdMarketAddress}`}>
+            <div className="flex flex-col gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <span className="font-mono text-xs text-emerald-800">{createdMarketAddress}</span>
+              <Link className="text-indigo-700 transition hover:text-indigo-900" href={`/markets/${createdMarketAddress}`}>
                 Open created market
               </Link>
             </div>
@@ -552,13 +552,13 @@ function CreateTransactionState({
         </div>
       )}
       {isRefreshing && !isPending && (
-        <div className="mt-3 flex items-center gap-2 text-cyan-100">
+        <div className="mt-3 flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
           Refreshing onchain market list.
         </div>
       )}
       {error && (
-        <div className="mt-2 flex items-start gap-2 text-rose-200">
+        <div className="mt-2 flex items-start gap-2 text-rose-700">
           <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{formatCreateError(error)}</span>
         </div>

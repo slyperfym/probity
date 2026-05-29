@@ -4,17 +4,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/70 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/45 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-cyan-300/90 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.12)] hover:bg-cyan-200",
+          "bg-indigo-600 text-white shadow-[0_10px_26px_rgba(79,70,229,0.18)] hover:bg-indigo-500",
         secondary:
-          "border border-white/10 bg-white/[0.04] text-slate-100 hover:border-white/20 hover:bg-white/[0.07]",
-        ghost: "text-slate-300 hover:bg-white/[0.05] hover:text-white",
+          "border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50",
+        ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
         outline:
-          "border border-cyan-400/35 bg-cyan-400/5 text-cyan-200 hover:border-cyan-300/70 hover:bg-cyan-400/10"
+          "border border-indigo-200 bg-indigo-50 text-indigo-700 hover:border-indigo-300 hover:bg-indigo-100"
       },
       size: {
         default: "h-10 px-4 py-2",

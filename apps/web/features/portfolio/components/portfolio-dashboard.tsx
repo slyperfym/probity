@@ -136,7 +136,7 @@ export function PortfolioDashboard() {
           </div>
           <div className="space-y-6">
             {isRefreshing && (
-              <div className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.035] px-3 py-2 text-xs text-cyan-100/80">
+              <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
                 Updating onchain portfolio data...
               </div>
             )}
@@ -245,13 +245,13 @@ function PortfolioMetric({
   return (
     <Card>
       <CardHeader>
-        <Icon className="h-4 w-4 text-cyan-300" />
+        <Icon className="h-4 w-4 text-indigo-600" />
             <CardTitle className="text-xs uppercase tracking-[0.14em] text-slate-500">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-xl font-semibold text-slate-100 sm:text-2xl">{value}</div>
+        <div className="text-xl font-semibold text-slate-950 sm:text-2xl">{value}</div>
       </CardContent>
     </Card>
   );

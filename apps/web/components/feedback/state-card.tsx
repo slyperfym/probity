@@ -30,10 +30,10 @@ export function StateCard({
   return (
     <Card className={cn("border-dashed", className)}>
       <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-        <div className="flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-cyan-200">
+        <div className="flex h-11 w-11 items-center justify-center rounded-md border border-indigo-100 bg-indigo-50 text-indigo-600">
           <Icon className={cn("h-5 w-5", kind === "loading" && "animate-spin")} />
         </div>
-        <div className="mt-4 text-sm font-medium text-white">{title}</div>
+        <div className="mt-4 text-sm font-medium text-slate-950">{title}</div>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
       </CardContent>
     </Card>

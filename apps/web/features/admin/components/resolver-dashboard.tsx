@@ -95,7 +95,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
         <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
           <div className="space-y-3">
             {markets.map((market) => (
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-4" key={market.id}>
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" key={market.id}>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -104,11 +104,11 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                       {market.proposedOutcome && <Badge variant="info">{market.proposedOutcome}</Badge>}
                     </div>
                     <Link
-                      className="group mt-3 inline-flex items-start gap-2 text-sm font-medium text-white transition hover:text-cyan-200"
+                      className="group mt-3 inline-flex items-start gap-2 text-sm font-medium text-slate-950 transition hover:text-indigo-700"
                       href={`/markets/${market.marketId}`}
                     >
                       {market.title}
-                      <ArrowUpRight className="mt-0.5 h-4 w-4 text-slate-600 transition group-hover:text-cyan-300" />
+                      <ArrowUpRight className="mt-0.5 h-4 w-4 text-slate-400 transition group-hover:text-indigo-600" />
                     </Link>
                     <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2 lg:grid-cols-4">
                       <span>Expires {formatExpiry(market.expiry)}</span>
@@ -151,12 +151,12 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
               </div>
             ))}
           </div>
-          <div className="mt-5 rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
+          <div className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
               <ShieldCheck className="h-4 w-4" />
               Resolver guardrails
             </div>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               {getResolverNotice({ accountAddress, isConnected, isLocalMode })}
             </p>
           </div>
@@ -176,9 +176,9 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
 
 function AdminMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-3.5 sm:p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm sm:p-4">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+      <div className="mt-2 text-2xl font-semibold text-slate-950">{value}</div>
     </div>
   );
 }
@@ -293,27 +293,27 @@ function ResolverTransactionState({
   }
 
   return (
-    <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+    <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
       {isPending && (
-        <div className="flex items-center gap-2 text-cyan-100">
+        <div className="flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
           Resolution transaction pending{transactionHash ? ` (${shortHash(transactionHash)})` : ""}.
         </div>
       )}
       {success && !isPending && (
-        <div className="flex items-center gap-2 text-emerald-200">
+        <div className="flex items-center gap-2 text-emerald-700">
           <CheckCircle2 className="h-4 w-4" />
           Resolution confirmed. Winning positions can now claim payout.
         </div>
       )}
       {isRefreshing && !isPending && (
-        <div className="mt-2 flex items-center gap-2 text-cyan-100">
+        <div className="mt-2 flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
           Refreshing onchain resolver data.
         </div>
       )}
       {error && (
-        <div className="mt-2 flex items-start gap-2 text-rose-200">
+        <div className="mt-2 flex items-start gap-2 text-rose-700">
           <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error.length > 180 ? `${error.slice(0, 180)}...` : error}</span>
         </div>

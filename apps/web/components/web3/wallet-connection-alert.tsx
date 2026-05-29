@@ -69,14 +69,14 @@ export function WalletConnectionAlert() {
 
 function WalletWarning({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
-    <div className="border-b border-amber-400/20 bg-amber-400/10">
-      <div className="mx-auto flex w-full max-w-7xl items-start gap-3 px-4 py-3 text-sm text-amber-100 sm:px-6 lg:px-8">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+    <div className="border-b border-amber-200 bg-amber-50">
+      <div className="mx-auto flex w-full max-w-7xl items-start gap-3 px-4 py-3 text-sm text-amber-800 sm:px-6 lg:px-8">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         <p className="flex-1 leading-6">{message}</p>
         <button
           aria-label="Dismiss wallet connection warning"
           className={cn(
-            "rounded-md p-1 text-amber-200 transition hover:bg-amber-300/10 hover:text-white"
+            "rounded-md p-1 text-amber-700 transition hover:bg-amber-100 hover:text-amber-950"
           )}
           onClick={onDismiss}
           type="button"

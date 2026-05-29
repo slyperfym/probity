@@ -28,15 +28,15 @@ export function SiteHeader() {
     (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken);
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-xl">
-      <div className="border-b border-white/10">
+    <header className="sticky top-0 z-50 bg-white/88 backdrop-blur-xl">
+      <div className="border-b border-slate-200/80">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-6 lg:px-8">
           <Link className="flex min-w-0 items-center gap-2.5" href="/">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-cyan-400/18 bg-cyan-400/[0.055] text-cyan-200/90">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-indigo-200 bg-indigo-600 text-white shadow-[0_8px_20px_rgba(79,70,229,0.18)]">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold uppercase tracking-[0.18em] text-slate-100 sm:tracking-[0.22em]">
+              <div className="truncate text-sm font-semibold uppercase tracking-[0.18em] text-slate-950 sm:tracking-[0.22em]">
                 Probity
               </div>
               <div className="hidden text-xs text-slate-500 sm:block">Arc prediction markets</div>
@@ -53,18 +53,18 @@ export function SiteHeader() {
 
           <div className="flex min-w-0 shrink items-center justify-end gap-1.5 sm:gap-2">
             {showArcSetupMode ? (
-              <div className="hidden items-center gap-2 rounded-md border border-cyan-400/15 bg-cyan-400/[0.06] px-3 py-2 text-xs text-cyan-100/85 lg:flex">
-                <Activity className="h-3.5 w-3.5 text-cyan-300/80" />
+              <div className="hidden items-center gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 lg:flex">
+                <Activity className="h-3.5 w-3.5 text-indigo-600" />
                 <span>Setup Mode</span>
-                <span className="text-slate-600">/</span>
+                <span className="text-slate-300">/</span>
                 <span>Arc Testnet Ready</span>
-                <span className="text-slate-600">/</span>
+                <span className="text-slate-300">/</span>
                 <span>Contract Addresses Pending</span>
               </div>
             ) : null}
             <a
               aria-label="Get Arc testnet USDC from Circle faucet"
-              className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-cyan-400/18 bg-cyan-400/[0.055] px-2.5 text-xs font-medium text-cyan-100/85 transition hover:border-cyan-300/35 hover:bg-cyan-400/10 hover:text-cyan-50 sm:gap-2 sm:px-4"
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 text-xs font-medium text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 sm:gap-2 sm:px-4"
               href={CIRCLE_FAUCET_URL}
               rel="noreferrer"
               target="_blank"
@@ -104,14 +104,14 @@ function NavItem({
       className={cn(
         "relative inline-flex h-9 shrink-0 items-center rounded-md border px-3 text-sm transition",
         isActive
-          ? "border-cyan-300/22 bg-cyan-400/[0.06] text-cyan-100 shadow-[0_0_12px_rgba(34,211,238,0.045)]"
-          : "border-transparent text-slate-400 hover:border-white/10 hover:bg-white/[0.035] hover:text-slate-100"
+          ? "border-indigo-200 bg-indigo-50 text-indigo-700 shadow-[0_8px_20px_rgba(79,70,229,0.08)]"
+          : "border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-950"
       )}
       href={href}
     >
       {children}
       {isActive && (
-        <span className="absolute inset-x-2 -bottom-px h-px rounded-full bg-cyan-300/55" />
+        <span className="absolute inset-x-2 -bottom-px h-px rounded-full bg-indigo-500/70" />
       )}
     </Link>
   );

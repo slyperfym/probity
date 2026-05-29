@@ -40,7 +40,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
-          <div className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+          <div className="min-h-screen bg-[#f7f7f2] text-slate-950 antialiased">
             <SiteHeader />
             {children}
             <SiteFooter />

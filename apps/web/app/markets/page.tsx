@@ -10,23 +10,23 @@ export const metadata = {
 
 export default function MarketsPage() {
   return (
-    <main className="min-h-screen bg-slate-950">
-      <section className="probity-grid border-b border-white/10">
+    <main className="min-h-screen bg-[#f7f7f2]">
+      <section className="probity-grid border-b border-slate-200">
         <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-          <Badge className="border-cyan-300/20 bg-cyan-400/[0.055] text-cyan-100/85 shadow-none" variant="info">
+          <Badge variant="info">
             Market Board
           </Badge>
           <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <h1 className="text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
+              <h1 className="text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
                 Forecasting markets for institutional signal.
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                 Browse Arc-native YES/NO markets with Arc testnet USDC for gas and settlement.
               </p>
             </div>
-            <div className="flex w-fit items-center gap-2 rounded-md border border-cyan-400/14 bg-cyan-400/[0.045] px-3 py-2 text-xs font-medium text-cyan-100/80">
-              <BarChart3 className="h-4 w-4 text-cyan-300/80" />
+            <div className="flex w-fit items-center gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700">
+              <BarChart3 className="h-4 w-4 text-indigo-600" />
               Arc Testnet onchain
             </div>
           </div>

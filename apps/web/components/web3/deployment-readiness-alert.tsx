@@ -14,9 +14,9 @@ export function DeploymentReadinessAlert() {
   }
 
   return (
-    <div className="border-b border-cyan-400/20 bg-cyan-400/10">
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-2 text-xs text-cyan-100 sm:px-6 sm:text-sm lg:px-8">
-        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-cyan-300 sm:h-4 sm:w-4" />
+    <div className="border-b border-indigo-200 bg-indigo-50">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-2 text-xs text-indigo-700 sm:px-6 sm:text-sm lg:px-8">
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-indigo-600 sm:h-4 sm:w-4" />
         <p className="truncate leading-5">{message}</p>
       </div>
     </div>
