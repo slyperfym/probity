@@ -113,21 +113,21 @@ export function PortfolioDashboard() {
 
       {!useMockFallback && !isConnected ? (
         <StateCard
-          description="Connect a wallet to view positions."
+          description="Connect to view positions and rewards."
           icon={Wallet}
-          title="Connect wallet to view live positions"
+          title="Wallet not connected"
         />
       ) : isInitialLoading ? (
         <StateCard
           description="Reading Arc Testnet positions."
           kind="loading"
-          title="Loading live portfolio"
+          title="Loading portfolio"
         />
       ) : isError ? (
         <StateCard
-          description="Live wallet positions could not be refreshed."
+          description="Refresh or try again shortly."
           kind="error"
-          title="Unable to load live positions"
+          title="Could not load positions"
         />
       ) : (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
@@ -165,9 +165,9 @@ export function PortfolioDashboard() {
       )}
 
       <OnchainActivityList
-        emptyDescription="No activity found for this wallet."
-        emptyTitle="No onchain activity"
-        error={walletActivity.isError ? "Could not load onchain activity." : null}
+        emptyDescription="Trades, claims, and resolutions will appear here."
+        emptyTitle="No activity yet"
+        error={walletActivity.isError ? "Could not load activity." : null}
         isLoading={walletActivity.isLoading || walletActivity.isFetching}
         items={walletActivity.data ?? []}
         loadingMessage="Reading Arc Testnet activity..."

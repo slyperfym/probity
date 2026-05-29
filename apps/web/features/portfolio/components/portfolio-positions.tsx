@@ -22,8 +22,8 @@ export function PortfolioPositions({ positions }: { positions: PortfolioPosition
   if (positions.length === 0) {
     return (
       <StateCard
-        description="Positions will appear here after the connected wallet buys YES or NO shares."
-        title="No portfolio positions"
+        description="Buy YES or NO shares to see positions here."
+        title="No positions yet"
       />
     );
   }
@@ -133,9 +133,9 @@ export function ClaimableRewards({
   if (claimablePositions.length === 0) {
     return (
       <StateCard
-        description="Winning positions will appear here after the resolver finalizes the winning outcome."
+        description="Winning resolved positions will appear here."
         icon={Coins}
-        title="No claimable rewards"
+        title="No rewards"
       />
     );
   }

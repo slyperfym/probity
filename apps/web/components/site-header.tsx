@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, BarChart3, Droplets } from "lucide-react";
+import { Activity, Droplets } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -28,15 +28,13 @@ export function SiteHeader() {
     (!deploymentConfig.hasMarketFactory || !deploymentConfig.hasSettlementToken);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/88 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl">
       <div className="border-b border-slate-200/80">
-        <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-6 lg:px-8">
-          <Link className="flex min-w-0 items-center gap-2.5" href="/">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-indigo-200 bg-indigo-600 text-white shadow-[0_8px_20px_rgba(79,70,229,0.18)]">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
+        <div className="mx-auto flex min-h-14 w-full max-w-7xl items-center justify-between gap-2.5 px-3 py-1.5 sm:px-6 lg:px-8">
+          <Link className="flex min-w-0 items-center gap-2" href="/">
+            <LogoMark />
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold uppercase tracking-[0.18em] text-slate-950 sm:tracking-[0.22em]">
+              <div className="truncate text-sm font-semibold tracking-[0.12em] text-slate-950 sm:tracking-[0.16em]">
                 Probity
               </div>
               <div className="hidden text-xs text-slate-500 sm:block">Arc prediction markets</div>
@@ -64,7 +62,7 @@ export function SiteHeader() {
             ) : null}
             <a
               aria-label="Get Arc testnet USDC from Circle faucet"
-              className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 text-xs font-medium text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 sm:gap-2 sm:px-4"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 text-xs font-medium text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100 sm:gap-2 sm:px-3.5"
               href={CIRCLE_FAUCET_URL}
               rel="noreferrer"
               target="_blank"
@@ -76,7 +74,7 @@ export function SiteHeader() {
             <WalletConnectButton />
           </div>
         </div>
-        <nav className="no-scrollbar mx-auto flex w-full max-w-7xl gap-2 overflow-x-auto px-3 pb-3 md:hidden">
+        <nav className="no-scrollbar mx-auto flex w-full max-w-7xl gap-2 overflow-x-auto px-3 pb-2 md:hidden">
           {navItems.map((item) => (
             <NavItem href={item.href} isActive={isActiveRoute(pathname, item.href)} key={item.label}>
               {item.label}
@@ -87,6 +85,16 @@ export function SiteHeader() {
       <DeploymentReadinessAlert />
       <WalletConnectionAlert />
     </header>
+  );
+}
+
+function LogoMark() {
+  return (
+    <div className="flex h-8 w-8 shrink-0 items-end justify-center gap-0.5 rounded-xl border border-indigo-200 bg-white p-1.5 shadow-sm">
+      <span className="h-3 w-1.5 rounded-full bg-indigo-500" />
+      <span className="h-[18px] w-1.5 rounded-full bg-emerald-500" />
+      <span className="h-2.5 w-1.5 rounded-full bg-slate-900" />
+    </div>
   );
 }
 
@@ -102,9 +110,9 @@ function NavItem({
   return (
     <Link
       className={cn(
-        "relative inline-flex h-9 shrink-0 items-center rounded-md border px-3 text-sm transition",
+        "relative inline-flex h-8 shrink-0 items-center rounded-full border px-3 text-sm transition",
         isActive
-          ? "border-indigo-200 bg-indigo-50 text-indigo-700 shadow-[0_8px_20px_rgba(79,70,229,0.08)]"
+          ? "border-indigo-200 bg-indigo-50 text-indigo-700 shadow-[0_8px_20px_rgba(79,70,229,0.06)]"
           : "border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-950"
       )}
       href={href}

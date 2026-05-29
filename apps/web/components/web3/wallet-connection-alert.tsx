@@ -40,7 +40,7 @@ export function WalletConnectionAlert() {
   const unsupportedChain = isConnected && !supportedChainIds.includes(chainId);
   const connectionMessage = isError ? getConnectionErrorMessage(error) : null;
   const message = unsupportedChain
-    ? `Unsupported network. Probity is configured for ${probityChain.name} (${probityChain.id}). Wallet writes are disabled until you switch networks.`
+    ? `Wrong network. Switch to ${probityChain.name} (${probityChain.id}) to trade.`
     : connectionMessage;
 
   if (!message || dismissedError === message) {
@@ -50,7 +50,7 @@ export function WalletConnectionAlert() {
 
     return (
       <WalletWarning
-        message="Developer note: WalletConnect/Reown Project ID is not configured. Mobile QR and deep-link wallet options are hidden, while injected browser wallets remain available. Add NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID locally and in Vercel to enable mobile wallet discovery."
+        message="WalletConnect Project ID is not configured. Injected wallets still work."
         onDismiss={() => setDismissedProjectIdWarning(true)}
       />
     );
@@ -70,7 +70,7 @@ export function WalletConnectionAlert() {
 function WalletWarning({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
     <div className="border-b border-amber-200 bg-amber-50">
-      <div className="mx-auto flex w-full max-w-7xl items-start gap-3 px-4 py-3 text-sm text-amber-800 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl items-start gap-3 px-4 py-2.5 text-sm text-amber-800 sm:px-6 lg:px-8">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         <p className="flex-1 leading-6">{message}</p>
         <button

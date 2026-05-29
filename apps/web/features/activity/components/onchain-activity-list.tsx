@@ -47,20 +47,23 @@ export function OnchainActivityList({
           <ActivityState
             description={loadingMessage}
             icon={<Loader2 className="h-4 w-4 animate-spin text-indigo-600" />}
-            title="Loading activity"
+            kind="loading"
+            title="Reading activity"
           />
         )}
         {!hasItems && !isLoading && error && (
           <ActivityState
             description={error}
             icon={<Activity className="h-4 w-4 text-rose-600" />}
-            title="Activity unavailable"
+            kind="error"
+            title="Could not load activity"
           />
         )}
         {!hasItems && !isLoading && !error && (
           <ActivityState
             description={emptyDescription}
             icon={<Activity className="h-4 w-4 text-slate-500" />}
+            kind="empty"
             title={emptyTitle}
           />
         )}
@@ -109,15 +112,28 @@ export function OnchainActivityList({
 function ActivityState({
   description,
   icon,
+  kind = "empty",
   title
 }: {
   description: string;
   icon: React.ReactNode;
+  kind?: "empty" | "error" | "loading";
   title: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <div className="mt-0.5">{icon}</div>
+    <div className="flex items-start gap-3 rounded-xl border border-dashed border-slate-300 bg-white p-4 shadow-sm">
+      <div
+        className={[
+          "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border",
+          kind === "error"
+            ? "border-rose-200 bg-rose-50"
+            : kind === "loading"
+              ? "border-indigo-200 bg-indigo-50"
+              : "border-slate-200 bg-slate-50"
+        ].join(" ")}
+      >
+        {icon}
+      </div>
       <div>
         <div className="text-sm font-medium text-slate-950">{title}</div>
         <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>

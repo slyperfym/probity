@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { LayoutGrid, List, RefreshCw, Search } from "lucide-react";
+import { AlertTriangle, Inbox, LayoutGrid, List, Loader2, RefreshCw, Search } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
+import { TrustStrip } from "@/components/marketing/trust-strip";
 import { Button } from "@/components/ui/button";
 import { deploymentConfig } from "@/config/contracts";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
@@ -141,6 +143,8 @@ export function MarketsBoard() {
         </div>
       </div>
 
+      <TrustStrip />
+
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <label className="flex min-h-11 w-full items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition focus-within:border-indigo-300 focus-within:bg-white lg:w-80">
@@ -165,7 +169,14 @@ export function MarketsBoard() {
         </div>
       </div>
 
-      {filteredMarkets.length > 0 ? (
+      {isInitialLoading ? (
+        <BoardState
+          description="Fetching Arc Testnet market summaries."
+          icon={Loader2}
+          kind="loading"
+          title="Loading markets"
+        />
+      ) : filteredMarkets.length > 0 ? (
         <>
           <div
             className={cn(
@@ -192,29 +203,30 @@ export function MarketsBoard() {
           )}
         </>
       ) : hasConnectedFactoryWithoutMarkets ? (
-        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-10 text-center">
-          <div className="text-sm font-medium text-slate-950">No deployed markets found.</div>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-indigo-700">
-            Create an Arc Testnet market, then refresh this page.
-          </p>
-        </div>
+        <BoardState
+          description="Create an Arc Testnet market, then refresh."
+          icon={Inbox}
+          title="No deployed markets"
+        />
       ) : (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <div className="text-sm font-medium text-slate-950">
-            {summaryQuery.isError
-              ? "Could not load Arc Testnet markets."
-              : searchQuery.trim()
-                ? "No markets match your search."
-                : "No markets match these filters."}
-          </div>
-          <p className="mt-2 text-sm text-slate-500">
-            {summaryQuery.isError
+        <BoardState
+          description={
+            summaryQuery.isError
               ? "Check MarketFactory configuration or RPC availability, then refresh."
               : searchQuery.trim()
-              ? "Try another question, category, status, or token symbol."
-              : "Adjust the category or status filters."}
-          </p>
-        </div>
+                ? "Try another question, category, status, or token."
+                : "Adjust category or status filters."
+          }
+          icon={summaryQuery.isError ? AlertTriangle : Inbox}
+          kind={summaryQuery.isError ? "error" : "empty"}
+          title={
+            summaryQuery.isError
+              ? "Could not load markets"
+              : searchQuery.trim()
+                ? "No search results"
+                : "No matching markets"
+          }
+        />
       )}
 
       <ExternalSignals
@@ -318,6 +330,37 @@ function SummaryMetric({
       <div className={cn("mt-1.5 truncate text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl lg:text-3xl", valueClassName)}>
         {value}
       </div>
+    </div>
+  );
+}
+
+function BoardState({
+  description,
+  icon: Icon,
+  kind = "empty",
+  title
+}: {
+  description: string;
+  icon: LucideIcon;
+  kind?: "empty" | "error" | "loading";
+  title: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm sm:p-10">
+      <div
+        className={cn(
+          "mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border",
+          kind === "error"
+            ? "border-rose-200 bg-rose-50 text-rose-600"
+            : kind === "loading"
+              ? "border-indigo-200 bg-indigo-50 text-indigo-600"
+              : "border-slate-200 bg-slate-50 text-slate-500"
+        )}
+      >
+        <Icon className={cn("h-5 w-5", kind === "loading" && "animate-spin")} />
+      </div>
+      <div className="mt-4 text-sm font-semibold text-slate-950">{title}</div>
+      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">{description}</p>
     </div>
   );
 }

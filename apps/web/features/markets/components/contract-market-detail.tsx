@@ -93,8 +93,12 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
   if (contractReads.isLoading && !hasTimedOut) {
     return (
       <main className="min-h-screen bg-[#f7f7f2] px-4 py-10 text-slate-700 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-7xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-          Reading deployed PredictionMarket contract...
+        <div className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-50 text-indigo-600">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+          </div>
+          <div className="mt-4 text-sm font-semibold text-slate-950">Loading market</div>
+          <p className="mt-2 text-sm text-slate-500">Reading Arc Testnet contract data.</p>
         </div>
       </main>
     );
@@ -103,9 +107,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
   if (contractReads.isError || hasTimedOut || !displayedMarket) {
     return (
       <main className="min-h-screen bg-[#f7f7f2] px-4 py-10 text-slate-700 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-7xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="text-lg font-semibold text-slate-950">Onchain market unavailable</div>
-          <p className="mt-2 text-sm text-slate-600">Return to markets to browse available Arc Testnet markets.</p>
+        <div className="mx-auto w-full max-w-7xl rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm">
+          <div className="text-lg font-semibold text-slate-950">Market unavailable</div>
+          <p className="mt-2 text-sm text-slate-600">Return to markets or refresh shortly.</p>
           <Link className={cn(buttonVariants({ variant: "outline" }), "mt-5")} href="/markets">
             Back to markets
           </Link>
@@ -130,30 +134,36 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             Back to Markets
           </Link>
 
-          <div className="mt-4 max-w-5xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge>{marketWithParticipants.category}</Badge>
-              <MarketStatusBadge status={marketWithParticipants.status} />
-              <Badge variant="info">
-                {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
-              </Badge>
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-white/92 p-4 shadow-[0_16px_48px_rgba(15,23,42,0.07)] sm:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="border-slate-200 bg-slate-50 text-slate-600">{marketWithParticipants.category}</Badge>
+                  <MarketStatusBadge status={marketWithParticipants.status} />
+                  <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700" variant="info">
+                    {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
+                  </Badge>
+                </div>
+                <h1 className="mt-4 max-w-4xl text-3xl font-semibold leading-[1.08] tracking-[-0.01em] text-slate-950 sm:text-4xl lg:text-5xl">
+                  {marketWithParticipants.title}
+                </h1>
+                {marketWithParticipants.description && (
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                    {marketWithParticipants.description}
+                  </p>
+                )}
+              </div>
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2 lg:w-72 lg:grid-cols-1">
+                <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
+                <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />
+              </div>
             </div>
-            <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-              {marketWithParticipants.title}
-            </h1>
-          {marketWithParticipants.description && (
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-              {marketWithParticipants.description}
-            </p>
-          )}
             {(contractReads as { isFetching?: boolean }).isFetching && !contractReads.isLoading && (
               <p className="mt-2 text-xs text-indigo-600">
                 Updating onchain data...
               </p>
             )}
-            <div className="mt-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
-              <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(marketWithParticipants.expiresAt)} />
-              <MetaChip icon={Droplets} label="Token" value={marketWithParticipants.settlementToken} />
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {marketWithParticipants.participants > 0 && (
                 <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
               )}
@@ -164,18 +174,20 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-6 lg:px-8">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6 lg:px-8">
         <div className="order-2 space-y-5 lg:order-1">
-          <Card>
+          <Card className="overflow-hidden">
             <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
-              <CardTitle>Onchain Signal</CardTitle>
+              <CardTitle>Market Probability</CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
               <div className="grid grid-cols-2 gap-3">
                 <OutcomeMetric label="YES" value={marketWithParticipants.yesProbability} variant="yes" />
                 <OutcomeMetric label="NO" value={noProbability} variant="no" />
               </div>
-              <ProbabilityBar className="mt-4" yesProbability={marketWithParticipants.yesProbability} />
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                <ProbabilityBar yesProbability={marketWithParticipants.yesProbability} />
+              </div>
             </CardContent>
           </Card>
 
@@ -288,11 +300,18 @@ function OutcomeMetric({
   variant: "yes" | "no";
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm sm:p-4">
-      <div className="text-xs text-slate-500">{label}</div>
+    <div
+      className={cn(
+        "rounded-2xl border p-4 shadow-sm",
+        variant === "yes"
+          ? "border-emerald-200 bg-emerald-50/80"
+          : "border-rose-200 bg-rose-50/80"
+      )}
+    >
+      <div className={cn("text-xs font-medium", variant === "yes" ? "text-emerald-700" : "text-rose-700")}>{label}</div>
       <div
         className={cn(
-          "mt-2 text-3xl font-semibold",
+          "mt-2 text-4xl font-semibold tracking-tight",
           variant === "yes" ? "text-emerald-700" : "text-rose-700"
         )}
       >
@@ -313,8 +332,10 @@ function InfoTile({
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm sm:p-4">
-      <Icon className="h-4 w-4 text-indigo-600" />
-      <div className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-500">{label}</div>
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-indigo-600" />
+        <div className="text-xs uppercase tracking-[0.14em] text-slate-500">{label}</div>
+      </div>
       <div className="mt-2 text-sm font-semibold text-slate-950">{value}</div>
     </div>
   );
@@ -330,10 +351,10 @@ function MetaChip({
   value: string;
 }) {
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm">
-      <Icon className="h-3.5 w-3.5 text-slate-400" />
-      <span className="text-slate-500">{label}</span>
-      <span className="min-w-0 truncate font-medium text-slate-700">{value}</span>
+    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs shadow-sm">
+      <Icon className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+      <span className="shrink-0 text-slate-500">{label}</span>
+      <span className="min-w-0 truncate font-semibold text-slate-800">{value}</span>
     </div>
   );
 }

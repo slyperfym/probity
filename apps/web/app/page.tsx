@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrustStrip } from "@/components/marketing/trust-strip";
 import { cn } from "@/lib/utils";
 
 const protocolFlow = [
@@ -111,6 +112,7 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+            <TrustStrip className="mt-4 max-w-2xl" />
           </div>
 
           <div className="probity-fade-in relative">

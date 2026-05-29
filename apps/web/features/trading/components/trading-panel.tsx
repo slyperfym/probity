@@ -268,11 +268,11 @@ export function TradingPanel({ market }: { market: Market }) {
   }
 
   return (
-    <Card>
-      <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
+    <Card className="overflow-hidden border-slate-200 bg-white shadow-[0_16px_48px_rgba(15,23,42,0.08)]">
+      <CardHeader className="border-b border-slate-100 bg-slate-50/80 p-4 pb-3 sm:p-5 sm:pb-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <CardTitle>Trade</CardTitle>
+            <CardTitle className="text-base">Trade</CardTitle>
             <p className="mt-1 text-xs text-slate-500">YES/NO position entry.</p>
           </div>
           <Badge variant={isLocalContractMarket ? "yes" : "info"}>
@@ -280,8 +280,8 @@ export function TradingPanel({ market }: { market: Market }) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3.5 p-4 pt-0 sm:p-5 sm:pt-0">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+      <CardContent className="space-y-3.5 p-4 sm:p-5">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
           <div className="flex items-center gap-2 text-xs font-medium text-amber-800">
             <AlertTriangle className="h-3.5 w-3.5" />
             {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local test"}
@@ -295,11 +295,11 @@ export function TradingPanel({ market }: { market: Market }) {
 
         <section className="space-y-2.5">
           <SectionLabel>Mode</SectionLabel>
-          <div className="grid grid-cols-2 gap-2 rounded-md border border-slate-200 bg-slate-50 p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
             {(["buy", "sell"] as const).map((option) => (
               <button
                 className={[
-                  "h-10 rounded-[5px] text-sm font-medium capitalize transition sm:h-9",
+                  "h-10 rounded-lg text-sm font-medium capitalize transition sm:h-9",
                   mode === option
                     ? "bg-white text-indigo-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-900"
@@ -320,7 +320,7 @@ export function TradingPanel({ market }: { market: Market }) {
           {(["YES", "NO"] as const).map((option) => (
               <button
                 className={[
-                  "h-11 rounded-md border px-3 text-sm font-medium transition sm:h-10",
+                  "h-11 rounded-xl border px-3 text-sm font-semibold transition sm:h-10",
                   side === option
                     ? option === "YES"
                       ? "border-emerald-300 bg-emerald-50 text-emerald-700"
@@ -344,9 +344,9 @@ export function TradingPanel({ market }: { market: Market }) {
               <span className="text-xs text-slate-600">Balance {formatUsdc(balance)} {tokenLabel}</span>
             )}
           </div>
-          <div className="flex h-12 items-center rounded-md border border-slate-200 bg-slate-50 px-3 transition focus-within:border-indigo-300 focus-within:bg-white">
+          <div className="flex h-14 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-indigo-300 focus-within:bg-white">
             <input
-              className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-slate-950 outline-none placeholder:text-slate-400"
+              className="min-w-0 flex-1 bg-transparent text-xl font-semibold text-slate-950 outline-none placeholder:text-slate-400"
               inputMode="decimal"
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
@@ -357,7 +357,7 @@ export function TradingPanel({ market }: { market: Market }) {
           <div className="flex flex-wrap gap-2">
             {QUICK_AMOUNTS.map((quickAmount) => (
               <button
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 sm:h-8"
+                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 sm:h-8"
                 key={quickAmount}
                 onClick={() => incrementAmount(quickAmount)}
                 type="button"
@@ -367,7 +367,7 @@ export function TradingPanel({ market }: { market: Market }) {
             ))}
             {isLocalContractMarket && balance > 0n && (
               <button
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 sm:h-8"
+                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 sm:h-8"
                 onClick={handleMaxAmount}
                 type="button"
               >
@@ -377,7 +377,7 @@ export function TradingPanel({ market }: { market: Market }) {
           </div>
         </section>
 
-        <section className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+        <section className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-sm">
           <SectionLabel>Preview</SectionLabel>
           <PreviewRow label="Action" value={`${mode === "buy" ? "Buy" : "Sell"} ${side}`} />
           <PreviewRow
