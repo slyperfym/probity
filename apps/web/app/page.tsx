@@ -142,7 +142,7 @@ export default function HomePage() {
             <div>
               <Badge variant="muted">Arc Testnet MVP</Badge>
               <h2 className="mt-4 text-2xl font-semibold text-slate-950 sm:text-3xl">
-                Browse real deployed markets from the Market Board.
+                Browse real deployed markets from the Market Board
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
                 Explore live Arc Testnet markets and open any market for trading.
@@ -180,7 +180,7 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <Badge variant="info">Infrastructure</Badge>
             <h2 className="mt-4 text-2xl font-semibold text-slate-950 sm:text-3xl">
-              Settlement-first market infrastructure.
+              Settlement-first market infrastructure
             </h2>
             <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
               Clean market lifecycle, USDC-style settlement, and transparent onchain accounting.

@@ -19,7 +19,7 @@ export default function CreatePage() {
             Create Market
           </Badge>
           <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-            Create a YES/NO market.
+            Create a YES/NO market
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Draft terms, resolver, expiry, and USDC settlement.

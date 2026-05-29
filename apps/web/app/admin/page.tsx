@@ -19,7 +19,7 @@ export default function AdminPage() {
             Resolver Admin
           </Badge>
           <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-            Resolver queue.
+            Resolver queue
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Onchain resolution for expired markets.
