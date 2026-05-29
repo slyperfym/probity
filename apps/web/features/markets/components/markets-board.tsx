@@ -6,7 +6,6 @@ import { AlertTriangle, Inbox, LayoutGrid, List, Loader2, RefreshCw, Search } fr
 import type { LucideIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-import { TrustStrip } from "@/components/marketing/trust-strip";
 import { Button } from "@/components/ui/button";
 import { deploymentConfig } from "@/config/contracts";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
@@ -161,8 +160,6 @@ export function MarketsBoard() {
           </div>
         </div>
       </div>
-
-      <TrustStrip />
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
