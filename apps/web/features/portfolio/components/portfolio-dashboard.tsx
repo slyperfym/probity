@@ -113,19 +113,19 @@ export function PortfolioDashboard() {
 
       {!useMockFallback && !isConnected ? (
         <StateCard
-          description="Connect a wallet to read live YES/NO balances from deployed PredictionMarket contracts."
+          description="Connect a wallet to view positions."
           icon={Wallet}
           title="Connect wallet to view live positions"
         />
       ) : isInitialLoading ? (
         <StateCard
-          description="Reading deployed markets and wallet positions from the configured chain."
+          description="Reading Arc Testnet positions."
           kind="loading"
           title="Loading live portfolio"
         />
       ) : isError ? (
         <StateCard
-          description="Position reads failed. The market board remains available, but live wallet positions could not be refreshed."
+          description="Live wallet positions could not be refreshed."
           kind="error"
           title="Unable to load live positions"
         />
@@ -137,26 +137,26 @@ export function PortfolioDashboard() {
           <div className="space-y-6">
             {isRefreshing && (
               <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
-                Updating onchain portfolio data...
+                Updating portfolio...
               </div>
             )}
             <ClaimableRewards enableClaims={!useMockFallback} positions={positions} />
             {useMockFallback ? (
               <>
                 <StateCard
-                  description="Live contract reads are unavailable in this environment, so wallet transactions remain disabled."
+                  description="Live contract reads are unavailable."
                   kind="loading"
                   title="Contract read fallback"
                 />
                 <StateCard
-                  description="Live wallet positions will appear when deployed contract reads are available."
+                  description="Live wallet positions unavailable."
                   kind="error"
                   title="Live read unavailable"
                 />
               </>
             ) : (
               <StateCard
-                description="Live positions are read directly from each deployed PredictionMarket using getPosition(wallet)."
+                description="Wallet positions from deployed markets."
                 title="Onchain portfolio"
               />
             )}
@@ -165,12 +165,12 @@ export function PortfolioDashboard() {
       )}
 
       <OnchainActivityList
-        emptyDescription="No onchain activity found for this wallet yet."
+        emptyDescription="No activity found for this wallet."
         emptyTitle="No onchain activity"
         error={walletActivity.isError ? "Could not load onchain activity." : null}
         isLoading={walletActivity.isLoading || walletActivity.isFetching}
         items={walletActivity.data ?? []}
-        loadingMessage="Reading wallet activity from Arc Testnet..."
+        loadingMessage="Reading Arc Testnet activity..."
         title="Recent Onchain Activity"
       />
     </section>

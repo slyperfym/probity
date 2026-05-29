@@ -154,7 +154,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
           <div className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
               <ShieldCheck className="h-4 w-4" />
-              Resolver guardrails
+              Resolver-only
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {getResolverNotice({ accountAddress, isConnected, isLocalMode })}
@@ -265,14 +265,14 @@ function getResolverNotice({
   isLocalMode: boolean;
 }) {
   if (!isLocalMode) {
-    return "Resolver transactions are disabled until deployed contracts are reachable.";
+    return "Contracts unavailable.";
   }
 
   if (!isConnected || !accountAddress) {
-    return "Connect the resolver wallet for this market before resolving expired markets.";
+    return "Connect the required resolver wallet.";
   }
 
-  return "Only the resolver address stored on each deployed PredictionMarket can resolve YES or NO after expiration.";
+  return "Only the market resolver can finalize YES or NO.";
 }
 
 function ResolverTransactionState({
@@ -297,19 +297,19 @@ function ResolverTransactionState({
       {isPending && (
         <div className="flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Resolution transaction pending{transactionHash ? ` (${shortHash(transactionHash)})` : ""}.
+          Resolution pending{transactionHash ? ` (${shortHash(transactionHash)})` : ""}.
         </div>
       )}
       {success && !isPending && (
         <div className="flex items-center gap-2 text-emerald-700">
           <CheckCircle2 className="h-4 w-4" />
-          Resolution confirmed. Winning positions can now claim payout.
+          Resolution confirmed.
         </div>
       )}
       {isRefreshing && !isPending && (
         <div className="mt-2 flex items-center gap-2 text-indigo-700">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Refreshing onchain resolver data.
+          Refreshing resolver data.
         </div>
       )}
       {error && (

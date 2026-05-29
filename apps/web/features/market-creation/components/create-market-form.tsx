@@ -53,7 +53,7 @@ export function CreateMarketForm() {
   const [question, setQuestion] = React.useState(importedQuestion);
   const [description, setDescription] = React.useState(() =>
     hasImportedReference
-      ? "Drafted from external market reference metadata. Probity deployment, trading, settlement, and resolution remain Arc-native and independent."
+      ? "Drafted from external reference metadata."
       : ""
   );
   const [expiry, setExpiry] = React.useState(importedExpiry ? importedExpiry.slice(0, 10) : "");
@@ -189,10 +189,9 @@ export function CreateMarketForm() {
         <form className="space-y-5" onSubmit={createMarket}>
           {hasImportedReference && (
             <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
-              <div className="text-sm font-medium text-indigo-800">Reference imported from public market metadata</div>
+              <div className="text-sm font-medium text-indigo-800">Imported reference</div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                This draft uses external market metadata as a reference. The created Probity market
-                will be a separate Arc-native market with independent USDC settlement.
+                Creates a separate Arc-native Probity market.
               </p>
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                 <ReferenceMetric label="Source" value={importedSourceLabel} />
@@ -212,7 +211,7 @@ export function CreateMarketForm() {
                   rel="noreferrer"
                   target="_blank"
                 >
-                  View external reference only
+                  View source
                   <ExternalLink className="h-4 w-4" />
                 </a>
               )}
@@ -232,7 +231,7 @@ export function CreateMarketForm() {
             <textarea
               className="min-h-28 w-full rounded-md border border-slate-200 bg-white px-3 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300"
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Describe the market and the institutional signal it is intended to capture."
+              placeholder="Short market description."
               value={description}
             />
           </Field>
@@ -322,32 +321,28 @@ export function CreateMarketForm() {
           />
 
           <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-indigo-800">
+              <div className="flex items-center gap-2 text-sm font-medium text-indigo-800">
               <FileText className="h-4 w-4" />
               Arc-native MarketFactory creation
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Only approved Probity creators can submit this transaction. External metadata can
-              prefill the draft, but the created market is a separate PredictionMarket deployed by
-              Probity on the configured chain.
+              Only approved creators can submit this transaction.
             </p>
             {!isApprovedCreator && isConnected && (
               <p className="mt-3 text-sm text-amber-700">
-                Public market proposals are not enabled yet. Connect an approved creator wallet to
-                create an Arc-native market.
+                Public proposals are not enabled yet.
               </p>
             )}
             <p className="mt-3 text-sm text-slate-500">
               {createDisabledReason ??
-                "Connected wallet is approved to create markets with the selected resolver."}
+                "Approved to create with selected resolver."}
             </p>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-sm font-medium text-slate-950">Suggest Market</div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Public market proposals are not enabled yet. For now, market creation is restricted
-              to approved creator wallets.
+              Public proposal workflow is planned.
             </p>
           </div>
 
@@ -448,7 +443,7 @@ function EligibilityPanel({
             ? "This wallet can create and resolve this market."
             : isConnectedWalletApprovedResolver
               ? "This wallet can resolve markets. Use it as resolver for the simplest MVP flow."
-              : "This wallet can create markets but is not approved as a resolver. Use an approved resolver address."}
+              : "Use an approved resolver address."}
         </p>
       )}
     </div>
@@ -469,22 +464,22 @@ function getResolverHelperCopy({
   resolverAddress: Address | undefined;
 }) {
   if (!isConnected) {
-    return "Connect an approved creator wallet to set the resolver for this market.";
+    return "Connect an approved creator wallet.";
   }
 
   if (isApprovedCreator && isConnectedWalletApprovedResolver && isUsingConnectedWalletAsResolver) {
-    return "For this MVP, using your creator wallet as resolver makes it easier to resolve markets you create.";
+    return "Creator wallet will resolve this market.";
   }
 
   if (isApprovedCreator && !isConnectedWalletApprovedResolver) {
-    return "This wallet can create markets but is not approved as a resolver. Use an approved resolver address.";
+    return "Use an approved resolver address.";
   }
 
   if (!resolverAddress) {
     return "Enter an approved resolver wallet address.";
   }
 
-  return "Resolver remains editable. Any custom resolver must be approved by the MarketFactory.";
+  return "Custom resolver must be approved.";
 }
 
 function EligibilityMetric({

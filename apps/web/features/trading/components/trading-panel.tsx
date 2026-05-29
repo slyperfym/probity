@@ -273,7 +273,7 @@ export function TradingPanel({ market }: { market: Market }) {
         <div className="flex items-center justify-between gap-3">
           <div>
             <CardTitle>Trade</CardTitle>
-            <p className="mt-1 text-xs text-slate-500">Arc-native YES/NO position entry.</p>
+            <p className="mt-1 text-xs text-slate-500">YES/NO position entry.</p>
           </div>
           <Badge variant={isLocalContractMarket ? "yes" : "info"}>
             {isLocalContractMarket ? environmentLabel : "Unavailable"}
@@ -284,12 +284,12 @@ export function TradingPanel({ market }: { market: Market }) {
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
           <div className="flex items-center gap-2 text-xs font-medium text-amber-800">
             <AlertTriangle className="h-3.5 w-3.5" />
-            {deploymentConfig.isArcTestnet ? "Arc testnet trading" : "Local test trading"}
+            {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local test"}
           </div>
           <p className="mt-1.5 text-xs leading-5 text-slate-600">
             {deploymentConfig.isArcTestnet
-              ? "Arc testnet USDC is used for gas and settlement. Sell-back is MVP pool pricing, not an orderbook."
-              : "Use local contracts and local settlement tokens only. Sell-back is MVP pool pricing, not an orderbook."}
+              ? "Arc testnet USDC is used for gas and settlement."
+              : "Local settlement tokens only."}
           </p>
         </div>
 
@@ -486,7 +486,7 @@ function TradingNotice({
     <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3">
       <div className="flex items-center gap-2 text-xs font-medium text-indigo-700">
         <ShieldCheck className="h-3.5 w-3.5" />
-        Trading guardrail
+        Guardrail
       </div>
       <p className="mt-1.5 text-xs leading-5 text-slate-500">{message}</p>
       {showFaucetLink && (
@@ -496,7 +496,7 @@ function TradingNotice({
           rel="noreferrer"
           target="_blank"
         >
-          Need Arc testnet USDC for gas and settlement? Get it from the Circle faucet.
+          Get Arc testnet USDC from the Circle faucet.
         </Link>
       )}
     </div>
@@ -640,7 +640,7 @@ function getStatusMessage({
 
   if (!hasEnoughAllowance) {
     return deploymentConfig.isArcTestnet
-      ? "Approve USDC for this market before buying YES or NO."
+      ? "Approve USDC before trading."
       : `Approve ${tokenLabel} for this market before buying YES or NO.`;
   }
 

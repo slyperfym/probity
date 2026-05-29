@@ -99,19 +99,17 @@ export function MarketsBoard() {
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
             <span className="font-medium text-slate-700">
               {isUsingMockFallback
-                ? "Contract summaries unavailable"
-                : isUsingClientFallback
-                  ? "Arc MarketFactory connected"
+                ? "Contracts unavailable"
                 : deploymentConfig.isArcTestnet
-                  ? "Arc MarketFactory connected"
-                  : "Local MarketFactory connected"}
+                  ? "Arc Testnet"
+                  : "Local contracts"}
             </span>
             <span className="hidden text-slate-300 sm:inline">/</span>
             <span>
               {isUsingMockFallback
-                ? "Live contract summaries are unavailable for this environment."
+                ? "Summaries unavailable."
                 : isUsingClientFallback
-                  ? "Reading Arc Testnet markets from wallet RPC fallback."
+                  ? "Real onchain markets"
                 : hasConnectedFactoryWithoutMarkets
                   ? "0 markets"
                   : `${displayedMarkets.length} of ${totalMarketCount} market${
@@ -119,10 +117,10 @@ export function MarketsBoard() {
                     }`}
             </span>
             {!isUsingMockFallback && totalMarketCount > displayedMarkets.length && (
-              <span className="text-slate-500">Board summaries are cached; detail pages read live contracts.</span>
+              <span className="text-slate-500">Real onchain markets</span>
             )}
             {summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0 && (
-              <span className="text-indigo-600">Reading Arc Testnet markets...</span>
+              <span className="text-indigo-600">Reading markets...</span>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -158,7 +156,7 @@ export function MarketsBoard() {
           </label>
           <div className="flex min-w-0 flex-col gap-2.5 lg:items-end">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-              <span className="text-xs text-slate-500">Search applies to loaded markets.</span>
+              <span className="text-xs text-slate-500">Loaded markets</span>
               <ViewToggle value={viewMode} onChange={setViewMode} />
             </div>
             <FilterGroup label="Category" options={marketCategories} value={category} onChange={setCategory} />
@@ -197,8 +195,7 @@ export function MarketsBoard() {
         <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-10 text-center">
           <div className="text-sm font-medium text-slate-950">No deployed markets found.</div>
           <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-indigo-700">
-            Probity is connected to the configured MarketFactory, but `allMarkets()` returned an
-            empty list. Create or seed Arc Testnet markets, then refresh this page.
+            Create an Arc Testnet market, then refresh this page.
           </p>
         </div>
       ) : (
@@ -212,7 +209,7 @@ export function MarketsBoard() {
           </div>
           <p className="mt-2 text-sm text-slate-500">
             {summaryQuery.isError
-              ? "The summary API failed and the real onchain fallback did not return markets. Check MarketFactory configuration or RPC availability, then refresh."
+              ? "Check MarketFactory configuration or RPC availability, then refresh."
               : searchQuery.trim()
               ? "Try another question, category, status, or token symbol."
               : "Adjust the category or status filters."}

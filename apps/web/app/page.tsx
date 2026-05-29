@@ -19,23 +19,23 @@ import { cn } from "@/lib/utils";
 const protocolFlow = [
   {
     label: "Create",
-    title: "Approved creator deploys a market",
-    description: "Arc-native MarketFactory creates a dedicated YES/NO PredictionMarket."
+    title: "Deploy market",
+    description: "Approved creators launch Arc-native YES/NO markets."
   },
   {
     label: "Trade",
-    title: "Wallets buy or sell YES/NO exposure",
-    description: "Users interact with deployed markets using Arc testnet USDC for gas and settlement."
+    title: "Trade YES/NO",
+    description: "Wallets use Arc testnet USDC for gas and settlement."
   },
   {
     label: "Resolve",
-    title: "Configured resolver finalizes outcome",
-    description: "Expired markets resolve through the resolver address stored onchain."
+    title: "Resolve outcome",
+    description: "The configured resolver finalizes expired markets."
   },
   {
     label: "Claim",
-    title: "Winning positions claim payout",
-    description: "Eligible wallets claim settlement from the deployed PredictionMarket contract."
+    title: "Claim payout",
+    description: "Winning positions claim settlement onchain."
   }
 ];
 
@@ -86,9 +86,8 @@ export default function HomePage() {
               Transparent forecasting markets for professional capital.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              Probity brings stablecoin-native settlement, deterministic market resolution,
-              and transparent onchain accounting to event forecasting across macro, crypto,
-              policy, and financial markets.
+              Arc-native prediction markets with USDC-style settlement, onchain positions,
+              and resolver-based outcomes.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link className={cn(buttonVariants({ size: "lg" }))} href="/markets">
@@ -118,8 +117,8 @@ export default function HomePage() {
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
               <div className="flex items-center justify-between border-b border-slate-200 px-3 py-3">
                 <div>
-                  <div className="text-sm font-medium text-slate-950">Probity Protocol Flow</div>
-                  <div className="text-xs text-slate-500">Arc Testnet MVP lifecycle</div>
+                  <div className="text-sm font-medium text-slate-950">Protocol Flow</div>
+                  <div className="text-xs text-slate-500">Arc Testnet</div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-emerald-700">
                   <span className="probity-pulse h-2 w-2 rounded-full bg-emerald-400" />
@@ -145,8 +144,7 @@ export default function HomePage() {
                 Browse real deployed markets from the Market Board.
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                The homepage avoids synthetic market volume. Open the board for cached summaries
-                from the configured Arc Testnet MarketFactory and live detail reads.
+                Explore live Arc Testnet markets and open any market for trading.
               </p>
             </div>
             <Link className={cn(buttonVariants({ variant: "outline" }))} href="/markets">
@@ -181,12 +179,10 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <Badge variant="info">Infrastructure</Badge>
             <h2 className="mt-4 text-2xl font-semibold text-slate-950 sm:text-3xl">
-              A settlement-first architecture for serious forecasting.
+              Settlement-first market infrastructure.
             </h2>
             <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-              Probity is designed around the parts institutions care about: predictable
-              collateral, clear lifecycle states, resolver accountability, and contract-level
-              payout guarantees.
+              Clean market lifecycle, USDC-style settlement, and transparent onchain accounting.
             </p>
           </div>
 

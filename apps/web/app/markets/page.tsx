@@ -19,15 +19,15 @@ export default function MarketsPage() {
           <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-                Forecasting markets for institutional signal.
+                Forecasting markets.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                Browse Arc-native YES/NO markets with Arc testnet USDC for gas and settlement.
+                Browse Arc-native YES/NO markets.
               </p>
             </div>
             <div className="flex w-fit items-center gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700">
               <BarChart3 className="h-4 w-4 text-indigo-600" />
-              Arc Testnet onchain
+              Arc Testnet
             </div>
           </div>
         </div>

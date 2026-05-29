@@ -99,12 +99,10 @@ export function ExternalSignals({
       <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-medium text-indigo-800">
           <DatabaseZap className="h-4 w-4" />
-          External Signals
+          Market References
         </div>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          These references are public Polymarket Gamma market metadata for discovery only.
-          Probity does not execute Polymarket trades, is not affiliated with Polymarket, and
-          deploys separate Arc-native markets with independent USDC settlement.
+          External references for drafting separate Probity markets.
         </p>
       </div>
 
@@ -126,7 +124,7 @@ export function ExternalSignals({
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600 shadow-sm">
-              No new external references are available to draft right now.
+              No new references available.
             </div>
           )}
 
@@ -138,7 +136,7 @@ export function ExternalSignals({
                 type="button"
               >
                 <span className="text-sm font-medium text-slate-900">
-                  Already listed references ({alreadyListedSignals.length})
+                  Already listed ({alreadyListedSignals.length})
                 </span>
                 <ChevronDown
                   className={cn(
@@ -196,15 +194,15 @@ function ExternalSignalCard({
             }
             variant={listedMarketId ? "yes" : "muted"}
           >
-            {listedMarketId ? "Already listed on Probity" : "External reference"}
+            {listedMarketId ? "Already listed" : "External reference"}
           </Badge>
           <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700">{market.category}</Badge>
         </div>
         <CardTitle className="text-[15px] leading-6 text-slate-950 sm:text-sm">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
           {listedMarketId
-            ? "This external reference already maps to a Probity Arc Testnet market."
-            : "Use this reference to draft a separate Arc-native Probity market."}
+            ? "Already on Probity."
+            : "Reference only."}
         </p>
       </CardHeader>
       <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
@@ -220,7 +218,7 @@ function ExternalSignalCard({
               className={cn(buttonVariants({ variant: "outline" }), "w-full")}
               href={`/markets/${listedMarketId}`}
             >
-              Open Probity Market
+              Open Market
               <ArrowRight className="h-4 w-4" />
             </Link>
           ) : (
@@ -231,7 +229,7 @@ function ExternalSignalCard({
               )}
               href={importHref}
             >
-              Draft Probity Market
+              Draft Market
               <ArrowRight className="h-4 w-4" />
             </Link>
           )}
@@ -242,7 +240,7 @@ function ExternalSignalCard({
               rel="noreferrer"
               target="_blank"
             >
-              View External Source
+              View Source
               <ExternalLink className="h-4 w-4" />
             </a>
           )}

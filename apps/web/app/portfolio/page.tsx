@@ -15,10 +15,10 @@ export default function PortfolioPage() {
             Portfolio
           </Badge>
           <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-            Wallet-level exposure and rewards.
+            Wallet exposure.
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Live wallet positions, claim status, and onchain activity from deployed PredictionMarket contracts.
+            Positions, claims, and onchain activity.
           </p>
         </div>
       </section>

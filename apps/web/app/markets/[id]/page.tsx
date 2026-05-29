@@ -73,11 +73,11 @@ export default async function MarketDetailPage({
   const noProbability = 100 - market.yesProbability;
 
   return (
-    <main className="min-h-screen bg-slate-950">
-      <section className="border-b border-white/10 bg-slate-950">
+    <main className="min-h-screen bg-[#f7f7f2]">
+      <section className="probity-grid border-b border-slate-200 bg-[#f7f7f2]">
         <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <Link
-            className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-200"
+            className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-indigo-700"
             href="/markets"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -94,12 +94,14 @@ export default async function MarketDetailPage({
                 </Badge>
               )}
             </div>
-            <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-100 sm:text-4xl">
+            <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
               {market.title}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
-              {market.description}
-            </p>
+            {market.description && (
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                {market.description}
+              </p>
+            )}
             <div className="mt-5 flex flex-wrap gap-2">
               <MetaChip icon={CalendarClock} label="Expiry" value={formatExpiry(market.expiresAt)} />
               <MetaChip icon={Droplets} label="Token" value={market.settlementToken} />
@@ -112,9 +114,9 @@ export default async function MarketDetailPage({
 
       <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:px-8">
         <div className="space-y-5">
-          <Card className="bg-slate-950/75">
+          <Card>
             <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
-              <CardTitle className="text-slate-100">Market Signal</CardTitle>
+              <CardTitle>Market Signal</CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
               <div className="grid grid-cols-2 gap-3">
@@ -132,7 +134,7 @@ export default async function MarketDetailPage({
             <InfoTile icon={Users} label="Participants" value={formatInteger(market.participants)} />
           </div>
 
-          <Card className="bg-slate-950/75">
+          <Card>
             <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
               <CardTitle>Resolution Criteria</CardTitle>
             </CardHeader>
@@ -143,9 +145,9 @@ export default async function MarketDetailPage({
                   "Positions and settlement funds are read from the deployed PredictionMarket contract.",
                   "This is an Arc Testnet MVP market, not production oracle logic."
                 ].map((rule) => (
-                  <div className="flex gap-3 rounded-md border border-white/[0.07] bg-white/[0.018] p-3" key={rule}>
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300/70" />
-                    <p className="text-sm leading-6 text-slate-400">{rule}</p>
+                  <div className="flex gap-3 rounded-md border border-slate-200 bg-slate-50 p-3" key={rule}>
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
+                    <p className="text-sm leading-6 text-slate-600">{rule}</p>
                   </div>
                 ))}
               </div>
@@ -179,9 +181,9 @@ function OutcomeMetric({
   variant: "yes" | "no";
 }) {
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-xs text-slate-500">{label}</div>
-      <div className={cn("mt-2 text-3xl font-semibold", variant === "yes" ? "text-emerald-300/85" : "text-rose-300/85")}>
+      <div className={cn("mt-2 text-3xl font-semibold", variant === "yes" ? "text-emerald-700" : "text-rose-700")}>
         {value}%
       </div>
     </div>
@@ -198,10 +200,10 @@ function InfoTile({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.018] p-4">
-      <Icon className="h-4 w-4 text-cyan-300/70" />
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <Icon className="h-4 w-4 text-indigo-600" />
       <div className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-500">{label}</div>
-      <div className="mt-2 text-sm font-semibold text-slate-200">{value}</div>
+      <div className="mt-2 text-sm font-semibold text-slate-950">{value}</div>
     </div>
   );
 }
@@ -216,10 +218,10 @@ function MetaChip({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.018] px-3 py-2 text-xs">
-      <Icon className="h-3.5 w-3.5 text-slate-600" />
-      <span className="text-slate-600">{label}</span>
-      <span className="font-medium text-slate-400">{value}</span>
+    <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm">
+      <Icon className="h-3.5 w-3.5 text-slate-400" />
+      <span className="text-slate-500">{label}</span>
+      <span className="font-medium text-slate-700">{value}</span>
     </div>
   );
 }

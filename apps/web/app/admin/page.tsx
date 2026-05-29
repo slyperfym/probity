@@ -19,11 +19,10 @@ export default function AdminPage() {
             Resolver Admin
           </Badge>
           <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-            Resolver operations dashboard.
+            Resolver queue.
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Resolve expired deployed markets, monitor claimable outcomes, and keep resolver
-            actions gated to the required wallet.
+            Onchain resolution for expired markets.
           </p>
         </div>
       </section>
@@ -33,21 +32,21 @@ export default function AdminPage() {
         <aside className="space-y-3 lg:space-y-4">
           <AdminControlCard
             icon={Gavel}
-            label="Resolver mode"
+            label="Mode"
             value="Onchain"
-            text="PredictionMarket resolution is enabled when deployed contracts are reachable."
+            text="Onchain resolution"
           />
           <AdminControlCard
             icon={TimerReset}
             label="SLA"
             value="Resolver"
-            text="Resolution timing depends on the configured resolver wallet finalizing each expired market."
+            text="Required resolver wallet"
           />
           <AdminControlCard
             icon={ShieldCheck}
             label="Access"
             value="Resolver-only"
-            text="Resolution actions are enabled only for the resolver address stored on each market."
+            text="Resolver-only"
           />
         </aside>
       </section>

@@ -105,10 +105,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
       <main className="min-h-screen bg-[#f7f7f2] px-4 py-10 text-slate-700 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-7xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="text-lg font-semibold text-slate-950">Onchain market unavailable</div>
-          <p className="mt-2 text-sm text-slate-600">
-            The configured chain is unavailable, the address is not a Probity market, or the
-            market was redeployed. Return to markets to browse available Arc Testnet markets.
-          </p>
+          <p className="mt-2 text-sm text-slate-600">Return to markets to browse available Arc Testnet markets.</p>
           <Link className={cn(buttonVariants({ variant: "outline" }), "mt-5")} href="/markets">
             Back to markets
           </Link>
@@ -144,12 +141,14 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
               {marketWithParticipants.title}
             </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+          {marketWithParticipants.description && (
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
               {marketWithParticipants.description}
             </p>
+          )}
             {(contractReads as { isFetching?: boolean }).isFetching && !contractReads.isLoading && (
               <p className="mt-2 text-xs text-indigo-600">
-                Updating onchain market data...
+                Updating onchain data...
               </p>
             )}
             <div className="mt-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
@@ -192,7 +191,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                 <div className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-500">Activity</div>
                 <div className="mt-2 text-sm font-semibold text-slate-950">Onchain activity</div>
                 <p className="mt-1 text-xs leading-5 text-slate-600">
-                  Participant indexing is being improved.
+                  Indexing in progress.
                 </p>
               </div>
             )}
@@ -233,7 +232,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                   {externalReference.externalQuestion && (
                     <div className="grid gap-2 text-slate-500 sm:grid-cols-[140px_1fr]">
                       <span className="text-xs uppercase tracking-[0.14em] text-slate-600">
-                        Original question
+                        Original
                       </span>
                       <span className="text-slate-600">{externalReference.externalQuestion}</span>
                     </div>
@@ -245,12 +244,12 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                       rel="noreferrer"
                       target="_blank"
                     >
-                      View external source
+                      View source
                       <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   )}
                   <p className="border-t border-slate-200 pt-3 text-xs leading-5 text-slate-500">
-                    Reference metadata only. Probity market settles independently on Arc.
+                    Reference only. Probity settles independently on Arc.
                   </p>
                 </div>
               </CardContent>
@@ -259,11 +258,11 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
 
           <OnchainActivityList
             emptyDescription="No activity found for this market yet."
-            emptyTitle="No market activity"
+            emptyTitle="No activity"
             error={marketActivity.isError ? "Could not load onchain activity." : null}
             isLoading={marketActivity.isLoading || marketActivity.isFetching}
             items={marketActivity.data ?? []}
-            loadingMessage="Reading market activity from Arc Testnet..."
+            loadingMessage="Reading Arc Testnet activity..."
             title="Market Activity"
           />
         </div>

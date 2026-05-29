@@ -19,11 +19,10 @@ export default function CreatePage() {
             Create Market
           </Badge>
           <h1 className="mt-4 text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-            Design a deterministic YES/NO market.
+            Create a YES/NO market.
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Draft institutional-grade market terms, resolution criteria, resolver assignment,
-            and USDC settlement parameters before submitting approved MarketFactory writes.
+            Draft terms, resolver, expiry, and USDC settlement.
           </p>
         </div>
       </section>
@@ -42,12 +41,12 @@ export default function CreatePage() {
           <GuidelineCard
             icon={FilePlus2}
             title="Market quality"
-            text="Every market should define a clear YES condition, NO condition, expiry, source of truth, and invalid/cancelled handling."
+            text="Define YES, NO, expiry, and source of truth."
           />
           <GuidelineCard
             icon={ShieldCheck}
             title="Resolver accountability"
-            text="Resolver selection remains controlled for the MVP. Role-gated factory creation is part of the next contract integration step."
+            text="Resolution is gated to the selected resolver wallet."
           />
         </aside>
       </section>
