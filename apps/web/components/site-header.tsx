@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { getAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { DeploymentReadinessAlert } from "@/components/web3/deployment-readiness-alert";
 import { WalletConnectionAlert } from "@/components/web3/wallet-connection-alert";
 import { WalletConnectButton } from "@/components/web3/wallet-connect-button";
@@ -101,6 +102,7 @@ export function SiteHeader() {
               <span className="hidden sm:inline">Get Faucet</span>
               <span className="sm:hidden">Faucet</span>
             </a>
+            <ThemeToggle />
             <WalletConnectButton />
           </div>
         </div>

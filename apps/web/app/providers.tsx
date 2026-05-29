@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 import { WagmiProvider } from "wagmi";
 
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { wagmiConfig } from "@/config/wagmi";
 import { probityChain } from "@/config/chains";
 
@@ -36,7 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             fontStack: "system"
           })}
         >
-          {children}
+          <ThemeProvider>{children}</ThemeProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

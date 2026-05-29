@@ -27,7 +27,6 @@ import {
   mapPredictionMarketReadsToMarket,
   type MarketReadTuple
 } from "@/features/contracts/hooks/use-local-contract-markets";
-import { CopyMarketLinkButton } from "@/features/markets/components/copy-market-link-button";
 import { useMarketParticipantCount } from "@/features/contracts/hooks/use-market-participants";
 import { MarketStatusBadge } from "@/features/markets/components/market-status-badge";
 import { ProbabilityBar } from "@/features/markets/components/probability-bar";
@@ -145,11 +144,10 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                     {deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Contract"}
                   </Badge>
                 </div>
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <h1 className="max-w-3xl text-2xl font-semibold leading-[1.14] tracking-normal text-slate-950 sm:text-3xl lg:text-[2.35rem] lg:leading-[1.12]">
+                <div className="max-w-4xl">
+                  <h1 className="text-2xl font-semibold leading-[1.14] tracking-normal text-slate-950 sm:text-3xl lg:text-[2.25rem] lg:leading-[1.12]">
                     {marketWithParticipants.title}
                   </h1>
-                  <CopyMarketLinkButton marketTitle={marketWithParticipants.title} />
                 </div>
                 {marketWithParticipants.description && (
                   <p className="max-w-2xl text-sm leading-6 text-slate-600">

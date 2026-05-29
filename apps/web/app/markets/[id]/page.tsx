@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContractMarketDetail } from "@/features/markets/components/contract-market-detail";
-import { CopyMarketLinkButton } from "@/features/markets/components/copy-market-link-button";
 import { MarketStatusBadge } from "@/features/markets/components/market-status-badge";
 import { ProbabilityBar } from "@/features/markets/components/probability-bar";
 import { getMarketById, mockMarkets } from "@/features/markets/data/mock-markets";
@@ -90,11 +89,10 @@ export default async function MarketDetailPage({
               <Badge>{market.category}</Badge>
               <MarketStatusBadge outcome={market.outcome} status={market.status} />
             </div>
-            <div className="mt-3 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-              <h1 className="max-w-3xl text-2xl font-semibold leading-[1.14] text-slate-950 sm:text-3xl lg:text-[2.35rem] lg:leading-[1.12]">
+            <div className="mt-3 max-w-4xl">
+              <h1 className="text-2xl font-semibold leading-[1.14] text-slate-950 sm:text-3xl lg:text-[2.25rem] lg:leading-[1.12]">
                 {market.title}
               </h1>
-              <CopyMarketLinkButton marketTitle={market.title} />
             </div>
             {market.description && (
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
