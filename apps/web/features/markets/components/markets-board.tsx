@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { AlertTriangle, Inbox, LayoutGrid, List, Loader2, RefreshCw, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,11 +12,12 @@ import { deploymentConfig } from "@/config/contracts";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { ExternalSignals } from "@/features/discovery/components/external-signals";
 import { MarketCard } from "@/features/markets/components/market-card";
+import { ProbabilityBar } from "@/features/markets/components/probability-bar";
 import {
   marketCategories,
   marketStatuses
 } from "@/features/markets/data/mock-markets";
-import { formatUsd } from "@/features/markets/lib/formatters";
+import { formatExpiry, formatUsd } from "@/features/markets/lib/formatters";
 import type { Market, MarketCategory, MarketStatus } from "@/features/markets/types";
 import type { MarketSummary, MarketSummaryResponse } from "@/features/markets/types/market-summary";
 import { cn } from "@/lib/utils";
@@ -82,6 +84,23 @@ export function MarketsBoard() {
   const isInitialLoading =
     (summaryQuery.isLoading && !summaryData) ||
     (summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
+  const featuredMarkets = React.useMemo(
+    () =>
+      isUsingMockFallback || isInitialLoading
+        ? []
+        : displayedMarkets
+            .filter(
+              (market) =>
+                market.status === "active" &&
+                (market.volumeUsd > 0 || market.liquidityUsd > 0)
+            )
+            .sort(
+              (left, right) =>
+                right.volumeUsd + right.liquidityUsd - (left.volumeUsd + left.liquidityUsd)
+            )
+            .slice(0, 3),
+    [displayedMarkets, isInitialLoading, isUsingMockFallback]
+  );
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -169,6 +188,8 @@ export function MarketsBoard() {
         </div>
       </div>
 
+      {featuredMarkets.length > 0 && <FeaturedMarkets markets={featuredMarkets} />}
+
       {isInitialLoading ? (
         <BoardState
           description="Fetching Arc Testnet market summaries."
@@ -233,6 +254,53 @@ export function MarketsBoard() {
         isUsingMockFallback={isUsingMockFallback}
         probityMarkets={boardMarkets}
       />
+    </div>
+  );
+}
+
+function FeaturedMarkets({ markets }: { markets: Market[] }) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-slate-950">Featured Markets</div>
+          <p className="mt-0.5 text-xs text-slate-500">Active Arc Testnet markets</p>
+        </div>
+        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
+          Live
+        </span>
+      </div>
+      <div className="grid gap-3 lg:grid-cols-3">
+        {markets.map((market) => (
+          <Link
+            className="group rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm transition hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_34px_rgba(15,23,42,0.08)]"
+            href={`/markets/${market.id}`}
+            key={market.id}
+          >
+            <div className="line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-slate-950 group-hover:text-indigo-950">
+              {market.title}
+            </div>
+            <ProbabilityBar className="mt-4" yesProbability={market.yesProbability} />
+            <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+              <FeaturedMetric label="Volume" value={formatUsd(market.volumeUsd)} />
+              <FeaturedMetric label="Expiry" value={formatExpiry(market.expiresAt)} />
+            </div>
+            <div className="mt-4 inline-flex items-center text-xs font-semibold text-indigo-700 transition group-hover:text-indigo-900">
+              Open Market
+              <span className="ml-1 transition group-hover:translate-x-0.5">-&gt;</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FeaturedMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+      <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{label}</div>
+      <div className="mt-1 truncate text-xs font-semibold text-slate-800">{value}</div>
     </div>
   );
 }

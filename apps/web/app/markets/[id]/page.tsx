@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContractMarketDetail } from "@/features/markets/components/contract-market-detail";
+import { CopyMarketLinkButton } from "@/features/markets/components/copy-market-link-button";
 import { MarketStatusBadge } from "@/features/markets/components/market-status-badge";
 import { ProbabilityBar } from "@/features/markets/components/probability-bar";
 import { getMarketById, mockMarkets } from "@/features/markets/data/mock-markets";
@@ -94,9 +95,12 @@ export default async function MarketDetailPage({
                 </Badge>
               )}
             </div>
-            <h1 className="mt-4 max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
-              {market.title}
-            </h1>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <h1 className="max-w-4xl text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
+                {market.title}
+              </h1>
+              <CopyMarketLinkButton />
+            </div>
             {market.description && (
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
                 {market.description}

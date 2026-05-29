@@ -34,6 +34,11 @@ export function OnchainActivityList({
       <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
         <div className="flex items-center justify-between gap-3">
           <CardTitle>{title}</CardTitle>
+          {hasItems && !isLoading && (
+            <Badge variant="muted">
+              {items.length} event{items.length === 1 ? "" : "s"}
+            </Badge>
+          )}
           {isLoading && hasItems && (
             <span className="inline-flex items-center gap-2 text-xs text-indigo-600">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -77,7 +82,7 @@ export function OnchainActivityList({
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={badgeVariant(item.kind)}>{item.action}</Badge>
                   <Badge variant="muted">
-                    {item.status}
+                    Confirmed
                   </Badge>
                 </div>
                 <Link
