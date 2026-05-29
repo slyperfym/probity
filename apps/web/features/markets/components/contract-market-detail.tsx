@@ -9,7 +9,6 @@ import {
   Droplets,
   ExternalLink,
   Landmark,
-  ShieldCheck,
   Users
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -170,13 +169,11 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                 Updating onchain data...
               </p>
             )}
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {marketWithParticipants.participants > 0 && (
+            {marketWithParticipants.participants > 0 && (
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
-              )}
-              <MetaChip icon={ShieldCheck} label="Resolver" value={shortValue(marketWithParticipants.resolver)} />
-              <MetaChip icon={Landmark} label="Market" value={shortValue(address)} />
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
