@@ -125,7 +125,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200 bg-[#f7f7f2]">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <Link
             className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-indigo-700"
             href="/markets"
@@ -134,9 +134,9 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             Back to Markets
           </Link>
 
-          <div className="mt-3 rounded-2xl border border-slate-200 bg-white/92 p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-              <div className="min-w-0 space-y-3">
+          <div className="mt-2.5 rounded-2xl border border-slate-200 bg-white/92 p-3.5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-4">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+              <div className="min-w-0 space-y-2.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className="border-slate-200 bg-slate-50 text-slate-600">{marketWithParticipants.category}</Badge>
                   <MarketStatusBadge outcome={marketWithParticipants.outcome} status={marketWithParticipants.status} />
@@ -145,7 +145,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
                   </Badge>
                 </div>
                 <div className="max-w-4xl">
-                  <h1 className="text-2xl font-semibold leading-[1.14] tracking-normal text-slate-950 sm:text-3xl lg:text-[2.25rem] lg:leading-[1.12]">
+                  <h1 className="text-xl font-semibold leading-[1.12] tracking-normal text-slate-950 sm:text-2xl lg:text-3xl lg:leading-[1.1]">
                     {marketWithParticipants.title}
                   </h1>
                 </div>
@@ -166,11 +166,11 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
               </div>
             </div>
             {(contractReads as { isFetching?: boolean }).isFetching && !contractReads.isLoading && (
-              <p className="mt-2 text-xs text-indigo-600">
+              <p className="mt-1.5 text-xs text-indigo-600">
                 Updating onchain data...
               </p>
             )}
-            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {marketWithParticipants.participants > 0 && (
                 <MetaChip icon={Users} label="Participants" value={formatInteger(marketWithParticipants.participants)} />
               )}
@@ -181,7 +181,7 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6 lg:px-8">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6 lg:px-8">
         <div className="order-2 space-y-5 lg:order-1">
           <Card className="overflow-hidden">
             <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
@@ -359,7 +359,7 @@ function MetaChip({
   value: string;
 }) {
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs shadow-sm">
+    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs shadow-sm">
       <Icon className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
       <span className="shrink-0 text-slate-500">{label}</span>
       <span className="min-w-0 truncate font-semibold text-slate-800">{value}</span>
