@@ -51,25 +51,36 @@ export function MarketsBoard() {
   React.useEffect(() => {
     const nextSummaryData = summaryQuery.data;
 
-    if (isCacheableSummaryResponse(nextSummaryData)) {
+    if (
+      isCacheableSummaryResponse(nextSummaryData) &&
+      (refreshNonce > 0 || !cachedSummaryData || nextSummaryData.markets.length >= cachedSummaryData.markets.length)
+    ) {
       writeCachedMarketSummaries(nextSummaryData);
       setCachedSummaryData(nextSummaryData);
     }
-  }, [summaryQuery.data]);
+  }, [cachedSummaryData, refreshNonce, summaryQuery.data]);
 
   const apiSummaryData = summaryQuery.data;
-  const shouldPreferApiData =
-    Boolean(apiSummaryData && apiSummaryData.markets.length > 0) ||
-    Boolean(apiSummaryData && apiSummaryData.total === 0);
-  const summaryData = shouldPreferApiData ? apiSummaryData : cachedSummaryData;
-  const isShowingCachedData = Boolean(summaryData && summaryData === cachedSummaryData && !shouldPreferApiData);
+  const shouldAcceptApiData =
+    shouldUseFreshSummary(apiSummaryData, cachedSummaryData) ||
+    Boolean(refreshNonce > 0 && apiSummaryData && apiSummaryData.markets.length > 0) ||
+    Boolean(apiSummaryData && apiSummaryData.total === 0 && !cachedSummaryData);
+  const summaryData = shouldAcceptApiData ? apiSummaryData : cachedSummaryData;
+  const isShowingCachedData = Boolean(summaryData && summaryData === cachedSummaryData && !shouldAcceptApiData);
+  const isHoldingBetterCachedData = Boolean(
+    apiSummaryData &&
+      cachedSummaryData &&
+      apiSummaryData.markets.length > 0 &&
+      apiSummaryData.markets.length < cachedSummaryData.markets.length &&
+      summaryData === cachedSummaryData
+  );
   const summaryMarkets = React.useMemo(
     () => (summaryData?.markets ?? []).map(mapSummaryToMarket),
     [summaryData?.markets]
   );
   const shouldUseClientFallback =
     summaryQuery.isError ||
-    Boolean(apiSummaryData && apiSummaryData.total > 0 && apiSummaryData.markets.length === 0 && !cachedSummaryData);
+    Boolean(apiSummaryData && apiSummaryData.total > 0 && apiSummaryData.markets.length === 0 && !summaryData);
   const clientFallbackMarkets = useLocalContractMarkets({
     enabled: shouldUseClientFallback,
     limit: visibleMarketLimit
@@ -177,9 +188,10 @@ export function MarketsBoard() {
             {summaryQuery.isFetching && displayedMarkets.length > 0 && (
               <span className="text-indigo-600">Refreshing onchain data...</span>
             )}
-            {summaryData?.warnings && summaryData.warnings.length > 0 && displayedMarkets.length > 0 && (
-              <span className="text-amber-700">Partial read</span>
-            )}
+            {(isHoldingBetterCachedData || (summaryData?.warnings && summaryData.warnings.length > 0)) &&
+              displayedMarkets.length > 0 && (
+                <span className="text-slate-500">Some markets are still syncing</span>
+              )}
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <span className="text-slate-500">Last updated {lastUpdatedLabel}</span>
@@ -310,7 +322,7 @@ function FeaturedMarkets({ markets }: { markets: Market[] }) {
           Live
         </span>
       </div>
-      <div className="grid gap-3 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(240px,320px))]">
         {markets.map((market) => (
           <Link
             className="group rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm transition hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_34px_rgba(15,23,42,0.08)]"
@@ -405,6 +417,25 @@ function isCacheableSummaryResponse(
       response.source === "contracts" &&
       response.markets.length > 0
   );
+}
+
+function shouldUseFreshSummary(
+  fresh: MarketSummaryResponse | undefined,
+  cached: MarketSummaryResponse | undefined
+) {
+  if (!fresh) {
+    return false;
+  }
+
+  if (fresh.total === 0 && !cached) {
+    return true;
+  }
+
+  if (!isCacheableSummaryResponse(fresh)) {
+    return false;
+  }
+
+  return !cached || fresh.markets.length >= cached.markets.length;
 }
 
 function mapSummaryToMarket(summary: MarketSummary): Market {

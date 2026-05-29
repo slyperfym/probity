@@ -12,6 +12,7 @@ import type { MarketCategory, MarketStatus } from "@/features/markets/types";
 const USDC_DECIMALS = 1_000_000;
 const ACTIVE_CACHE_MS = 30_000;
 const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network";
+const SUMMARY_READ_CONCURRENCY = 6;
 const summaryFunctionNames = [
   "title",
   "metadataURI",
@@ -191,18 +192,24 @@ async function retryMarketSummaries({
   generatedAt: string;
   publicClient: PublicClient;
 }) {
-  const settledSummaries = await Promise.allSettled(
-    addresses.map((address) => readMarketSummaryIndividually(publicClient, address, generatedAt))
-  );
   const warnings: string[] = [];
-  const summaries = settledSummaries.flatMap((result, index) => {
-    if (result.status === "rejected" || !result.value) {
-      warnings.push(`Could not read full summary for market ${addresses[index]}.`);
-      return [];
-    }
+  const summaries: MarketSummary[] = [];
 
-    return [result.value];
-  });
+  for (let index = 0; index < addresses.length; index += SUMMARY_READ_CONCURRENCY) {
+    const chunk = addresses.slice(index, index + SUMMARY_READ_CONCURRENCY);
+    const settledSummaries = await Promise.allSettled(
+      chunk.map((address) => readMarketSummaryIndividually(publicClient, address, generatedAt))
+    );
+
+    settledSummaries.forEach((result, chunkIndex) => {
+      if (result.status === "rejected" || !result.value) {
+        warnings.push(`Could not read full summary for market ${chunk[chunkIndex]}.`);
+        return;
+      }
+
+      summaries.push(result.value);
+    });
+  }
 
   return { summaries, warnings };
 }
@@ -263,42 +270,52 @@ function mapSummaryReads(
   reads: Array<{ result?: unknown; status: "success" | "failure" }>,
   updatedAt: string
 ): MarketSummary | null {
-  const title = readResult<string>(reads[0]);
-  const metadataURI = readResult<string>(reads[1]);
-  const expirationTime = readResult<bigint>(reads[2]);
-  const status = readResult<number>(reads[3]);
-  const totalYesShares = readResult<bigint>(reads[5]);
-  const totalNoShares = readResult<bigint>(reads[6]);
-  const totalDeposited = readResult<bigint>(reads[7]);
+  try {
+    const title = readResult<string>(reads[0]);
+    const metadataURI = readResult<string>(reads[1]);
+    const expirationTime = readResult<bigint>(reads[2]);
+    const status = readResult<number>(reads[3]);
+    const totalYesShares = readResult<bigint>(reads[5]);
+    const totalNoShares = readResult<bigint>(reads[6]);
+    const totalDeposited = readResult<bigint>(reads[7]);
 
-  if (!title || expirationTime === undefined) {
+    if (!title || expirationTime === undefined) {
+      return null;
+    }
+
+    const expirationDate = toIsoDate(expirationTime);
+
+    if (!expirationDate) {
+      return null;
+    }
+
+    const parsedMetadata = parseMarketMetadata(metadataURI);
+    const cleanTitle = sanitizeMarketTitle(title, parsedMetadata);
+    const yesShares = safeNumber(totalYesShares);
+    const noShares = safeNumber(totalNoShares);
+    const totalShares = yesShares + noShares;
+    const yesProbability = totalShares > 0 ? Math.round((yesShares / totalShares) * 100) : 50;
+    const statusLabel = getMarketStatus(status, expirationTime);
+    const volumeUsd = safeNumber(totalDeposited) / USDC_DECIMALS;
+
+    return {
+      address,
+      category: parsedMetadata.category ?? inferCategory(cleanTitle, metadataURI),
+      expiresAt: expirationDate,
+      externalReference: parseExternalReferenceMetadata(metadataURI),
+      liquidityUsd: statusLabel === "resolved" ? 0 : volumeUsd,
+      noProbability: 100 - yesProbability,
+      settlementTokenSymbol: deploymentConfig.isArcTestnet ? "USDC" : "Local USDC",
+      sourceType: "contracts",
+      status: statusLabel,
+      title: cleanTitle,
+      updatedAt,
+      volumeUsd,
+      yesProbability
+    };
+  } catch {
     return null;
   }
-
-  const parsedMetadata = parseMarketMetadata(metadataURI);
-  const cleanTitle = sanitizeMarketTitle(title, parsedMetadata);
-  const yesShares = Number(totalYesShares ?? 0n);
-  const noShares = Number(totalNoShares ?? 0n);
-  const totalShares = yesShares + noShares;
-  const yesProbability = totalShares > 0 ? Math.round((yesShares / totalShares) * 100) : 50;
-  const statusLabel = getMarketStatus(status, expirationTime);
-  const volumeUsd = Number(totalDeposited ?? 0n) / USDC_DECIMALS;
-
-  return {
-    address,
-    category: parsedMetadata.category ?? inferCategory(cleanTitle, metadataURI),
-    expiresAt: new Date(Number(expirationTime) * 1000).toISOString(),
-    externalReference: parseExternalReferenceMetadata(metadataURI),
-    liquidityUsd: statusLabel === "resolved" ? 0 : volumeUsd,
-    noProbability: 100 - yesProbability,
-    settlementTokenSymbol: deploymentConfig.isArcTestnet ? "USDC" : "Local USDC",
-    sourceType: "contracts",
-    status: statusLabel,
-    title: cleanTitle,
-    updatedAt,
-    volumeUsd,
-    yesProbability
-  };
 }
 
 function getMockSummaryResponse(): MarketSummaryResponse {
@@ -329,6 +346,24 @@ function getMockSummaryResponse(): MarketSummaryResponse {
 
 function readResult<T>(value: { result?: unknown; status: "success" | "failure" } | undefined) {
   return value?.status === "success" ? value.result as T : undefined;
+}
+
+function safeNumber(value: bigint | undefined) {
+  const parsed = Number(value ?? 0n);
+
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function toIsoDate(value: bigint) {
+  const seconds = Number(value);
+
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return null;
+  }
+
+  const date = new Date(seconds * 1000);
+
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function getMarketStatus(status: number | undefined, expirationTime: bigint): MarketStatus {
