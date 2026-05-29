@@ -24,4 +24,5 @@ export type MarketSummaryResponse = {
   markets: MarketSummary[];
   source: "contracts" | "mock";
   total: number;
+  warnings?: string[];
 };

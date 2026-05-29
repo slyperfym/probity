@@ -285,7 +285,7 @@ async function fetchWalletActivity({
   });
 
   if (failedMarkets > 0 && activity.length === 0) {
-    throw new Error("Could not load onchain activity logs.");
+    throw new Error("Activity indexing is being improved.");
   }
 
   return activity;
@@ -431,7 +431,7 @@ async function fetchMarketActivity({
   });
 
   if (results.some((result) => result.failed) && activity.length === 0) {
-    throw new Error("Could not load market activity logs.");
+    throw new Error("Activity indexing is being improved.");
   }
 
   return activity;

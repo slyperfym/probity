@@ -10,7 +10,15 @@ import { formatExpiry, formatInteger, formatUsd } from "@/features/markets/lib/f
 import type { Market } from "@/features/markets/types";
 import { cn } from "@/lib/utils";
 
-function MarketCardComponent({ market, variant = "grid" }: { market: Market; variant?: "grid" | "list" }) {
+function MarketCardComponent({
+  duplicateLabel,
+  market,
+  variant = "grid"
+}: {
+  duplicateLabel?: string;
+  market: Market;
+  variant?: "grid" | "list";
+}) {
   const changeColor = market.change24h >= 0 ? "text-emerald-700" : "text-rose-700";
   const participantLabel =
     market.participants > 0 ? formatInteger(market.participants) : "Onchain activity";
@@ -36,6 +44,11 @@ function MarketCardComponent({ market, variant = "grid" }: { market: Market; var
           <CardTitle className="line-clamp-3 text-[15px] font-semibold leading-6 text-slate-950 transition group-hover:text-indigo-950 sm:text-base">
             {market.title}
           </CardTitle>
+          {duplicateLabel && (
+            <span className="w-fit rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500">
+              Listed as {duplicateLabel}
+            </span>
+          )}
         </CardHeader>
         <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
           <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3">

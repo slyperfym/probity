@@ -98,7 +98,73 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
     functionName: "allMarkets"
   }) as Address[];
   const newestFirstAddresses = [...marketAddresses].reverse();
-  const contracts = newestFirstAddresses.flatMap((address) => [
+  const contracts = newestFirstAddresses.flatMap((address) => getSummaryContracts(address));
+  const generatedAt = new Date().toISOString();
+  const warnings: string[] = [];
+  let summaries: MarketSummary[] = [];
+
+  try {
+    const reads = await publicClient.multicall({
+      allowFailure: true,
+      contracts
+    });
+
+    summaries = newestFirstAddresses.flatMap((address, index) => {
+      const offset = index * 8;
+      const marketReads = reads.slice(offset, offset + 8);
+      const market = mapSummaryReads(address, marketReads, generatedAt);
+
+      if (!market) {
+        warnings.push(`Could not read full summary for market ${address}.`);
+      }
+
+      return market ? [market] : [];
+    });
+  } catch (error) {
+    console.warn("Probity market summary multicall failed; retrying per market", error);
+    warnings.push("Batched market reads failed; returned partial summaries from per-market reads.");
+
+    const settledSummaries = await Promise.allSettled(
+      newestFirstAddresses.map(async (address) => {
+        const reads = await publicClient.multicall({
+          allowFailure: true,
+          contracts: getSummaryContracts(address)
+        });
+
+        return mapSummaryReads(address, reads, generatedAt);
+      })
+    );
+
+    summaries = settledSummaries.flatMap((result, index) => {
+      if (result.status === "rejected" || !result.value) {
+        warnings.push(`Could not read full summary for market ${newestFirstAddresses[index]}.`);
+        return [];
+      }
+
+      return [result.value];
+    });
+  }
+
+  if (warnings.length > 0) {
+    console.warn("Probity market summary returned partial data", {
+      loaded: summaries.length,
+      total: marketAddresses.length,
+      warnings: warnings.length
+    });
+  }
+
+  return {
+    generatedAt,
+    isUsingMockFallback: false,
+    markets: summaries,
+    source: "contracts",
+    total: marketAddresses.length,
+    warnings: warnings.length > 0 ? warnings : undefined
+  };
+}
+
+function getSummaryContracts(address: Address) {
+  return [
     { abi: contractAbis.predictionMarket, address, functionName: "title" },
     { abi: contractAbis.predictionMarket, address, functionName: "metadataURI" },
     { abi: contractAbis.predictionMarket, address, functionName: "expirationTime" },
@@ -107,26 +173,7 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
     { abi: contractAbis.predictionMarket, address, functionName: "totalYesShares" },
     { abi: contractAbis.predictionMarket, address, functionName: "totalNoShares" },
     { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" }
-  ]);
-  const reads = await publicClient.multicall({
-    allowFailure: true,
-    contracts
-  });
-  const generatedAt = new Date().toISOString();
-  const summaries = newestFirstAddresses.flatMap((address, index) => {
-    const offset = index * 8;
-    const market = mapSummaryReads(address, reads.slice(offset, offset + 8), generatedAt);
-
-    return market ? [market] : [];
-  });
-
-  return {
-    generatedAt,
-    isUsingMockFallback: false,
-    markets: summaries,
-    source: "contracts",
-    total: marketAddresses.length
-  };
+  ];
 }
 
 function getSummaryMarketFactoryAddress() {

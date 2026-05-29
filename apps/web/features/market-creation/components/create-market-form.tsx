@@ -57,7 +57,7 @@ export function CreateMarketForm() {
       ? "Drafted from external reference metadata."
       : ""
   );
-  const [expiry, setExpiry] = React.useState(importedExpiry ? importedExpiry.slice(0, 10) : "");
+  const [expiry, setExpiry] = React.useState(() => toDateInputValue(importedExpiry));
   const [resolver, setResolver] = React.useState(
     deploymentConfig.resolverAddress ?? accountAddress ?? ""
   );
@@ -650,7 +650,9 @@ function getCreateDisabledReason({
     return "Enter a market question before creating the market.";
   }
 
-  if (!expiry || toExpirationTimestamp(expiry) <= Math.floor(Date.now() / 1000)) {
+  const expirationTimestamp = toExpirationTimestamp(expiry);
+
+  if (!expiry || !expirationTimestamp || expirationTimestamp <= Math.floor(Date.now() / 1000)) {
     return "Choose a future expiration date.";
   }
 
@@ -729,7 +731,27 @@ function parseCreatedMarketAddress(logs: { topics: readonly `0x${string}`[]; dat
 }
 
 function toExpirationTimestamp(expiry: string) {
-  return Math.floor(new Date(`${expiry}T23:59:59Z`).getTime() / 1000);
+  if (!expiry) {
+    return 0;
+  }
+
+  const timestamp = Math.floor(new Date(`${expiry}T23:59:59Z`).getTime() / 1000);
+
+  return Number.isFinite(timestamp) && timestamp > 0 ? timestamp : 0;
+}
+
+function toDateInputValue(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime()) || parsed.getUTCFullYear() < 2024) {
+    return "";
+  }
+
+  return parsed.toISOString().slice(0, 10);
 }
 
 function formatCreateError(error: string) {

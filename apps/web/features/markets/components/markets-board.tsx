@@ -79,7 +79,9 @@ export function MarketsBoard() {
     totalMarketCount === 0;
   const lastUpdatedLabel = summaryData?.generatedAt
     ? formatLastUpdated(summaryData.generatedAt)
-    : "Not loaded";
+    : isUsingClientFallback
+      ? "from wallet RPC"
+      : "Not loaded";
   const isInitialLoading =
     (summaryQuery.isLoading && !summaryData) ||
     (summaryQuery.isError && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
@@ -99,6 +101,10 @@ export function MarketsBoard() {
             )
             .slice(0, 3),
     [displayedMarkets, isInitialLoading, isUsingMockFallback]
+  );
+  const duplicateLabelByMarketId = React.useMemo(
+    () => getDuplicateLabelByMarketId(displayedMarkets),
+    [displayedMarkets]
   );
 
   return (
@@ -203,7 +209,12 @@ export function MarketsBoard() {
             )}
           >
             {filteredMarkets.map((market) => (
-              <MarketCard key={market.id} market={market} variant={viewMode} />
+              <MarketCard
+                duplicateLabel={duplicateLabelByMarketId.get(market.id)}
+                key={market.id}
+                market={market}
+                variant={viewMode}
+              />
             ))}
           </div>
           {hasMoreMarkets && (
@@ -378,6 +389,35 @@ function getMarketsByFilter(
 
 function normalizeSearch(value: string) {
   return value.toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+function getDuplicateLabelByMarketId(markets: Market[]) {
+  const groupedByTitle = new Map<string, Market[]>();
+
+  markets.forEach((market) => {
+    const key = normalizeSearch(market.title);
+    groupedByTitle.set(key, [...(groupedByTitle.get(key) ?? []), market]);
+  });
+
+  const labels = new Map<string, string>();
+
+  groupedByTitle.forEach((duplicateMarkets) => {
+    if (duplicateMarkets.length < 2) {
+      return;
+    }
+
+    duplicateMarkets.forEach((market) => {
+      labels.set(market.id, shortAddressLabel(market.id));
+    });
+  });
+
+  return labels;
+}
+
+function shortAddressLabel(value: string) {
+  return value.startsWith("0x") && value.length > 10
+    ? `${value.slice(0, 6)}...${value.slice(-4)}`
+    : "Duplicate listing";
 }
 
 function SummaryMetric({
