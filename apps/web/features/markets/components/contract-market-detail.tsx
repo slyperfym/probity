@@ -219,18 +219,18 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
           </div>
 
           <Card>
-            <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
-              <CardTitle>Resolution Criteria</CardTitle>
+            <CardHeader className="p-3 pb-2 sm:p-4 sm:pb-2">
+              <CardTitle className="text-sm">Resolution Criteria</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
-              <div className="space-y-2">
+            <CardContent className="p-3 pt-1 sm:p-4 sm:pt-1">
+              <div className="grid gap-1.5">
                 {marketWithParticipants.rules.map((rule) => (
                   <div
-                    className="flex gap-3 rounded-md border border-slate-200 bg-slate-50 p-3"
+                    className="flex gap-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-2"
                     key={rule}
                   >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
-                    <p className="text-sm leading-6 text-slate-600">{rule}</p>
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-600" />
+                    <p className="text-xs leading-5 text-slate-600">{rule}</p>
                   </div>
                 ))}
               </div>
@@ -280,7 +280,8 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
           <OnchainActivityList
             emptyDescription="No activity found for this market yet."
             emptyTitle="No activity"
-            error={marketActivity.isError ? "Could not load market activity." : null}
+            error={marketActivity.isError ? "Trades, claims, and resolution transactions can still be verified on Arcscan." : null}
+            errorTitle="Activity indexing is being improved."
             isLoading={marketActivity.isLoading || marketActivity.isFetching}
             items={marketActivity.data ?? []}
             loadingMessage="Reading market activity from Arc Testnet..."

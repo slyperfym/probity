@@ -14,6 +14,7 @@ export function OnchainActivityList({
   emptyDescription,
   emptyTitle = "No onchain activity",
   error,
+  errorTitle = "Activity indexing is being improved.",
   isLoading,
   items,
   loadingMessage = "Reading onchain activity from Arc Testnet...",
@@ -22,6 +23,7 @@ export function OnchainActivityList({
   emptyDescription: string;
   emptyTitle?: string;
   error?: string | null;
+  errorTitle?: string;
   isLoading?: boolean;
   items: OnchainActivityItem[];
   loadingMessage?: string;
@@ -59,9 +61,9 @@ export function OnchainActivityList({
         {!hasItems && !isLoading && error && (
           <ActivityState
             description={error}
-            icon={<Activity className="h-4 w-4 text-rose-600" />}
-            kind="error"
-            title="Could not load activity"
+            icon={<Activity className="h-4 w-4 text-slate-500" />}
+            kind="empty"
+            title={errorTitle}
           />
         )}
         {!hasItems && !isLoading && !error && (

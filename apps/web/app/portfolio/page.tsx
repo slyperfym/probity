@@ -10,7 +10,7 @@ export default function PortfolioPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f2]">
       <section className="probity-grid border-b border-slate-200">
-        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-5 pt-8 sm:px-6 sm:pb-7 sm:pt-10 lg:px-8 lg:pb-8 lg:pt-12">
           <Badge variant="info">
             Portfolio
           </Badge>

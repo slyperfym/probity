@@ -167,7 +167,8 @@ export function PortfolioDashboard() {
       <OnchainActivityList
         emptyDescription="No onchain activity found for this wallet yet."
         emptyTitle="No activity yet"
-        error={walletActivity.isError ? "Could not load onchain activity." : null}
+        error={walletActivity.isError ? "Wallet positions and claimable rewards are still read from deployed markets." : null}
+        errorTitle="Activity indexing is being improved."
         isLoading={walletActivity.isLoading || walletActivity.isFetching}
         items={walletActivity.data ?? []}
         loadingMessage="Reading wallet activity from Arc Testnet..."

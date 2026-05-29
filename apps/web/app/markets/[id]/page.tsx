@@ -139,19 +139,19 @@ export default async function MarketDetailPage({
           </div>
 
           <Card>
-            <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
-              <CardTitle>Resolution Criteria</CardTitle>
+            <CardHeader className="p-3 pb-2 sm:p-4 sm:pb-2">
+              <CardTitle className="text-sm">Resolution Criteria</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
-              <div className="space-y-2">
+            <CardContent className="p-3 pt-1 sm:p-4 sm:pt-1">
+              <div className="grid gap-1.5">
                 {[
                   "This market resolves through the configured resolver address.",
                   "Positions and settlement funds are read from the deployed PredictionMarket contract.",
                   "This is an Arc Testnet MVP market, not production oracle logic."
                 ].map((rule) => (
-                  <div className="flex gap-3 rounded-md border border-slate-200 bg-slate-50 p-3" key={rule}>
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
-                    <p className="text-sm leading-6 text-slate-600">{rule}</p>
+                  <div className="flex gap-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-2" key={rule}>
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-600" />
+                    <p className="text-xs leading-5 text-slate-600">{rule}</p>
                   </div>
                 ))}
               </div>
