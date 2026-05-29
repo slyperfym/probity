@@ -25,7 +25,7 @@ function MarketCardComponent({
   if (variant === "list") {
     return (
       <Link className="group block min-w-0" href={`/markets/${market.id}`}>
-        <article className="grid gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-indigo-200 hover:shadow-[0_10px_28px_rgba(15,23,42,0.07)] sm:grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[84px_minmax(0,1fr)_330px] lg:items-center">
+        <article className="grid gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-indigo-200 hover:shadow-[0_10px_28px_rgba(15,23,42,0.07)] sm:grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[84px_minmax(0,1fr)_360px] lg:items-center">
           <MarketThumbnail market={market} size="sm" />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -46,7 +46,7 @@ function MarketCardComponent({
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs lg:text-right">
             <ListMetric label="Volume" value={formatUsd(market.volumeUsd)} />
-            <ListMetric label="Traders" value={participantLabel} />
+            <ListMetric label="Liquidity" value={formatUsd(market.liquidityUsd)} />
             <ListMetric label="Ends" value={formatExpiry(market.expiresAt)} />
           </div>
         </article>
@@ -65,7 +65,7 @@ function MarketCardComponent({
           </div>
         </div>
 
-        <div className="space-y-4 p-4">
+        <div className="space-y-3.5 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="line-clamp-2 min-h-12 text-[15px] font-semibold leading-6 text-slate-950 transition group-hover:text-indigo-950 sm:text-base">
@@ -90,14 +90,18 @@ function MarketCardComponent({
           </div>
 
           <div className="grid gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500 sm:grid-cols-3">
-            <MetaItem icon={Users} label={participantLabel} />
             <MetaItem icon={Droplets} label={formatUsd(market.volumeUsd)} />
+            <MetaItem icon={Users} label={formatUsd(market.liquidityUsd)} />
             <MetaItem icon={Clock3} label={formatExpiry(market.expiresAt)} />
             {market.status === "expired" && (
               <div className="rounded-md bg-amber-50 px-2.5 py-2 text-amber-700 sm:col-span-3">
                 Awaiting resolver settlement
               </div>
             )}
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition group-hover:border-indigo-200 group-hover:text-indigo-700">
+            <span>Open Market</span>
+            <ArrowUpRight className="h-3.5 w-3.5" />
           </div>
         </div>
       </article>

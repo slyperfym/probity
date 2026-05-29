@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { AlertTriangle, Inbox, LayoutGrid, List, Loader2, RefreshCw, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,7 +10,6 @@ import { deploymentConfig } from "@/config/contracts";
 import { useLocalContractMarkets } from "@/features/contracts/hooks";
 import { ExternalSignals } from "@/features/discovery/components/external-signals";
 import { MarketCard } from "@/features/markets/components/market-card";
-import { ProbabilityBar } from "@/features/markets/components/probability-bar";
 import {
   marketCategories,
   marketStatuses
@@ -122,23 +120,6 @@ export function MarketsBoard() {
   const isInitialLoading =
     (summaryQuery.isLoading && !summaryData) ||
     (shouldUseClientFallback && clientFallbackMarkets.isLoading && clientFallbackMarkets.markets.length === 0);
-  const featuredMarkets = React.useMemo(
-    () =>
-      isUsingMockFallback || isInitialLoading
-        ? []
-        : displayedMarkets
-            .filter(
-              (market) =>
-                market.status === "active" &&
-                (market.volumeUsd > 0 || market.liquidityUsd > 0)
-            )
-            .sort(
-              (left, right) =>
-                right.volumeUsd + right.liquidityUsd - (left.volumeUsd + left.liquidityUsd)
-            )
-            .slice(0, 3),
-    [displayedMarkets, isInitialLoading, isUsingMockFallback]
-  );
   const duplicateLabelByMarketId = React.useMemo(
     () => getDuplicateLabelByMarketId(displayedMarkets),
     [displayedMarkets]
@@ -234,8 +215,6 @@ export function MarketsBoard() {
         </div>
       </div>
 
-      {featuredMarkets.length > 0 && <FeaturedMarkets markets={featuredMarkets} />}
-
       {isInitialLoading ? (
         <BoardState
           description="Loading Arc Testnet markets..."
@@ -306,27 +285,6 @@ export function MarketsBoard() {
         probityMarkets={boardMarkets}
       />
     </div>
-  );
-}
-
-function FeaturedMarkets({ markets }: { markets: Market[] }) {
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-sm font-semibold text-slate-950">Featured Markets</div>
-          <p className="mt-0.5 text-xs text-slate-500">Active Arc Testnet markets</p>
-        </div>
-        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
-          Live
-        </span>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {markets.map((market) => (
-          <MarketCard key={market.id} market={market} />
-        ))}
-      </div>
-    </section>
   );
 }
 
