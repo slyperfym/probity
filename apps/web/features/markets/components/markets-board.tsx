@@ -208,7 +208,7 @@ export function MarketsBoard() {
           </label>
             <ViewToggle value={viewMode} onChange={setViewMode} />
           </div>
-          <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center xl:gap-x-8 xl:gap-y-3">
             <FilterGroup label="Category" options={marketCategories} value={category} onChange={setCategory} />
             <FilterGroup label="Status" options={marketStatuses} value={status} onChange={setStatus} />
           </div>
