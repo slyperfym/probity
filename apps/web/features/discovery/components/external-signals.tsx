@@ -185,13 +185,20 @@ function ExternalSignalCard({
   }).toString()}`;
 
   return (
-    <Card className="transition hover:border-indigo-200 hover:shadow-[0_16px_44px_rgba(15,23,42,0.10)]">
+    <Card className="border-slate-200 bg-white text-slate-950 shadow-sm transition hover:border-indigo-200 hover:shadow-[0_16px_44px_rgba(15,23,42,0.10)]">
       <CardHeader className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
-          <Badge variant={listedMarketId ? "yes" : "muted"}>
+          <Badge
+            className={
+              listedMarketId
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                : "border-slate-200 bg-slate-50 text-slate-600"
+            }
+            variant={listedMarketId ? "yes" : "muted"}
+          >
             {listedMarketId ? "Already listed on Probity" : "External reference"}
           </Badge>
-          <Badge>{market.category}</Badge>
+          <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700">{market.category}</Badge>
         </div>
         <CardTitle className="text-[15px] leading-6 text-slate-950 sm:text-sm">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
@@ -217,7 +224,13 @@ function ExternalSignalCard({
               <ArrowRight className="h-4 w-4" />
             </Link>
           ) : (
-            <Link className={cn(buttonVariants({ variant: "default" }), "w-full shadow-sm")} href={importHref}>
+            <Link
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "w-full border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm hover:border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
+              )}
+              href={importHref}
+            >
               Draft Probity Market
               <ArrowRight className="h-4 w-4" />
             </Link>
