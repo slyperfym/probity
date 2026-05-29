@@ -15,6 +15,7 @@ import { contractAddresses, deploymentConfig } from "@/config/contracts";
 import type { OnchainActivityItem } from "@/features/activity/types";
 
 const USDC_DECIMALS = 1_000_000n;
+const ACTIVITY_TIMEOUT_MS = 5_500;
 
 const sharesPurchasedEvent = parseAbiItem(
   "event SharesPurchased(address indexed buyer, uint8 indexed side, uint256 amount, uint256 shares, uint256 totalYesShares, uint256 totalNoShares)"
@@ -61,11 +62,13 @@ export function useWalletOnchainActivity({
     queryFn: async () => {
       if (!publicClient || !wallet) return [];
 
-      const activity = await fetchWalletActivity({
-        markets: normalizedMarkets,
-        publicClient,
-        wallet
-      });
+      const activity = await withActivityTimeout(
+        fetchWalletActivity({
+          markets: normalizedMarkets,
+          publicClient,
+          wallet
+        })
+      );
 
       return sortNewestFirst(activity);
     },
@@ -76,10 +79,11 @@ export function useWalletOnchainActivity({
       wallet,
       normalizedMarkets.map((market) => market.address.toLowerCase()).join(",")
     ],
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
     refetchIntervalInBackground: false,
-    retry: 1,
-    staleTime: 10_000
+    retry: false,
+    staleTime: 45_000,
+    gcTime: 60_000
   });
 }
 
@@ -100,11 +104,13 @@ export function useMarketOnchainActivity({
     queryFn: async () => {
       if (!publicClient || !market) return [];
 
-      const activity = await fetchMarketActivity({
-        market,
-        marketTitle,
-        publicClient
-      });
+      const activity = await withActivityTimeout(
+        fetchMarketActivity({
+          market,
+          marketTitle,
+          publicClient
+        })
+      );
 
       return sortNewestFirst(activity);
     },
@@ -115,11 +121,29 @@ export function useMarketOnchainActivity({
       market,
       marketTitle
     ],
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
     refetchIntervalInBackground: false,
-    retry: 1,
-    staleTime: 10_000
+    retry: false,
+    staleTime: 45_000,
+    gcTime: 60_000
   });
+}
+
+async function withActivityTimeout<T>(work: Promise<T>) {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error("Activity indexing is being improved."));
+    }, ACTIVITY_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([work, timeout]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 }
 
 async function fetchWalletActivity({

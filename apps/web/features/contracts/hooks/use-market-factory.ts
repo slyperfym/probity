@@ -43,7 +43,9 @@ export function useMarketFactoryMarkets({ enabled = true }: { enabled?: boolean 
       placeholderData: (previousData: unknown) => previousData,
       refetchInterval: 15_000,
       refetchIntervalInBackground: false,
-      retry: 1
+      retry: 1,
+      staleTime: 45_000,
+      gcTime: 60_000
     }
   });
 

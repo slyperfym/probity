@@ -23,10 +23,11 @@ import {
 import type { PortfolioPosition } from "@/features/portfolio/types";
 
 const USDC_DECIMALS = 6;
+const ACTIVITY_MARKET_LIMIT = 12;
 
 export function PortfolioDashboard() {
   const { address: accountAddress, isConnected } = useAccount();
-  const localMarkets = useLocalContractMarkets();
+  const localMarkets = useLocalContractMarkets({ includeParticipantCounts: false });
   const useMockFallback = localMarkets.isUsingMockFallback;
   const shouldReadPositions =
     !useMockFallback && Boolean(accountAddress) && localMarkets.markets.length > 0;
@@ -35,10 +36,13 @@ export function PortfolioDashboard() {
       localMarkets.markets.map((market) => [market.id.toLowerCase(), market.title])
     );
 
-    return [...localMarkets.factoryMarkets.contractMarkets].reverse().map((address) => ({
-      address: address as `0x${string}`,
-      title: titleByAddress.get(address.toLowerCase()) ?? `PredictionMarket ${shortHash(address)}`
-    }));
+    return [...localMarkets.factoryMarkets.contractMarkets]
+      .reverse()
+      .slice(0, ACTIVITY_MARKET_LIMIT)
+      .map((address) => ({
+        address: address as `0x${string}`,
+        title: titleByAddress.get(address.toLowerCase()) ?? `PredictionMarket ${shortHash(address)}`
+      }));
   }, [localMarkets.factoryMarkets.contractMarkets, localMarkets.markets]);
   const walletActivity = useWalletOnchainActivity({
     enabled: Boolean(accountAddress && activityMarkets.length > 0),
@@ -58,7 +62,9 @@ export function PortfolioDashboard() {
       placeholderData: (previousData) => previousData,
       refetchInterval: 12_000,
       refetchIntervalInBackground: false,
-      retry: 1
+      retry: 1,
+      staleTime: 45_000,
+      gcTime: 60_000
     }
   });
 

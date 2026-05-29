@@ -46,9 +46,11 @@ type MarketReadResult = Array<
 
 export function useLocalContractMarkets({
   enabled = true,
+  includeParticipantCounts = true,
   limit
 }: {
   enabled?: boolean;
+  includeParticipantCounts?: boolean;
   limit?: number;
 } = {}) {
   const factoryMarkets = useMarketFactoryMarkets({ enabled });
@@ -89,10 +91,15 @@ export function useLocalContractMarkets({
       placeholderData: (previousData: MarketReadResult | undefined) => previousData,
       refetchInterval: 20_000,
       refetchIntervalInBackground: false,
-      retry: 1
+      retry: 1,
+      staleTime: 45_000,
+      gcTime: 60_000
     }
   });
-  const participantCounts = useMarketParticipantCounts(marketAddresses, shouldReadMarkets);
+  const participantCounts = useMarketParticipantCounts(
+    marketAddresses,
+    shouldReadMarkets && includeParticipantCounts
+  );
 
   const markets = React.useMemo(() => {
     if (!shouldReadMarkets || !marketReads.data) {
@@ -114,11 +121,11 @@ export function useLocalContractMarkets({
 
         return {
           ...market,
-          participants: participantCounts.data?.get(address) ?? 0
+          participants: includeParticipantCounts ? participantCounts.data?.get(address) ?? 0 : 0
         };
       })
       .filter((market): market is Market => Boolean(market));
-  }, [marketAddresses, marketReads.data, participantCounts.data, shouldReadMarkets]);
+  }, [includeParticipantCounts, marketAddresses, marketReads.data, participantCounts.data, shouldReadMarkets]);
 
   const shouldUseMockFallback =
     factoryMarkets.isUsingMockFallback || marketReads.isError || (shouldReadMarkets && markets.length === 0);
@@ -131,10 +138,10 @@ export function useLocalContractMarkets({
     factoryMarkets,
     isLoading:
       factoryMarkets.isLoading ||
-      (shouldReadMarkets && (marketReads.isLoading || participantCounts.isLoading)),
+      (shouldReadMarkets && (marketReads.isLoading || (includeParticipantCounts && participantCounts.isLoading))),
     isRefreshing:
       Boolean((marketReads as { isFetching?: boolean }).isFetching && !marketReads.isLoading) ||
-      Boolean(participantCounts.isFetching && !participantCounts.isLoading),
+      Boolean(includeParticipantCounts && participantCounts.isFetching && !participantCounts.isLoading),
     isUsingMockFallback: shouldUseMockFallback,
     loadedMarketCount: markets.length,
     markets,
