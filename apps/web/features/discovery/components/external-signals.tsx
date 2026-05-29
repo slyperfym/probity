@@ -96,12 +96,12 @@ export function ExternalSignals({
 
   return (
     <section className="space-y-4 sm:space-y-5">
-      <div className="rounded-lg border border-cyan-400/14 bg-cyan-400/[0.035] p-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
+        <div className="flex items-center gap-2 text-sm font-medium text-indigo-800">
           <DatabaseZap className="h-4 w-4" />
           External Signals
         </div>
-        <p className="mt-2 text-sm leading-6 text-slate-400">
+        <p className="mt-2 text-sm leading-6 text-slate-600">
           These references are public Polymarket Gamma market metadata for discovery only.
           Probity does not execute Polymarket trades, is not affiliated with Polymarket, and
           deploys separate Arc-native markets with independent USDC settlement.
@@ -109,11 +109,11 @@ export function ExternalSignals({
       </div>
 
       {isLoading ? (
-        <div className="rounded-lg border border-white/10 bg-slate-950/70 p-8 text-sm text-slate-400">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-600 shadow-sm">
           Loading external market references...
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-8 text-sm text-slate-400">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600 shadow-sm">
           {error}
         </div>
       ) : (
@@ -125,30 +125,30 @@ export function ExternalSignals({
               ))}
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-white/10 bg-slate-950/70 p-8 text-sm text-slate-400">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600 shadow-sm">
               No new external references are available to draft right now.
             </div>
           )}
 
           {alreadyListedSignals.length > 0 && (
-            <div className="rounded-lg border border-white/10 bg-slate-950/70">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
               <button
                 className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
                 onClick={() => setShowAlreadyListed((current) => !current)}
                 type="button"
               >
-                <span className="text-sm font-medium text-slate-200">
+                <span className="text-sm font-medium text-slate-900">
                   Already listed references ({alreadyListedSignals.length})
                 </span>
                 <ChevronDown
                   className={cn(
                     "h-4 w-4 text-slate-500 transition",
-                    showAlreadyListed && "rotate-180 text-cyan-300"
+                    showAlreadyListed && "rotate-180 text-indigo-600"
                   )}
                 />
               </button>
               {showAlreadyListed && (
-                <div className="grid gap-3 border-t border-white/10 p-4 sm:gap-4 lg:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 border-t border-slate-200 p-4 sm:gap-4 lg:grid-cols-2 xl:grid-cols-4">
                   {alreadyListedSignals.map(({ market, probityMarketId }) => (
                     <ExternalSignalCard
                       key={market.id}
@@ -185,7 +185,7 @@ function ExternalSignalCard({
   }).toString()}`;
 
   return (
-    <Card className="bg-slate-950/80">
+    <Card className="transition hover:border-indigo-200 hover:shadow-[0_16px_44px_rgba(15,23,42,0.10)]">
       <CardHeader className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <Badge variant={listedMarketId ? "yes" : "muted"}>
@@ -193,7 +193,7 @@ function ExternalSignalCard({
           </Badge>
           <Badge>{market.category}</Badge>
         </div>
-        <CardTitle className="text-[15px] leading-6 sm:text-sm">{market.question}</CardTitle>
+        <CardTitle className="text-[15px] leading-6 text-slate-950 sm:text-sm">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
           {listedMarketId
             ? "This external reference already maps to a Probity Arc Testnet market."
@@ -217,14 +217,14 @@ function ExternalSignalCard({
               <ArrowRight className="h-4 w-4" />
             </Link>
           ) : (
-            <Link className={cn(buttonVariants({ variant: "default" }), "w-full")} href={importHref}>
+            <Link className={cn(buttonVariants({ variant: "default" }), "w-full shadow-sm")} href={importHref}>
               Draft Probity Market
               <ArrowRight className="h-4 w-4" />
             </Link>
           )}
           {market.url && (
             <a
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full text-slate-400")}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full text-slate-600 hover:text-indigo-700")}
               href={market.url}
               rel="noreferrer"
               target="_blank"
@@ -241,9 +241,9 @@ function ExternalSignalCard({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/[0.08] bg-white/[0.02] p-3">
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
       <div className="text-xs text-slate-500">{label}</div>
-      <div className="mt-1 font-medium text-white">{value}</div>
+      <div className="mt-1 font-medium text-slate-950">{value}</div>
     </div>
   );
 }
