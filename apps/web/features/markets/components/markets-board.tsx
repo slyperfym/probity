@@ -145,7 +145,7 @@ export function MarketsBoard() {
   );
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-3.5 sm:space-y-4">
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryMetric label="Filtered Volume" value={formatUsd(totalVolume)} />
         <SummaryMetric label="Loaded Active" value={String(activeMarkets)} />
@@ -211,9 +211,10 @@ export function MarketsBoard() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <label className="flex min-h-11 w-full items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition focus-within:border-indigo-300 focus-within:bg-white lg:w-80">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <label className="flex min-h-11 w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 text-sm text-slate-500 transition focus-within:border-indigo-300 focus-within:bg-white lg:w-96">
             <Search className="h-4 w-4 text-slate-600" />
             <input
               aria-label="Search markets"
@@ -224,11 +225,9 @@ export function MarketsBoard() {
               value={searchQuery}
             />
           </label>
-          <div className="flex min-w-0 flex-col gap-2.5 lg:items-end">
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-              <span className="text-xs text-slate-500">Loaded markets</span>
-              <ViewToggle value={viewMode} onChange={setViewMode} />
-            </div>
+            <ViewToggle value={viewMode} onChange={setViewMode} />
+          </div>
+          <div className="flex min-w-0 flex-col gap-3">
             <FilterGroup label="Category" options={marketCategories} value={category} onChange={setCategory} />
             <FilterGroup label="Status" options={marketStatuses} value={status} onChange={setStatus} />
           </div>
@@ -249,7 +248,7 @@ export function MarketsBoard() {
           <div
             className={cn(
               "grid gap-3 sm:gap-4",
-              viewMode === "grid" ? "lg:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
+              viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"
             )}
           >
             {filteredMarkets.map((market) => (
@@ -322,38 +321,12 @@ function FeaturedMarkets({ markets }: { markets: Market[] }) {
           Live
         </span>
       </div>
-      <div className="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(240px,320px))]">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {markets.map((market) => (
-          <Link
-            className="group rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm transition hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_34px_rgba(15,23,42,0.08)]"
-            href={`/markets/${market.id}`}
-            key={market.id}
-          >
-            <div className="line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-slate-950 group-hover:text-indigo-950">
-              {market.title}
-            </div>
-            <ProbabilityBar className="mt-4" yesProbability={market.yesProbability} />
-            <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-              <FeaturedMetric label="Volume" value={formatUsd(market.volumeUsd)} />
-              <FeaturedMetric label="Expiry" value={formatExpiry(market.expiresAt)} />
-            </div>
-            <div className="mt-4 inline-flex items-center text-xs font-semibold text-indigo-700 transition group-hover:text-indigo-900">
-              Open Market
-              <span className="ml-1 transition group-hover:translate-x-0.5">-&gt;</span>
-            </div>
-          </Link>
+          <MarketCard key={market.id} market={market} />
         ))}
       </div>
     </section>
-  );
-}
-
-function FeaturedMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
-      <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{label}</div>
-      <div className="mt-1 truncate text-xs font-semibold text-slate-800">{value}</div>
-    </div>
   );
 }
 
@@ -604,13 +577,13 @@ function FilterGroup<T extends string>({
   return (
     <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
       <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:mr-1">{label}</span>
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+      <div className="flex flex-wrap gap-2">
       {options.map((option) => (
         <Button
           className={cn(
-            "h-9 px-3 text-xs sm:h-8",
+            "h-8 rounded-full border-slate-200 px-3 text-xs shadow-none",
             value === option &&
-              "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-none"
+              "border-indigo-300 bg-indigo-50 text-indigo-700"
           )}
           key={option}
           onClick={() => onChange(option)}
@@ -634,7 +607,7 @@ function ViewToggle({
   onChange: (value: "grid" | "list") => void;
 }) {
   return (
-    <div className="grid grid-cols-2 rounded-md border border-slate-200 bg-slate-50 p-1">
+    <div className="grid w-fit grid-cols-2 rounded-full border border-slate-200 bg-slate-50 p-1">
       {([
         { icon: LayoutGrid, label: "Grid", value: "grid" },
         { icon: List, label: "List", value: "list" }
@@ -645,7 +618,7 @@ function ViewToggle({
           <button
             aria-pressed={value === item.value}
             className={cn(
-              "inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2 text-xs font-medium transition",
+              "inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-medium transition",
               value === item.value
                 ? "bg-white text-indigo-700 shadow-sm"
                 : "text-slate-500 hover:text-slate-900"
