@@ -30,6 +30,7 @@ let cachedSummary:
       response: MarketSummaryResponse;
     }
   | undefined;
+let lastSuccessfulSummary: MarketSummaryResponse | undefined;
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
   const shouldRefresh = new URL(request.url).searchParams.get("refresh") === "1";
 
   if (!shouldRefresh && cachedSummary && cachedSummary.expiresAt > Date.now()) {
-    return NextResponse.json(cachedSummary.response);
+    return NextResponse.json(markSummaryAsCached(cachedSummary.response));
   }
 
   if (deploymentConfig.marketDataMode === "mock" && deploymentConfig.isMockFallbackEnabled) {
@@ -63,7 +64,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await getContractSummaryResponse(marketFactoryAddress);
+    const latestResponse = await getContractSummaryResponse(marketFactoryAddress);
+    const response = chooseStableSummary(latestResponse, lastSuccessfulSummary);
+
+    if (isRealSummaryResponse(response)) {
+      lastSuccessfulSummary = response;
+    }
 
     cachedSummary = {
       expiresAt: Date.now() + ACTIVE_CACHE_MS,
@@ -73,6 +79,19 @@ export async function GET(request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Probity market summary read failed", error);
+
+    if (lastSuccessfulSummary) {
+      const response = markSummaryAsCached(lastSuccessfulSummary, [
+        "Latest Arc Testnet summary refresh failed; serving the last successful real summary."
+      ]);
+
+      cachedSummary = {
+        expiresAt: Date.now() + ACTIVE_CACHE_MS,
+        response
+      };
+
+      return NextResponse.json(response);
+    }
 
     return NextResponse.json(
       {
@@ -170,9 +189,53 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
     isUsingMockFallback: false,
     markets: summaries,
     source: "contracts",
+    summaryStatus: warnings.length > 0 || summaries.length < marketAddresses.length ? "partial" : "fresh",
     total: marketAddresses.length,
     warnings: warnings.length > 0 ? warnings : undefined
   };
+}
+
+function chooseStableSummary(
+  latestResponse: MarketSummaryResponse,
+  previousResponse: MarketSummaryResponse | undefined
+) {
+  if (!isRealSummaryResponse(latestResponse)) {
+    return previousResponse
+      ? markSummaryAsCached(previousResponse, ["Latest summary refresh returned no readable markets."])
+      : latestResponse;
+  }
+
+  if (
+    previousResponse &&
+    isRealSummaryResponse(previousResponse) &&
+    latestResponse.markets.length < previousResponse.markets.length
+  ) {
+    return markSummaryAsCached(previousResponse, [
+      `Latest summary refresh loaded ${latestResponse.markets.length} of ${latestResponse.total} markets; serving the last better real summary.`
+    ]);
+  }
+
+  return {
+    ...latestResponse,
+    summaryStatus: latestResponse.summaryStatus ?? "fresh"
+  } satisfies MarketSummaryResponse;
+}
+
+function markSummaryAsCached(response: MarketSummaryResponse, warnings: string[] = []) {
+  return {
+    ...response,
+    summaryStatus: "cached" as const,
+    warnings: [...(response.warnings ?? []), ...warnings]
+  };
+}
+
+function isRealSummaryResponse(response: MarketSummaryResponse | undefined) {
+  return Boolean(
+    response &&
+      !response.isUsingMockFallback &&
+      response.source === "contracts" &&
+      response.markets.length > 0
+  );
 }
 
 function getSummaryContracts(address: Address) {
@@ -340,6 +403,7 @@ function getMockSummaryResponse(): MarketSummaryResponse {
       yesProbability: market.yesProbability
     })),
     source: "mock",
+    summaryStatus: "fresh",
     total: mockMarkets.length
   };
 }

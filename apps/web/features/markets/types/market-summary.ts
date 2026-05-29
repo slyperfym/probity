@@ -23,6 +23,7 @@ export type MarketSummaryResponse = {
   isUsingMockFallback: boolean;
   markets: MarketSummary[];
   source: "contracts" | "mock";
+  summaryStatus?: "fresh" | "cached" | "partial";
   total: number;
   warnings?: string[];
 };
