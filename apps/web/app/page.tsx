@@ -78,19 +78,18 @@ export default function HomePage() {
     <main className="overflow-hidden bg-[#f7f7f2]">
       <section className="probity-grid relative border-b border-slate-200">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent" />
-        <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:py-20">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:min-h-[620px] lg:grid-cols-[0.96fr_1.04fr] lg:gap-10 lg:px-8 lg:py-14">
           <div className="probity-fade-up">
-            <Badge className="mb-6" variant="info">
-              Arc-native prediction markets with USDC-style settlement
+            <Badge className="mb-4" variant="info">
+              Arc-native markets
             </Badge>
-            <h1 className="max-w-4xl text-4xl font-semibold tracking-normal text-slate-950 sm:text-5xl lg:text-7xl">
-              Transparent forecasting markets for professional capital.
+            <h1 className="max-w-3xl text-4xl font-semibold tracking-normal text-slate-950 sm:text-5xl lg:text-6xl">
+              Prediction markets on Arc
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              Arc-native prediction markets with USDC-style settlement, onchain positions,
-              and resolver-based outcomes.
+            <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+              Create, trade, resolve, and claim YES/NO markets with Arc testnet USDC.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link className={cn(buttonVariants({ size: "lg" }))} href="/markets">
                 Explore Markets
                 <ArrowRight className="h-4 w-4" />
@@ -99,25 +98,25 @@ export default function HomePage() {
                 Create Market
               </Link>
             </div>
-            <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3">
+            <div className="mt-7 grid max-w-xl grid-cols-3 gap-2.5">
               {metrics.map((metric) => (
                 <div
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm"
                   key={metric.label}
                 >
-                  <div className="text-lg font-semibold text-slate-950 sm:text-xl">
+                  <div className="text-sm font-semibold text-slate-950 sm:text-base">
                     {metric.value}
                   </div>
-                  <div className="mt-1 text-xs text-slate-500">{metric.label}</div>
+                  <div className="mt-0.5 text-[11px] text-slate-500">{metric.label}</div>
                 </div>
               ))}
             </div>
-            <TrustStrip className="mt-4 max-w-2xl" />
+            <TrustStrip className="mt-3 max-w-xl" />
           </div>
 
           <div className="probity-fade-in relative">
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
-              <div className="flex items-center justify-between border-b border-slate-200 px-3 py-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-[0_18px_50px_rgba(15,23,42,0.09)]">
+              <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2.5">
                 <div>
                   <div className="text-sm font-medium text-slate-950">Protocol Flow</div>
                   <div className="text-xs text-slate-500">Arc Testnet</div>
@@ -244,14 +243,14 @@ function ProtocolFlowRow({
   step: (typeof protocolFlow)[number];
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-indigo-200">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm transition hover:border-indigo-200">
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700">
           {index}
         </div>
         <div>
           <Badge>{step.label}</Badge>
-          <div className="mt-3 text-sm font-medium leading-6 text-slate-950">{step.title}</div>
+          <div className="mt-2 text-sm font-medium leading-6 text-slate-950">{step.title}</div>
           <p className="mt-1 text-xs leading-5 text-slate-500">{step.description}</p>
         </div>
       </div>
