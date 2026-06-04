@@ -22,6 +22,7 @@
     "contracts:export-abis": "node scripts/export-abis.mjs",
     "verify:deployment:arc-testnet": "node scripts/verify-probity-deployment.mjs",
     "verify:phase1": "node scripts/verify-phase1-fixes.mjs",
+    "verify:market-loading": "node scripts/verify-market-loading-performance.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "turbo clean"

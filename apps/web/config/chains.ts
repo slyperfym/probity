@@ -39,7 +39,13 @@ export const arcTestnetConfigured = defineChain({
           url: publicEnv.arcBlockExplorerUrl
         }
       }
-    : undefined
+    : undefined,
+  contracts: publicEnv.deploymentTarget === "arc-testnet" ? {
+    multicall3: {
+      address: "0xcA11bde05977b3631167028862bE2a173976CA11",
+      blockCreated: 0
+    }
+  } : undefined
 });
 
 export const probityChain = publicEnv.chainId === anvil.id ? anvil : arcTestnetConfigured;

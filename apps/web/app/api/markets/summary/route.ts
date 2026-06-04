@@ -12,17 +12,18 @@ import type { MarketCategory, MarketStatus } from "@/features/markets/types";
 const USDC_DECIMALS = 1_000_000;
 const ACTIVE_CACHE_MS = 30_000;
 const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network";
+const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 const SUMMARY_READ_CONCURRENCY = 6;
 const summaryFunctionNames = [
   "title",
   "metadataURI",
   "expirationTime",
   "status",
-  "resolvedOutcome",
   "totalYesShares",
   "totalNoShares",
   "totalDeposited"
 ] as const;
+const SUMMARY_READS_PER_MARKET = summaryFunctionNames.length;
 
 let cachedSummary:
   | {
@@ -118,6 +119,12 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
         default: {
           http: [rpcUrl]
         }
+      },
+      contracts: {
+        multicall3: {
+          address: MULTICALL3_ADDRESS,
+          blockCreated: 0
+        }
       }
     }),
     transport: http(rpcUrl)
@@ -141,8 +148,8 @@ async function getContractSummaryResponse(marketFactoryAddress: Address): Promis
     const retryAddresses: Address[] = [];
 
     summaries = newestFirstAddresses.flatMap((address, index) => {
-      const offset = index * 8;
-      const marketReads = reads.slice(offset, offset + 8);
+      const offset = index * SUMMARY_READS_PER_MARKET;
+      const marketReads = reads.slice(offset, offset + SUMMARY_READS_PER_MARKET);
       const market = mapSummaryReads(address, marketReads, generatedAt);
 
       if (!market) {
@@ -338,9 +345,9 @@ function mapSummaryReads(
     const metadataURI = readResult<string>(reads[1]);
     const expirationTime = readResult<bigint>(reads[2]);
     const status = readResult<number>(reads[3]);
-    const totalYesShares = readResult<bigint>(reads[5]);
-    const totalNoShares = readResult<bigint>(reads[6]);
-    const totalDeposited = readResult<bigint>(reads[7]);
+    const totalYesShares = readResult<bigint>(reads[4]);
+    const totalNoShares = readResult<bigint>(reads[5]);
+    const totalDeposited = readResult<bigint>(reads[6]);
 
     if (!title || expirationTime === undefined) {
       return null;

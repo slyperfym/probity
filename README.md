@@ -116,6 +116,7 @@ Useful validation commands:
 ```txt
 pnpm typecheck
 pnpm verify:phase1
+pnpm verify:market-loading
 pnpm verify:deployment:arc-testnet
 pnpm build
 ```
