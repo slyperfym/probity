@@ -48,7 +48,7 @@ External Signals use public prediction market metadata only as reference materia
 - Explorer: `https://testnet.arcscan.app`
 - Faucet: `https://faucet.circle.com`
 - Settlement token: `0x3600000000000000000000000000000000000000`
-- MarketFactory: `0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23`
+- MarketFactory: `0x7bca73d2dd03924bdac330d176760b09f17c1504`
 
 Probity currently uses Arc Testnet and USDC-style settlement. Users need Arc testnet USDC for gas and trading in the demo. Circle Wallets, Paymaster, Gas Station, and other Circle Developer Platform products are future roadmap integrations; they are not currently live in this MVP.
 
@@ -57,7 +57,7 @@ Probity currently uses Arc Testnet and USDC-style settlement. Users need Arc tes
 MarketFactory:
 
 ```txt
-0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23
+0x7bca73d2dd03924bdac330d176760b09f17c1504
 ```
 
 Settlement token:
@@ -115,13 +115,26 @@ Useful validation commands:
 
 ```txt
 pnpm typecheck
+pnpm verify:phase1
+pnpm verify:deployment:arc-testnet
 pnpm build
 ```
 
-If Foundry is installed:
+`pnpm verify:deployment:arc-testnet` checks the Arc Testnet chain ID, MarketFactory bytecode, SettlementToken bytecode, non-zero market count, and sample market settlement token so frontend configuration drift is caught early.
+
+Install Foundry before running contract tests or contract formatting checks:
 
 ```txt
-forge test
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+forge --version
+```
+
+Then run:
+
+```txt
+pnpm test:contracts
+pnpm --filter @probity/contracts lint
 ```
 
 Never commit `.env`, `.env.local`, private keys, or real deployment secrets.

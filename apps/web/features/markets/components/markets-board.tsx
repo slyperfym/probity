@@ -104,6 +104,13 @@ export function MarketsBoard() {
   const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
   const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
   const isUsingMockFallback = !isUsingClientFallback && (summaryData?.isUsingMockFallback ?? false);
+  const dataSourceStatus = isUsingMockFallback
+    ? "MOCK FALLBACK"
+    : isUsingClientFallback
+      ? "LIVE ONCHAIN RPC FALLBACK"
+      : summaryData?.source === "contracts"
+        ? "LIVE ONCHAIN"
+        : "LOADING DATA SOURCE";
   const dataSourceTone = isUsingMockFallback ? "text-amber-700" : "text-emerald-700";
   const hasConnectedFactoryWithoutMarkets =
     !summaryQuery.isError &&
@@ -141,6 +148,16 @@ export function MarketsBoard() {
       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
         <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-500">
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                isUsingMockFallback
+                  ? "border-amber-200 bg-amber-50 text-amber-700"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
+              )}
+            >
+              {dataSourceStatus}
+            </span>
             <span className="font-medium text-slate-700">
               {isUsingMockFallback
                 ? "Contracts unavailable"

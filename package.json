@@ -20,6 +20,8 @@
     "contracts:bootstrap:local": "pnpm contracts:deploy:local && pnpm contracts:seed:local && pnpm contracts:export-abis",
     "contracts:bootstrap:arc-testnet": "pnpm contracts:deploy:arc-testnet && pnpm contracts:export-abis",
     "contracts:export-abis": "node scripts/export-abis.mjs",
+    "verify:deployment:arc-testnet": "node scripts/verify-probity-deployment.mjs",
+    "verify:phase1": "node scripts/verify-phase1-fixes.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "turbo clean"

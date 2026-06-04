@@ -42,14 +42,15 @@ export function TradingPanel({ market }: { market: Market }) {
   const isLocalContractMarket = isAddress(market.id) && hasContractAddress("MockUSDC");
   const marketAddress = isLocalContractMarket ? (market.id as Address) : undefined;
   const selectedProbability = side === "YES" ? market.yesProbability : 100 - market.yesProbability;
-  const estimatedShares = Number(amount || 0) / Math.max(selectedProbability / 100, 0.01);
-  const estimatedYesSellPayout = Number(amount || 0) * (market.yesProbability / 100);
-  const estimatedNoSellPayout = Number(amount || 0) * ((100 - market.yesProbability) / 100);
+  const enteredAmount = Number(amount || 0);
+  const estimatedShares = Number.isFinite(enteredAmount) ? enteredAmount : 0;
+  const estimatedYesSellPayout = estimatedShares * (market.yesProbability / 100);
+  const estimatedNoSellPayout = estimatedShares * ((100 - market.yesProbability) / 100);
   const parsedAmount = parseTradeAmount(amount);
   const hasEnteredAmount = parsedAmount > 0n;
   const isMarketClosed = market.status === "expired" || market.status === "resolved";
-  const tokenLabel = deploymentConfig.isArcTestnet ? "USDC" : "Local USDC";
-  const environmentLabel = deploymentConfig.isArcTestnet ? "Arc Testnet" : "Local Test";
+  const tokenLabel = deploymentConfig.isArcTestnet ? "Arc Testnet USDC" : "Local settlement token";
+  const environmentLabel = deploymentConfig.isArcTestnet ? "Live Onchain" : "Local Test";
   const configuredSettlementToken = contractAddresses.MockUSDC?.toLowerCase();
   const marketSettlementToken = market.settlementTokenAddress?.toLowerCase();
   const hasSettlementTokenMismatch = Boolean(
@@ -288,7 +289,7 @@ export function TradingPanel({ market }: { market: Market }) {
           </div>
           <p className="mt-1.5 text-xs leading-5 text-slate-600">
             {deploymentConfig.isArcTestnet
-              ? "Arc testnet USDC is used for gas and settlement."
+              ? "Live Arc Testnet settlement uses the configured token only."
               : "Local settlement tokens only."}
           </p>
         </div>
@@ -381,12 +382,13 @@ export function TradingPanel({ market }: { market: Market }) {
           <SectionLabel>Preview</SectionLabel>
           <PreviewRow label="Action" value={`${mode === "buy" ? "Buy" : "Sell"} ${side}`} />
           <PreviewRow
-            label={isLocalContractMarket ? "Onchain probability" : "Reference probability"}
+            label={isLocalContractMarket ? "Current market probability" : "Reference probability"}
             value={`${selectedProbability}%`}
           />
+          <PreviewRow label="Share model" value="1 settlement token unit = 1 YES/NO share" />
           <PreviewRow
             label="Estimated shares"
-            value={hasEnteredAmount ? estimatedShares.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "--"}
+            value={hasEnteredAmount ? `${estimatedShares.toLocaleString("en-US", { maximumFractionDigits: 6 })} ${side} shares` : "--"}
           />
           {isLocalContractMarket && (
             <PreviewRow
@@ -400,7 +402,7 @@ export function TradingPanel({ market }: { market: Market }) {
           )}
           {isLocalContractMarket && (
             <>
-              <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} USDC`} />
+              <PreviewRow label={`${tokenLabel} balance`} value={`${formatUsdc(balance)} ${tokenLabel}`} />
               <PreviewRow label="YES position" value={`${formatUsdc(yesPosition)} shares`} />
               <PreviewRow label="NO position" value={`${formatUsdc(noPosition)} shares`} />
               {market.status === "resolved" && (
@@ -592,7 +594,7 @@ function getStatusMessage({
 
   if (!isConnected || !accountAddress) {
     return deploymentConfig.isArcTestnet
-      ? `Connect a wallet on ${probityChain.name}. Arc testnet USDC is used for gas and settlement.`
+      ? `Connect a wallet on ${probityChain.name}. ${tokenLabel} is used for settlement on live deployed markets.`
       : `Connect a wallet on ${probityChain.name} to approve ${tokenLabel}, buy shares, or claim payouts.`;
   }
 
@@ -634,13 +636,13 @@ function getStatusMessage({
 
   if (!hasEnoughBalance) {
     return deploymentConfig.isArcTestnet
-      ? "Need Arc testnet USDC for gas and settlement? Get it from the Circle faucet."
+      ? `Need ${tokenLabel}? Get it from the Circle faucet.`
       : `Your connected wallet does not have enough ${tokenLabel} for this trade.`;
   }
 
   if (!hasEnoughAllowance) {
     return deploymentConfig.isArcTestnet
-      ? "Approve USDC before trading."
+      ? `Approve ${tokenLabel} before trading.`
       : `Approve ${tokenLabel} for this market before buying YES or NO.`;
   }
 
