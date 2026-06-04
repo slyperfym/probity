@@ -24,7 +24,7 @@ type StatusFilter = (typeof marketStatuses)[number];
 
 const MARKET_PAGE_SIZE = 9;
 const SUMMARY_CACHE_KEY = "probity-real-market-summaries";
-const SUMMARY_CACHE_TTL_MS = 60_000;
+const SUMMARY_CACHE_TTL_MS = 5 * 60_000;
 
 export function MarketsBoard() {
   const [category, setCategory] = React.useState<CategoryFilter>("All");
@@ -33,8 +33,9 @@ export function MarketsBoard() {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [visibleMarketLimit, setVisibleMarketLimit] = React.useState(MARKET_PAGE_SIZE);
   const [refreshNonce, setRefreshNonce] = React.useState(0);
-  const [cachedSummaryData, setCachedSummaryData] = React.useState<MarketSummaryResponse | undefined>();
+  const [cachedSummaryData, setCachedSummaryData] = React.useState<MarketSummaryResponse | undefined>(() => readCachedMarketSummaries());
   const summaryQuery = useQuery({
+    initialData: refreshNonce === 0 ? cachedSummaryData : undefined,
     queryFn: () => fetchMarketSummaries(refreshNonce > 0),
     queryKey: ["probity", "market-summaries", refreshNonce],
     placeholderData: (previousData) => previousData,
@@ -42,10 +43,6 @@ export function MarketsBoard() {
     refetchIntervalInBackground: false,
     staleTime: 25_000
   });
-  React.useEffect(() => {
-    setCachedSummaryData(readCachedMarketSummaries());
-  }, []);
-
   React.useEffect(() => {
     const nextSummaryData = summaryQuery.data;
 

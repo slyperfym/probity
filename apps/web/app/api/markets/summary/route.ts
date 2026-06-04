@@ -10,7 +10,7 @@ import type { MarketSummary, MarketSummaryResponse } from "@/features/markets/ty
 import type { MarketCategory, MarketStatus } from "@/features/markets/types";
 
 const USDC_DECIMALS = 1_000_000;
-const ACTIVE_CACHE_MS = 30_000;
+const ACTIVE_CACHE_MS = 120_000;
 const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 const SUMMARY_READ_CONCURRENCY = 6;
@@ -32,6 +32,7 @@ let cachedSummary:
     }
   | undefined;
 let lastSuccessfulSummary: MarketSummaryResponse | undefined;
+let summaryRefreshInFlight: Promise<void> | undefined;
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,14 @@ export async function GET(request: Request) {
 
   if (!shouldRefresh && cachedSummary && cachedSummary.expiresAt > Date.now()) {
     return NextResponse.json(markSummaryAsCached(cachedSummary.response));
+  }
+
+  if (!shouldRefresh && cachedSummary) {
+    // For normal page reloads, serve stale summary immediately and refresh in the background.
+    queueSummaryRefresh();
+    return NextResponse.json(markSummaryAsCached(cachedSummary.response, [
+      "Serving cached market summary while a background refresh updates Arc Testnet data."
+    ]));
   }
 
   if (deploymentConfig.marketDataMode === "mock" && deploymentConfig.isMockFallbackEnabled) {
@@ -101,6 +110,38 @@ export async function GET(request: Request) {
       { status: 502 }
     );
   }
+}
+
+function queueSummaryRefresh() {
+  if (summaryRefreshInFlight) {
+    return;
+  }
+
+  const marketFactoryAddress = getSummaryMarketFactoryAddress();
+
+  if (!marketFactoryAddress) {
+    return;
+  }
+
+  summaryRefreshInFlight = getContractSummaryResponse(marketFactoryAddress)
+    .then((latestResponse) => {
+      const response = chooseStableSummary(latestResponse, lastSuccessfulSummary);
+
+      if (isRealSummaryResponse(response)) {
+        lastSuccessfulSummary = response;
+      }
+
+      cachedSummary = {
+        expiresAt: Date.now() + ACTIVE_CACHE_MS,
+        response
+      };
+    })
+    .catch((error) => {
+      console.warn("Probity market summary background refresh failed", error);
+    })
+    .finally(() => {
+      summaryRefreshInFlight = undefined;
+    });
 }
 
 async function getContractSummaryResponse(marketFactoryAddress: Address): Promise<MarketSummaryResponse> {
