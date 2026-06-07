@@ -36,8 +36,8 @@ import { cn } from "@/lib/utils";
 export function ContractMarketDetail({ marketAddress }: { marketAddress: string }) {
   const address = getAddress(marketAddress);
   const [hasTimedOut, setHasTimedOut] = React.useState(false);
-  const contractReads = useReadContracts({
-    contracts: [
+  const detailContracts = React.useMemo(
+    () => [
       { abi: contractAbis.predictionMarket, address, functionName: "title" },
       { abi: contractAbis.predictionMarket, address, functionName: "metadataURI" },
       { abi: contractAbis.predictionMarket, address, functionName: "expirationTime" },
@@ -49,11 +49,16 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
       { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" },
       { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" }
     ],
+    [address]
+  );
+  const contractReads = useReadContracts({
+    contracts: detailContracts,
     query: {
+      gcTime: 10 * 60_000,
       placeholderData: (previousData) => previousData,
-      refetchInterval: 8_000,
       refetchIntervalInBackground: false,
-      retry: 1
+      retry: 1,
+      staleTime: 60_000
     }
   });
 
@@ -68,14 +73,18 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
     return () => window.clearTimeout(timeout);
   }, [contractReads.isLoading]);
 
-  const market = contractReads.data
-    ? mapPredictionMarketReadsToMarket(
-        address,
-        contractReads.data.map((result) =>
-          result.status === "success" ? result.result : undefined
-        ) as MarketReadTuple
-      )
-    : null;
+  const market = React.useMemo(
+    () =>
+      contractReads.data
+        ? mapPredictionMarketReadsToMarket(
+            address,
+            contractReads.data.map((result) =>
+              result.status === "success" ? result.result : undefined
+            ) as MarketReadTuple
+          )
+        : null,
+    [address, contractReads.data]
+  );
   const participantCount = useMarketParticipantCount(address, Boolean(market));
   const marketActivity = useMarketOnchainActivity({
     enabled: Boolean(market),

@@ -11,6 +11,7 @@ import type { MarketCategory, MarketStatus } from "@/features/markets/types";
 
 const USDC_DECIMALS = 1_000_000;
 const ACTIVE_CACHE_MS = 120_000;
+const ACTIVE_CACHE_SECONDS = ACTIVE_CACHE_MS / 1000;
 const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 const SUMMARY_READ_CONCURRENCY = 6;
@@ -33,6 +34,7 @@ let cachedSummary:
   | undefined;
 let lastSuccessfulSummary: MarketSummaryResponse | undefined;
 let summaryRefreshInFlight: Promise<void> | undefined;
+let summaryLoadInFlight: Promise<MarketSummaryResponse> | undefined;
 
 export const dynamic = "force-dynamic";
 
@@ -40,15 +42,15 @@ export async function GET(request: Request) {
   const shouldRefresh = new URL(request.url).searchParams.get("refresh") === "1";
 
   if (!shouldRefresh && cachedSummary && cachedSummary.expiresAt > Date.now()) {
-    return NextResponse.json(markSummaryAsCached(cachedSummary.response));
+    return summaryJson(markSummaryAsCached(cachedSummary.response), { cacheable: true });
   }
 
   if (!shouldRefresh && cachedSummary) {
     // For normal page reloads, serve stale summary immediately and refresh in the background.
     queueSummaryRefresh();
-    return NextResponse.json(markSummaryAsCached(cachedSummary.response, [
+    return summaryJson(markSummaryAsCached(cachedSummary.response, [
       "Serving cached market summary while a background refresh updates Arc Testnet data."
-    ]));
+    ]), { cacheable: true, stale: true });
   }
 
   if (deploymentConfig.marketDataMode === "mock" && deploymentConfig.isMockFallbackEnabled) {
@@ -59,7 +61,7 @@ export async function GET(request: Request) {
       response
     };
 
-    return NextResponse.json(response);
+    return summaryJson(response, { cacheable: true });
   }
 
   const marketFactoryAddress = getSummaryMarketFactoryAddress();
@@ -74,8 +76,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const latestResponse = await getContractSummaryResponse(marketFactoryAddress);
-    const response = chooseStableSummary(latestResponse, lastSuccessfulSummary);
+    const response = await loadContractSummary(marketFactoryAddress);
 
     if (isRealSummaryResponse(response)) {
       lastSuccessfulSummary = response;
@@ -86,7 +87,7 @@ export async function GET(request: Request) {
       response
     };
 
-    return NextResponse.json(response);
+    return summaryJson(response, { cacheable: true });
   } catch (error) {
     console.error("Probity market summary read failed", error);
 
@@ -100,16 +101,28 @@ export async function GET(request: Request) {
         response
       };
 
-      return NextResponse.json(response);
+      return summaryJson(response, { cacheable: true, stale: true });
     }
 
-    return NextResponse.json(
+    return summaryJson(
       {
         error: "Arc Testnet markets could not be loaded. Check MarketFactory configuration or RPC availability."
       },
-      { status: 502 }
+      { cacheable: false, status: 502 }
     );
   }
+}
+
+async function loadContractSummary(marketFactoryAddress: Address) {
+  if (!summaryLoadInFlight) {
+    summaryLoadInFlight = getContractSummaryResponse(marketFactoryAddress)
+      .then((latestResponse) => chooseStableSummary(latestResponse, lastSuccessfulSummary))
+      .finally(() => {
+        summaryLoadInFlight = undefined;
+      });
+  }
+
+  return summaryLoadInFlight;
 }
 
 function queueSummaryRefresh() {
@@ -123,9 +136,8 @@ function queueSummaryRefresh() {
     return;
   }
 
-  summaryRefreshInFlight = getContractSummaryResponse(marketFactoryAddress)
-    .then((latestResponse) => {
-      const response = chooseStableSummary(latestResponse, lastSuccessfulSummary);
+  summaryRefreshInFlight = loadContractSummary(marketFactoryAddress)
+    .then((response) => {
 
       if (isRealSummaryResponse(response)) {
         lastSuccessfulSummary = response;
@@ -275,6 +287,32 @@ function markSummaryAsCached(response: MarketSummaryResponse, warnings: string[]
     summaryStatus: "cached" as const,
     warnings: [...(response.warnings ?? []), ...warnings]
   };
+}
+
+function summaryJson(
+  body: MarketSummaryResponse | { error: string },
+  options: {
+    cacheable: boolean;
+    stale?: boolean;
+    status?: number;
+  }
+) {
+  const response = NextResponse.json(body, { status: options.status });
+
+  if (options.cacheable) {
+    response.headers.set(
+      "Cache-Control",
+      `public, max-age=0, s-maxage=${ACTIVE_CACHE_SECONDS}, stale-while-revalidate=${ACTIVE_CACHE_SECONDS * 4}`
+    );
+  } else {
+    response.headers.set("Cache-Control", "no-store");
+  }
+
+  if (options.stale) {
+    response.headers.set("x-probity-cache", "stale");
+  }
+
+  return response;
 }
 
 function isRealSummaryResponse(response: MarketSummaryResponse | undefined) {

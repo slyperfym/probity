@@ -43,14 +43,32 @@ assert.match(
 
 assert.match(
   marketsBoard,
-  /React\.useState<MarketSummaryResponse \| undefined>\(\(\) => readCachedMarketSummaries\(\)\)/,
+  /React\.useState<CachedSummaryEntry \| undefined>\(\(\) => readCachedMarketSummaries\(\)\)/,
   'MarketsBoard should hydrate localStorage summaries in the initial state so reloads do not render a blocking loading screen.'
 );
 
 assert.match(
   marketsBoard,
-  /initialData: refreshNonce === 0 \? cachedSummaryData : undefined/,
+  /initialData:\s*cachedSummaryEntry\?\.response/,
   'MarketsBoard query should use cached summaries as initial data for fast reloads.'
+);
+
+assert.match(
+  marketsBoard,
+  /initialDataUpdatedAt:\s*cachedSummaryEntry\?\.cachedAt/,
+  'MarketsBoard query should preserve localStorage cache age so React Query does not refetch immediately after navigation.'
+);
+
+assert.match(
+  marketsBoard,
+  /queryKey:\s*\["probity", "market-summaries"\]/,
+  'MarketsBoard should use a stable market summary query key so manual refreshes dedupe instead of creating new cache entries.'
+);
+
+assert.doesNotMatch(
+  marketsBoard,
+  /refetchInterval:\s*30_000/,
+  'MarketsBoard should not poll market summaries every 30 seconds while users are browsing.'
 );
 
 console.log('Market loading performance static verification passed.');

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronDown, DatabaseZap, ExternalLink } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -30,10 +31,16 @@ export function ExternalSignals({
   isUsingMockFallback: boolean;
   probityMarkets: Market[];
 }) {
-  const [markets, setMarkets] = React.useState<ExternalMarketReference[]>([]);
-  const [error, setError] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(true);
   const [showAlreadyListed, setShowAlreadyListed] = React.useState(false);
+  const signalsQuery = useQuery({
+    queryFn: fetchExternalSignals,
+    queryKey: ["probity", "external-signals", "polymarket"],
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    retry: 1,
+    staleTime: 5 * 60_000
+  });
+  const markets = signalsQuery.data ?? [];
 
   const { alreadyListedSignals, draftableSignals } = React.useMemo(() => {
     return markets.reduce(
@@ -60,40 +67,6 @@ export function ExternalSignals({
     );
   }, [isUsingMockFallback, probityMarkets, markets]);
 
-  React.useEffect(() => {
-    let active = true;
-
-    async function loadSignals() {
-      try {
-        const response = await fetch("/api/discovery/polymarket");
-        const data = (await response.json()) as DiscoveryResponse;
-
-        if (!active) return;
-
-        if (!response.ok) {
-          setError(data.error ?? "External market references are unavailable.");
-          return;
-        }
-
-        setMarkets(data.markets);
-      } catch {
-        if (active) {
-          setError("External market references are unavailable.");
-        }
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadSignals();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
     <section className="space-y-4 sm:space-y-5">
       <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
@@ -106,13 +79,13 @@ export function ExternalSignals({
         </p>
       </div>
 
-      {isLoading ? (
+      {signalsQuery.isLoading ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-600 shadow-sm">
           Loading external market references...
         </div>
-      ) : error ? (
+      ) : signalsQuery.isError ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600 shadow-sm">
-          {error}
+          {signalsQuery.error instanceof Error ? signalsQuery.error.message : "External market references are unavailable."}
         </div>
       ) : (
         <>
@@ -162,6 +135,17 @@ export function ExternalSignals({
       )}
     </section>
   );
+}
+
+async function fetchExternalSignals() {
+  const response = await fetch("/api/discovery/polymarket");
+  const data = (await response.json()) as DiscoveryResponse;
+
+  if (!response.ok) {
+    throw new Error(data.error ?? "External market references are unavailable.");
+  }
+
+  return data.markets;
 }
 
 function ExternalSignalCard({

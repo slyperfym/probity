@@ -25,6 +25,8 @@ type StatusFilter = (typeof marketStatuses)[number];
 const MARKET_PAGE_SIZE = 9;
 const SUMMARY_CACHE_KEY = "probity-real-market-summaries";
 const SUMMARY_CACHE_TTL_MS = 5 * 60_000;
+const SUMMARY_STALE_MS = 2 * 60_000;
+const SUMMARY_GC_MS = 10 * 60_000;
 
 export function MarketsBoard() {
   const [category, setCategory] = React.useState<CategoryFilter>("All");
@@ -32,33 +34,49 @@ export function MarketsBoard() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [visibleMarketLimit, setVisibleMarketLimit] = React.useState(MARKET_PAGE_SIZE);
-  const [refreshNonce, setRefreshNonce] = React.useState(0);
-  const [cachedSummaryData, setCachedSummaryData] = React.useState<MarketSummaryResponse | undefined>(() => readCachedMarketSummaries());
+  const refreshModeRef = React.useRef(false);
+  const [cachedSummaryEntry, setCachedSummaryEntry] = React.useState<CachedSummaryEntry | undefined>(() => readCachedMarketSummaries());
   const summaryQuery = useQuery({
-    initialData: refreshNonce === 0 ? cachedSummaryData : undefined,
-    queryFn: () => fetchMarketSummaries(refreshNonce > 0),
-    queryKey: ["probity", "market-summaries", refreshNonce],
+    gcTime: SUMMARY_GC_MS,
+    initialData: cachedSummaryEntry?.response,
+    initialDataUpdatedAt: cachedSummaryEntry?.cachedAt,
+    queryFn: async ({ signal }) => {
+      const forceRefresh = refreshModeRef.current;
+
+      try {
+        return await fetchMarketSummaries({ forceRefresh, signal });
+      } finally {
+        refreshModeRef.current = false;
+      }
+    },
+    queryKey: ["probity", "market-summaries"],
     placeholderData: (previousData) => previousData,
-    refetchInterval: 30_000,
-    refetchIntervalInBackground: false,
-    staleTime: 25_000
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    staleTime: SUMMARY_STALE_MS
   });
+  const handleRefreshSummaries = React.useCallback(() => {
+    refreshModeRef.current = true;
+    void summaryQuery.refetch({ cancelRefetch: false });
+  }, [summaryQuery]);
+
   React.useEffect(() => {
     const nextSummaryData = summaryQuery.data;
+    const cachedSummaryData = cachedSummaryEntry?.response;
 
     if (
       isCacheableSummaryResponse(nextSummaryData) &&
-      (refreshNonce > 0 || !cachedSummaryData || nextSummaryData.markets.length >= cachedSummaryData.markets.length)
+      (!cachedSummaryData || nextSummaryData.markets.length >= cachedSummaryData.markets.length)
     ) {
-      writeCachedMarketSummaries(nextSummaryData);
-      setCachedSummaryData(nextSummaryData);
+      const nextEntry = writeCachedMarketSummaries(nextSummaryData);
+      setCachedSummaryEntry(nextEntry);
     }
-  }, [cachedSummaryData, refreshNonce, summaryQuery.data]);
+  }, [cachedSummaryEntry?.response, summaryQuery.data]);
 
   const apiSummaryData = summaryQuery.data;
+  const cachedSummaryData = cachedSummaryEntry?.response;
   const shouldAcceptApiData =
     shouldUseFreshSummary(apiSummaryData, cachedSummaryData) ||
-    Boolean(refreshNonce > 0 && apiSummaryData && apiSummaryData.markets.length > 0) ||
     Boolean(apiSummaryData && apiSummaryData.total === 0 && !cachedSummaryData);
   const summaryData = shouldAcceptApiData ? apiSummaryData : cachedSummaryData;
   const isShowingCachedData = Boolean(summaryData && summaryData === cachedSummaryData && !shouldAcceptApiData);
@@ -85,21 +103,41 @@ export function MarketsBoard() {
     !clientFallbackMarkets.isUsingMockFallback &&
     clientFallbackMarkets.markets.length > 0;
   const boardMarkets = isUsingClientFallback ? clientFallbackMarkets.markets : summaryMarkets;
-  const displayedMarkets = boardMarkets.slice(0, visibleMarketLimit);
+  const displayedMarkets = React.useMemo(
+    () => boardMarkets.slice(0, visibleMarketLimit),
+    [boardMarkets, visibleMarketLimit]
+  );
   const totalMarketCount = isUsingClientFallback
     ? clientFallbackMarkets.totalContractMarketCount
     : summaryData?.total ?? 0;
   const hasMoreMarkets = visibleMarketLimit < totalMarketCount;
 
-  const filteredMarkets = getMarketsByFilter(
-    displayedMarkets,
-    category as "All" | MarketCategory,
-    status as "All" | MarketStatus,
-    searchQuery
+  const filteredMarkets = React.useMemo(
+    () =>
+      getMarketsByFilter(
+        displayedMarkets,
+        category as "All" | MarketCategory,
+        status as "All" | MarketStatus,
+        searchQuery
+      ),
+    [category, displayedMarkets, searchQuery, status]
   );
-  const activeMarkets = filteredMarkets.filter((market) => market.status === "active").length;
-  const totalVolume = filteredMarkets.reduce((sum, market) => sum + market.volumeUsd, 0);
-  const totalLiquidity = filteredMarkets.reduce((sum, market) => sum + market.liquidityUsd, 0);
+  const filteredMetrics = React.useMemo(
+    () =>
+      filteredMarkets.reduce(
+        (metrics, market) => ({
+          activeMarkets: metrics.activeMarkets + (market.status === "active" ? 1 : 0),
+          totalLiquidity: metrics.totalLiquidity + market.liquidityUsd,
+          totalVolume: metrics.totalVolume + market.volumeUsd
+        }),
+        {
+          activeMarkets: 0,
+          totalLiquidity: 0,
+          totalVolume: 0
+        }
+      ),
+    [filteredMarkets]
+  );
   const isUsingMockFallback = !isUsingClientFallback && (summaryData?.isUsingMockFallback ?? false);
   const dataSourceStatus = isUsingMockFallback
     ? "MOCK FALLBACK"
@@ -132,9 +170,9 @@ export function MarketsBoard() {
   return (
     <div className="space-y-3.5 sm:space-y-4">
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryMetric label="Filtered Volume" value={formatUsd(totalVolume)} />
-        <SummaryMetric label="Loaded Active" value={String(activeMarkets)} />
-        <SummaryMetric label="Displayed Liquidity" value={formatUsd(totalLiquidity)} />
+        <SummaryMetric label="Filtered Volume" value={formatUsd(filteredMetrics.totalVolume)} />
+        <SummaryMetric label="Loaded Active" value={String(filteredMetrics.activeMarkets)} />
+        <SummaryMetric label="Displayed Liquidity" value={formatUsd(filteredMetrics.totalLiquidity)} />
         <SummaryMetric
           label="Loaded / Total"
           value={isInitialLoading ? "Checking..." : `${displayedMarkets.length}/${totalMarketCount}`}
@@ -193,7 +231,7 @@ export function MarketsBoard() {
             <Button
               className="h-8 px-2 text-[10px] uppercase tracking-[0.12em]"
               disabled={summaryQuery.isFetching}
-              onClick={() => setRefreshNonce((current) => current + 1)}
+              onClick={handleRefreshSummaries}
               size="sm"
               type="button"
               variant="outline"
@@ -302,8 +340,21 @@ export function MarketsBoard() {
   );
 }
 
-async function fetchMarketSummaries(forceRefresh: boolean) {
-  const response = await fetch(`/api/markets/summary${forceRefresh ? "?refresh=1" : ""}`);
+type CachedSummaryEntry = {
+  cachedAt: number;
+  response: MarketSummaryResponse;
+};
+
+async function fetchMarketSummaries({
+  forceRefresh,
+  signal
+}: {
+  forceRefresh: boolean;
+  signal?: AbortSignal;
+}) {
+  const response = await fetch(`/api/markets/summary${forceRefresh ? "?refresh=1" : ""}`, {
+    signal
+  });
   const data = await response.json() as MarketSummaryResponse;
 
   if (!response.ok) {
@@ -325,14 +376,19 @@ function readCachedMarketSummaries() {
       return undefined;
     }
 
-    const parsed = JSON.parse(rawValue) as { cachedAt?: number; response?: MarketSummaryResponse };
+    const parsed = JSON.parse(rawValue) as Partial<CachedSummaryEntry>;
 
     if (!parsed.cachedAt || !parsed.response || Date.now() - parsed.cachedAt > SUMMARY_CACHE_TTL_MS) {
       window.localStorage.removeItem(SUMMARY_CACHE_KEY);
       return undefined;
     }
 
-    return isCacheableSummaryResponse(parsed.response) ? parsed.response : undefined;
+    return isCacheableSummaryResponse(parsed.response)
+      ? {
+          cachedAt: parsed.cachedAt,
+          response: parsed.response
+        }
+      : undefined;
   } catch {
     window.localStorage.removeItem(SUMMARY_CACHE_KEY);
     return undefined;
@@ -341,16 +397,20 @@ function readCachedMarketSummaries() {
 
 function writeCachedMarketSummaries(response: MarketSummaryResponse) {
   if (typeof window === "undefined" || !isCacheableSummaryResponse(response)) {
-    return;
+    return undefined;
   }
+
+  const entry = {
+    cachedAt: Date.now(),
+    response
+  };
 
   window.localStorage.setItem(
     SUMMARY_CACHE_KEY,
-    JSON.stringify({
-      cachedAt: Date.now(),
-      response
-    })
+    JSON.stringify(entry)
   );
+
+  return entry;
 }
 
 function isCacheableSummaryResponse(

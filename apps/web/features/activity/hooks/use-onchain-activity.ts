@@ -79,11 +79,9 @@ export function useWalletOnchainActivity({
       wallet,
       normalizedMarkets.map((market) => market.address.toLowerCase()).join(",")
     ],
-    refetchInterval: 60_000,
-    refetchIntervalInBackground: false,
     retry: false,
-    staleTime: 45_000,
-    gcTime: 60_000
+    staleTime: 2 * 60_000,
+    gcTime: 10 * 60_000
   });
 }
 
@@ -121,11 +119,9 @@ export function useMarketOnchainActivity({
       market,
       marketTitle
     ],
-    refetchInterval: 60_000,
-    refetchIntervalInBackground: false,
     retry: false,
-    staleTime: 45_000,
-    gcTime: 60_000
+    staleTime: 2 * 60_000,
+    gcTime: 10 * 60_000
   });
 }
 

@@ -60,10 +60,9 @@ export function useMarketParticipantCounts(marketAddresses: readonly Address[], 
       normalizedAddresses.join(",")
     ],
     refetchOnWindowFocus: false,
-    refetchInterval: 15_000,
-    refetchIntervalInBackground: false,
     retry: 1,
-    staleTime: 10_000
+    staleTime: 2 * 60_000,
+    gcTime: 10 * 60_000
   });
 }
 
@@ -133,45 +132,54 @@ async function readParticipantsFromBlock({
 }) {
   const participants = new Set<string>();
   const summaries: ParticipantLogSummary[] = [];
+  const eventResults = await Promise.all(
+    participantEvents.map(async (participantEvent) => {
+      try {
+        const logs = await publicClient.getLogs({
+          address: marketAddress,
+          event: participantEvent.event,
+          fromBlock,
+          toBlock: "latest"
+        });
 
-  for (const participantEvent of participantEvents) {
-    try {
-      const logs = await publicClient.getLogs({
-        address: marketAddress,
-        event: participantEvent.event,
-        fromBlock,
-        toBlock: "latest"
-      });
+        return {
+          logs,
+          participantEvent
+        };
+      } catch (error) {
+        devWarn("Participant getLogs failed.", {
+          error,
+          eventName: participantEvent.eventName,
+          fromBlock: fromBlock.toString(),
+          marketAddress
+        });
 
-      summaries.push({
-        eventName: participantEvent.eventName,
-        logCount: logs.length
-      });
-
-      for (const log of logs) {
-        const participant = extractParticipantAddress(log.args, participantEvent);
-
-        if (participant) {
-          participants.add(participant.toLowerCase());
-        } else {
-          devWarn("Unable to extract participant address from trade log.", {
-            args: log.args,
-            eventName: participantEvent.eventName,
-            marketAddress
-          });
-        }
+        return {
+          logs: [],
+          participantEvent
+        };
       }
-    } catch (error) {
-      summaries.push({
-        eventName: participantEvent.eventName,
-        logCount: 0
-      });
-      devWarn("Participant getLogs failed.", {
-        error,
-        eventName: participantEvent.eventName,
-        fromBlock: fromBlock.toString(),
-        marketAddress
-      });
+    })
+  );
+
+  for (const { logs, participantEvent } of eventResults) {
+    summaries.push({
+      eventName: participantEvent.eventName,
+      logCount: logs.length
+    });
+
+    for (const log of logs) {
+      const participant = extractParticipantAddress(log.args, participantEvent);
+
+      if (participant) {
+        participants.add(participant.toLowerCase());
+      } else {
+        devWarn("Unable to extract participant address from trade log.", {
+          args: log.args,
+          eventName: participantEvent.eventName,
+          marketAddress
+        });
+      }
     }
   }
 
