@@ -1,5 +1,5 @@
 import type { ExternalReferenceMetadata } from "@/features/discovery/types";
-import type { MarketCategory, MarketStatus } from "@/features/markets/types";
+import type { MarketCategory, MarketOutcome, MarketStatus } from "@/features/markets/types";
 
 export type MarketSummary = {
   address: string;
@@ -8,6 +8,7 @@ export type MarketSummary = {
   externalReference?: ExternalReferenceMetadata | null;
   liquidityUsd: number;
   noProbability: number;
+  outcome: MarketOutcome;
   sourceType: "contracts" | "mock";
   settlementTokenSymbol: string;
   status: MarketStatus;

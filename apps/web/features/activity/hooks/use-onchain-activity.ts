@@ -16,6 +16,7 @@ import type { OnchainActivityItem } from "@/features/activity/types";
 
 const USDC_DECIMALS = 1_000_000n;
 const ACTIVITY_TIMEOUT_MS = 5_500;
+const ACTIVITY_CACHE_TTL_MS = 15 * 60_000;
 
 const sharesPurchasedEvent = parseAbiItem(
   "event SharesPurchased(address indexed buyer, uint8 indexed side, uint256 amount, uint256 shares, uint256 totalYesShares, uint256 totalNoShares)"
@@ -56,9 +57,20 @@ export function useWalletOnchainActivity({
     () => markets.filter((market) => isAddress(market.address)),
     [markets]
   );
+  const queryKey = [
+    "probity",
+    "wallet-onchain-activity",
+    deploymentConfig.chainId,
+    wallet,
+    normalizedMarkets.map((market) => market.address.toLowerCase()).join(",")
+  ];
+  const cacheKey = queryKey.join(":");
+  const cachedActivity = readCachedActivity(cacheKey);
 
   return useQuery({
     enabled: enabled && Boolean(publicClient && wallet && normalizedMarkets.length > 0),
+    initialData: cachedActivity?.items,
+    initialDataUpdatedAt: cachedActivity?.cachedAt,
     queryFn: async () => {
       if (!publicClient || !wallet) return [];
 
@@ -70,15 +82,13 @@ export function useWalletOnchainActivity({
         })
       );
 
-      return sortNewestFirst(activity);
+      const sortedActivity = sortNewestFirst(activity);
+
+      writeCachedActivity(cacheKey, sortedActivity);
+
+      return sortedActivity;
     },
-    queryKey: [
-      "probity",
-      "wallet-onchain-activity",
-      deploymentConfig.chainId,
-      wallet,
-      normalizedMarkets.map((market) => market.address.toLowerCase()).join(",")
-    ],
+    queryKey,
     retry: false,
     staleTime: 2 * 60_000,
     gcTime: 10 * 60_000
@@ -96,9 +106,20 @@ export function useMarketOnchainActivity({
 }) {
   const publicClient = usePublicClient();
   const market = toAddress(marketAddress);
+  const queryKey = [
+    "probity",
+    "market-onchain-activity",
+    deploymentConfig.chainId,
+    market,
+    marketTitle
+  ];
+  const cacheKey = queryKey.join(":");
+  const cachedActivity = readCachedActivity(cacheKey);
 
   return useQuery({
     enabled: enabled && Boolean(publicClient && market),
+    initialData: cachedActivity?.items,
+    initialDataUpdatedAt: cachedActivity?.cachedAt,
     queryFn: async () => {
       if (!publicClient || !market) return [];
 
@@ -110,15 +131,13 @@ export function useMarketOnchainActivity({
         })
       );
 
-      return sortNewestFirst(activity);
+      const sortedActivity = sortNewestFirst(activity);
+
+      writeCachedActivity(cacheKey, sortedActivity);
+
+      return sortedActivity;
     },
-    queryKey: [
-      "probity",
-      "market-onchain-activity",
-      deploymentConfig.chainId,
-      market,
-      marketTitle
-    ],
+    queryKey,
     retry: false,
     staleTime: 2 * 60_000,
     gcTime: 10 * 60_000
@@ -528,4 +547,71 @@ function logActivityDebug(label: string, values: Record<string, unknown>) {
   }
 
   console.info(`Probity ${label}`, values);
+}
+
+type CachedActivityEntry = {
+  cachedAt: number;
+  items: OnchainActivityItem[];
+};
+
+type SerializedActivityItem = Omit<OnchainActivityItem, "blockNumber"> & {
+  blockNumber: string;
+};
+
+function readCachedActivity(cacheKey: string): CachedActivityEntry | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(getActivityStorageKey(cacheKey));
+
+    if (!rawValue) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(rawValue) as {
+      cachedAt?: number;
+      items?: SerializedActivityItem[];
+    };
+
+    if (!parsed.cachedAt || !parsed.items || Date.now() - parsed.cachedAt > ACTIVITY_CACHE_TTL_MS) {
+      window.localStorage.removeItem(getActivityStorageKey(cacheKey));
+      return undefined;
+    }
+
+    return {
+      cachedAt: parsed.cachedAt,
+      items: parsed.items.map((item) => ({
+        ...item,
+        blockNumber: BigInt(item.blockNumber)
+      }))
+    };
+  } catch {
+    window.localStorage.removeItem(getActivityStorageKey(cacheKey));
+    return undefined;
+  }
+}
+
+function writeCachedActivity(cacheKey: string, items: OnchainActivityItem[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const serializedItems: SerializedActivityItem[] = items.map((item) => ({
+    ...item,
+    blockNumber: item.blockNumber.toString()
+  }));
+
+  window.localStorage.setItem(
+    getActivityStorageKey(cacheKey),
+    JSON.stringify({
+      cachedAt: Date.now(),
+      items: serializedItems
+    })
+  );
+}
+
+function getActivityStorageKey(cacheKey: string) {
+  return `probity-onchain-activity:${cacheKey}`;
 }

@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 const summaryRoute = readFileSync(new URL('../apps/web/app/api/markets/summary/route.ts', import.meta.url), 'utf8');
 const chainsConfig = readFileSync(new URL('../apps/web/config/chains.ts', import.meta.url), 'utf8');
 const marketsBoard = readFileSync(new URL('../apps/web/features/markets/components/markets-board.tsx', import.meta.url), 'utf8');
+const portfolioDashboard = readFileSync(new URL('../apps/web/features/portfolio/components/portfolio-dashboard.tsx', import.meta.url), 'utf8');
+const activityHook = readFileSync(new URL('../apps/web/features/activity/hooks/use-onchain-activity.ts', import.meta.url), 'utf8');
 
 assert.match(
   summaryRoute,
@@ -29,10 +31,10 @@ assert.match(
   'Summary API should serve stale cached summaries immediately on normal reloads instead of blocking on RPC.'
 );
 
-assert.doesNotMatch(
+assert.match(
   summaryRoute,
   /"resolvedOutcome",/,
-  'Market board summary should not read resolvedOutcome because it is not used in summary cards.'
+  'Shared market snapshots should include resolvedOutcome so Portfolio can detect winning claimable positions without extra metadata reads.'
 );
 
 assert.match(
@@ -43,7 +45,7 @@ assert.match(
 
 assert.match(
   marketsBoard,
-  /React\.useState<CachedSummaryEntry \| undefined>\(\(\) => readCachedMarketSummaries\(\)\)/,
+  /React\.useState<CachedMarketSummaryEntry \| undefined>\(\(\) => readCachedMarketSummaries\(\)\)/,
   'MarketsBoard should hydrate localStorage summaries in the initial state so reloads do not render a blocking loading screen.'
 );
 
@@ -93,6 +95,42 @@ assert.match(
   marketsBoard,
   /includeParticipantCounts:\s*false/,
   'MarketsBoard fallback should skip participant log scans because list statistics do not use them.'
+);
+
+assert.doesNotMatch(
+  portfolioDashboard,
+  /useLocalContractMarkets/,
+  'Portfolio should reuse cached market summaries instead of rediscovering all market metadata through client contract reads.'
+);
+
+assert.match(
+  portfolioDashboard,
+  /queryKey:\s*\["probity", "market-summaries"\]/,
+  'Portfolio should share the Markets page summary cache key.'
+);
+
+assert.match(
+  portfolioDashboard,
+  /functionName:\s*"getPosition"/,
+  'Portfolio should batch wallet YES/NO/claim status with getPosition multicalls.'
+);
+
+assert.doesNotMatch(
+  portfolioDashboard,
+  /refetchInterval:\s*12_000/,
+  'Portfolio position reads should not poll every 12 seconds.'
+);
+
+assert.match(
+  portfolioDashboard,
+  /positions\s*\n\s*\.filter\(\(position\) => isContractAddress\(position\.marketId\)\)/,
+  'Portfolio activity scans should be limited to markets where the wallet has a position.'
+);
+
+assert.match(
+  activityHook,
+  /readCachedActivity\(cacheKey\)/,
+  'Activity hooks should hydrate cached log scans before revalidating.'
 );
 
 console.log('Market loading performance static verification passed.');

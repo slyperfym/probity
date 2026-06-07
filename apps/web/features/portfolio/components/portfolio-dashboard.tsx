@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BriefcaseBusiness, Coins, History, Wallet } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { formatUnits } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 
@@ -10,9 +11,14 @@ import { StateCard } from "@/components/feedback/state-card";
 import { contractAbis } from "@/config/contracts";
 import { OnchainActivityList } from "@/features/activity/components/onchain-activity-list";
 import { useWalletOnchainActivity } from "@/features/activity/hooks/use-onchain-activity";
-import { useLocalContractMarkets } from "@/features/contracts/hooks";
-import type { Market } from "@/features/markets/types";
 import { formatUsd } from "@/features/markets/lib/formatters";
+import {
+  isCacheableSummaryResponse,
+  readCachedMarketSummaries,
+  writeCachedMarketSummaries,
+  type CachedMarketSummaryEntry
+} from "@/features/markets/lib/market-summary-cache";
+import type { MarketSummary, MarketSummaryResponse } from "@/features/markets/types/market-summary";
 import {
   ClaimableRewards,
   PortfolioPositions
@@ -24,47 +30,57 @@ import type { PortfolioPosition } from "@/features/portfolio/types";
 
 const USDC_DECIMALS = 6;
 const ACTIVITY_MARKET_LIMIT = 12;
+const PORTFOLIO_STALE_MS = 2 * 60_000;
+const PORTFOLIO_GC_MS = 10 * 60_000;
 
 export function PortfolioDashboard() {
   const { address: accountAddress, isConnected } = useAccount();
-  const localMarkets = useLocalContractMarkets({ includeParticipantCounts: false });
-  const useMockFallback = localMarkets.isUsingMockFallback;
-  const shouldReadPositions =
-    !useMockFallback && Boolean(accountAddress) && localMarkets.markets.length > 0;
-  const activityMarkets = React.useMemo(() => {
-    const titleByAddress = new Map(
-      localMarkets.markets.map((market) => [market.id.toLowerCase(), market.title])
-    );
-
-    return [...localMarkets.factoryMarkets.contractMarkets]
-      .reverse()
-      .slice(0, ACTIVITY_MARKET_LIMIT)
-      .map((address) => ({
-        address: address as `0x${string}`,
-        title: titleByAddress.get(address.toLowerCase()) ?? `PredictionMarket ${shortHash(address)}`
-      }));
-  }, [localMarkets.factoryMarkets.contractMarkets, localMarkets.markets]);
-  const walletActivity = useWalletOnchainActivity({
-    enabled: Boolean(accountAddress && activityMarkets.length > 0),
-    markets: activityMarkets,
-    walletAddress: accountAddress
+  const [cachedSummaryEntry, setCachedSummaryEntry] = React.useState<CachedMarketSummaryEntry | undefined>(() => readCachedMarketSummaries());
+  const summaryQuery = useQuery({
+    gcTime: PORTFOLIO_GC_MS,
+    initialData: cachedSummaryEntry?.response,
+    initialDataUpdatedAt: cachedSummaryEntry?.cachedAt,
+    queryFn: fetchMarketSummaries,
+    queryKey: ["probity", "market-summaries"],
+    placeholderData: (previousData) => previousData,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    staleTime: PORTFOLIO_STALE_MS
   });
+  React.useEffect(() => {
+    if (isCacheableSummaryResponse(summaryQuery.data)) {
+      const nextEntry = writeCachedMarketSummaries(summaryQuery.data);
+      setCachedSummaryEntry(nextEntry);
+    }
+  }, [summaryQuery.data]);
+
+  const summaryData = summaryQuery.data ?? cachedSummaryEntry?.response;
+  const summaryMarkets = React.useMemo(
+    () => summaryData?.markets ?? [],
+    [summaryData?.markets]
+  );
+  const useMockFallback = Boolean(summaryData?.isUsingMockFallback || summaryQuery.isError);
+  const shouldReadPositions =
+    !useMockFallback && Boolean(accountAddress) && summaryMarkets.length > 0;
+  const positionContracts = React.useMemo(
+    () =>
+      summaryMarkets.map((market) => ({
+        abi: contractAbis.predictionMarket,
+        address: market.address as `0x${string}`,
+        args: accountAddress ? [accountAddress] : undefined,
+        functionName: "getPosition"
+      })),
+    [accountAddress, summaryMarkets]
+  );
 
   const positionReads = useReadContracts({
-    contracts: localMarkets.markets.map((market) => ({
-      abi: contractAbis.predictionMarket,
-      address: market.id as `0x${string}`,
-      args: accountAddress ? [accountAddress] : undefined,
-      functionName: "getPosition"
-    })),
+    contracts: positionContracts,
     query: {
+      gcTime: PORTFOLIO_GC_MS,
       enabled: shouldReadPositions,
       placeholderData: (previousData) => previousData,
-      refetchInterval: 12_000,
-      refetchIntervalInBackground: false,
       retry: 1,
-      staleTime: 45_000,
-      gcTime: 60_000
+      staleTime: PORTFOLIO_STALE_MS
     }
   });
 
@@ -73,7 +89,7 @@ export function PortfolioDashboard() {
       return [];
     }
 
-    return localMarkets.markets.flatMap((market, index) => {
+    return summaryMarkets.flatMap((market, index) => {
       const result = positionReads.data[index];
 
       if (!result || result.status !== "success") {
@@ -95,26 +111,55 @@ export function PortfolioDashboard() {
         })
       ];
     });
-  }, [localMarkets.markets, positionReads.data, shouldReadPositions]);
+  }, [positionReads.data, shouldReadPositions, summaryMarkets]);
 
   const positions = useMockFallback ? mockPortfolioPositions : livePositions;
-  const totalValue = positions.reduce((sum, position) => sum + position.notionalUsd, 0);
-  const claimable = positions.reduce((sum, position) => sum + position.claimableUsd, 0);
-  const activePositions = positions.filter((position) => position.status === "active").length;
+  const portfolioMetrics = React.useMemo(
+    () =>
+      positions.reduce(
+        (metrics, position) => ({
+          activePositions: metrics.activePositions + (position.status === "active" ? 1 : 0),
+          claimable: metrics.claimable + position.claimableUsd,
+          totalValue: metrics.totalValue + position.notionalUsd
+        }),
+        {
+          activePositions: 0,
+          claimable: 0,
+          totalValue: 0
+        }
+      ),
+    [positions]
+  );
+  const activityMarkets = React.useMemo(
+    () =>
+      positions
+        .filter((position) => isContractAddress(position.marketId))
+        .slice(0, ACTIVITY_MARKET_LIMIT)
+        .map((position) => ({
+          address: position.marketId as `0x${string}`,
+          title: position.marketTitle || `PredictionMarket ${shortHash(position.marketId)}`
+        })),
+    [positions]
+  );
+  const walletActivity = useWalletOnchainActivity({
+    enabled: Boolean(accountAddress && activityMarkets.length > 0 && !useMockFallback),
+    markets: activityMarkets,
+    walletAddress: accountAddress
+  });
   const isInitialLoading =
-    (localMarkets.isLoading && localMarkets.markets.length === 0) ||
+    (summaryQuery.isLoading && !summaryData) ||
     (shouldReadPositions && positionReads.isLoading && !positionReads.data);
   const isRefreshing =
-    Boolean(localMarkets.isRefreshing) ||
+    Boolean(summaryQuery.isFetching && !summaryQuery.isLoading) ||
     Boolean((positionReads as { isFetching?: boolean }).isFetching && !positionReads.isLoading);
   const isError = !useMockFallback && positionReads.isError;
 
   return (
     <section className="mx-auto grid w-full max-w-[1800px] gap-5 px-4 py-5 sm:px-6 lg:gap-6 lg:px-8 lg:py-6">
       <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-4">
-        <PortfolioMetric icon={BriefcaseBusiness} label="Portfolio value" value={formatUsd(totalValue)} />
-        <PortfolioMetric icon={Coins} label="Claimable" value={formatUsd(claimable)} />
-        <PortfolioMetric icon={History} label="Active positions" value={String(activePositions)} />
+        <PortfolioMetric icon={BriefcaseBusiness} label="Portfolio value" value={formatUsd(portfolioMetrics.totalValue)} />
+        <PortfolioMetric icon={Coins} label="Claimable" value={formatUsd(portfolioMetrics.claimable)} />
+        <PortfolioMetric icon={History} label="Active positions" value={String(portfolioMetrics.activePositions)} />
       </div>
 
       {!useMockFallback && !isConnected ? (
@@ -191,7 +236,7 @@ function mapLivePosition({
   yesShares
 }: {
   hasClaimed: boolean;
-  market: Market;
+  market: MarketSummary;
   noShares: bigint;
   yesShares: bigint;
 }): PortfolioPosition {
@@ -226,19 +271,34 @@ function mapLivePosition({
     claimStatus,
     currentProbability: market.yesProbability / 100,
     expiresAt: market.expiresAt,
-    id: `live-${market.id}`,
-    marketId: market.id,
+    id: `live-${market.address}`,
+    marketId: market.address,
     marketOutcome: market.outcome,
     marketStatus: market.status,
     marketTitle: market.title,
     noShares: no,
     notionalUsd: totalShares,
-    settlementToken: market.settlementToken,
+    settlementToken: market.settlementTokenSymbol,
     shares: totalShares,
     side: yes >= no ? "YES" : "NO",
     status,
     yesShares: yes
   };
+}
+
+async function fetchMarketSummaries() {
+  const response = await fetch("/api/markets/summary");
+  const data = await response.json() as MarketSummaryResponse;
+
+  if (!response.ok) {
+    throw new Error(data.error ?? "Portfolio market metadata could not be loaded.");
+  }
+
+  return data;
+}
+
+function isContractAddress(value: string) {
+  return value.startsWith("0x") && value.length === 42;
 }
 
 function PortfolioMetric({

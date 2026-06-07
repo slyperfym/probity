@@ -7,7 +7,7 @@ import { parseExternalReferenceMetadata } from "@/features/discovery/lib/externa
 import { mockMarkets } from "@/features/markets/data/mock-markets";
 import { parseMarketMetadata, sanitizeMarketTitle } from "@/features/markets/lib/market-metadata";
 import type { MarketSummary, MarketSummaryResponse } from "@/features/markets/types/market-summary";
-import type { MarketCategory, MarketStatus } from "@/features/markets/types";
+import type { MarketCategory, MarketOutcome, MarketStatus } from "@/features/markets/types";
 
 const USDC_DECIMALS = 1_000_000;
 const ACTIVE_CACHE_MS = 120_000;
@@ -20,6 +20,7 @@ const summaryFunctionNames = [
   "metadataURI",
   "expirationTime",
   "status",
+  "resolvedOutcome",
   "totalYesShares",
   "totalNoShares",
   "totalDeposited"
@@ -424,9 +425,10 @@ function mapSummaryReads(
     const metadataURI = readResult<string>(reads[1]);
     const expirationTime = readResult<bigint>(reads[2]);
     const status = readResult<number>(reads[3]);
-    const totalYesShares = readResult<bigint>(reads[4]);
-    const totalNoShares = readResult<bigint>(reads[5]);
-    const totalDeposited = readResult<bigint>(reads[6]);
+    const resolvedOutcome = readResult<number>(reads[4]);
+    const totalYesShares = readResult<bigint>(reads[5]);
+    const totalNoShares = readResult<bigint>(reads[6]);
+    const totalDeposited = readResult<bigint>(reads[7]);
 
     if (!title || expirationTime === undefined) {
       return null;
@@ -454,6 +456,7 @@ function mapSummaryReads(
       externalReference: parseExternalReferenceMetadata(metadataURI),
       liquidityUsd: statusLabel === "resolved" ? 0 : volumeUsd,
       noProbability: 100 - yesProbability,
+      outcome: getOutcome(resolvedOutcome),
       settlementTokenSymbol: deploymentConfig.isArcTestnet ? "USDC" : "Local USDC",
       sourceType: "contracts",
       status: statusLabel,
@@ -480,6 +483,7 @@ function getMockSummaryResponse(): MarketSummaryResponse {
       externalReference: market.externalReference,
       liquidityUsd: market.liquidityUsd,
       noProbability: 100 - market.yesProbability,
+      outcome: market.outcome,
       settlementTokenSymbol: market.settlementToken,
       sourceType: "mock",
       status: market.status,
@@ -526,6 +530,18 @@ function getMarketStatus(status: number | undefined, expirationTime: bigint): Ma
   }
 
   return "active";
+}
+
+function getOutcome(outcome: number | undefined): MarketOutcome {
+  if (outcome === 1) {
+    return "yes";
+  }
+
+  if (outcome === 2) {
+    return "no";
+  }
+
+  return null;
 }
 
 const categoriesByKeyword: Array<[MarketCategory, string[]]> = [

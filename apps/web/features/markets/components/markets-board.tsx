@@ -15,6 +15,12 @@ import {
   marketStatuses
 } from "@/features/markets/data/mock-markets";
 import { formatExpiry, formatUsd } from "@/features/markets/lib/formatters";
+import {
+  isCacheableSummaryResponse,
+  readCachedMarketSummaries,
+  type CachedMarketSummaryEntry,
+  writeCachedMarketSummaries
+} from "@/features/markets/lib/market-summary-cache";
 import type { Market, MarketCategory, MarketStatus } from "@/features/markets/types";
 import type { MarketSummary, MarketSummaryResponse } from "@/features/markets/types/market-summary";
 import { cn } from "@/lib/utils";
@@ -23,8 +29,6 @@ type CategoryFilter = (typeof marketCategories)[number];
 type StatusFilter = (typeof marketStatuses)[number];
 
 const MARKET_PAGE_SIZE = 9;
-const SUMMARY_CACHE_KEY = "probity-real-market-summaries";
-const SUMMARY_CACHE_TTL_MS = 5 * 60_000;
 const SUMMARY_STALE_MS = 2 * 60_000;
 const SUMMARY_GC_MS = 10 * 60_000;
 
@@ -35,7 +39,7 @@ export function MarketsBoard() {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [visibleMarketLimit, setVisibleMarketLimit] = React.useState(MARKET_PAGE_SIZE);
   const refreshModeRef = React.useRef(false);
-  const [cachedSummaryEntry, setCachedSummaryEntry] = React.useState<CachedSummaryEntry | undefined>(() => readCachedMarketSummaries());
+  const [cachedSummaryEntry, setCachedSummaryEntry] = React.useState<CachedMarketSummaryEntry | undefined>(() => readCachedMarketSummaries());
   const summaryQuery = useQuery({
     gcTime: SUMMARY_GC_MS,
     initialData: cachedSummaryEntry?.response,
@@ -348,11 +352,6 @@ export function MarketsBoard() {
   );
 }
 
-type CachedSummaryEntry = {
-  cachedAt: number;
-  response: MarketSummaryResponse;
-};
-
 async function fetchMarketSummaries({
   forceRefresh,
   signal
@@ -370,66 +369,6 @@ async function fetchMarketSummaries({
   }
 
   return data;
-}
-
-function readCachedMarketSummaries() {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
-
-  try {
-    const rawValue = window.localStorage.getItem(SUMMARY_CACHE_KEY);
-
-    if (!rawValue) {
-      return undefined;
-    }
-
-    const parsed = JSON.parse(rawValue) as Partial<CachedSummaryEntry>;
-
-    if (!parsed.cachedAt || !parsed.response || Date.now() - parsed.cachedAt > SUMMARY_CACHE_TTL_MS) {
-      window.localStorage.removeItem(SUMMARY_CACHE_KEY);
-      return undefined;
-    }
-
-    return isCacheableSummaryResponse(parsed.response)
-      ? {
-          cachedAt: parsed.cachedAt,
-          response: parsed.response
-        }
-      : undefined;
-  } catch {
-    window.localStorage.removeItem(SUMMARY_CACHE_KEY);
-    return undefined;
-  }
-}
-
-function writeCachedMarketSummaries(response: MarketSummaryResponse) {
-  if (typeof window === "undefined" || !isCacheableSummaryResponse(response)) {
-    return undefined;
-  }
-
-  const entry = {
-    cachedAt: Date.now(),
-    response
-  };
-
-  window.localStorage.setItem(
-    SUMMARY_CACHE_KEY,
-    JSON.stringify(entry)
-  );
-
-  return entry;
-}
-
-function isCacheableSummaryResponse(
-  response: MarketSummaryResponse | undefined
-): response is MarketSummaryResponse {
-  return Boolean(
-    response &&
-      !response.isUsingMockFallback &&
-      response.source === "contracts" &&
-      response.markets.length > 0
-  );
 }
 
 function shouldUseFreshSummary(
@@ -461,7 +400,7 @@ function mapSummaryToMarket(summary: MarketSummary): Market {
     id: summary.address,
     liquidityUsd: summary.liquidityUsd,
     metadataURI: undefined,
-    outcome: null,
+    outcome: summary.outcome,
     participants: 0,
     resolver: "Open market",
     rules: [],
