@@ -96,32 +96,35 @@ export function MarketsBoard() {
     Boolean(apiSummaryData && apiSummaryData.total > 0 && apiSummaryData.markets.length === 0 && !summaryData);
   const clientFallbackMarkets = useLocalContractMarkets({
     enabled: shouldUseClientFallback,
-    limit: visibleMarketLimit
+    includeParticipantCounts: false
   });
   const isUsingClientFallback =
     shouldUseClientFallback &&
     !clientFallbackMarkets.isUsingMockFallback &&
     clientFallbackMarkets.markets.length > 0;
   const boardMarkets = isUsingClientFallback ? clientFallbackMarkets.markets : summaryMarkets;
-  const displayedMarkets = React.useMemo(
-    () => boardMarkets.slice(0, visibleMarketLimit),
-    [boardMarkets, visibleMarketLimit]
-  );
   const totalMarketCount = isUsingClientFallback
     ? clientFallbackMarkets.totalContractMarketCount
     : summaryData?.total ?? 0;
-  const hasMoreMarkets = visibleMarketLimit < totalMarketCount;
-
+  const hasActiveFilter =
+    category !== "All" ||
+    status !== "All" ||
+    searchQuery.trim().length > 0;
   const filteredMarkets = React.useMemo(
     () =>
       getMarketsByFilter(
-        displayedMarkets,
+        boardMarkets,
         category as "All" | MarketCategory,
         status as "All" | MarketStatus,
         searchQuery
       ),
-    [category, displayedMarkets, searchQuery, status]
+    [boardMarkets, category, searchQuery, status]
   );
+  const displayedMarkets = React.useMemo(
+    () => filteredMarkets.slice(0, visibleMarketLimit),
+    [filteredMarkets, visibleMarketLimit]
+  );
+  const hasMoreMarkets = visibleMarketLimit < filteredMarkets.length;
   const filteredMetrics = React.useMemo(
     () =>
       filteredMarkets.reduce(
@@ -172,10 +175,16 @@ export function MarketsBoard() {
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryMetric label="Filtered Volume" value={formatUsd(filteredMetrics.totalVolume)} />
         <SummaryMetric label="Loaded Active" value={String(filteredMetrics.activeMarkets)} />
-        <SummaryMetric label="Displayed Liquidity" value={formatUsd(filteredMetrics.totalLiquidity)} />
+        <SummaryMetric label="Filtered Liquidity" value={formatUsd(filteredMetrics.totalLiquidity)} />
         <SummaryMetric
-          label="Loaded / Total"
-          value={isInitialLoading ? "Checking..." : `${displayedMarkets.length}/${totalMarketCount}`}
+          label={hasActiveFilter ? "Shown / Matched" : "Shown / Total"}
+          value={
+            isInitialLoading
+              ? "Checking..."
+              : hasActiveFilter
+                ? `${displayedMarkets.length}/${filteredMarkets.length}`
+                : `${displayedMarkets.length}/${totalMarketCount}`
+          }
           valueClassName={dataSourceTone}
         />
       </div>
@@ -274,7 +283,7 @@ export function MarketsBoard() {
           kind="loading"
           title="Loading markets"
         />
-      ) : filteredMarkets.length > 0 ? (
+      ) : displayedMarkets.length > 0 ? (
         <>
           <div
             className={cn(
@@ -282,7 +291,7 @@ export function MarketsBoard() {
               viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"
             )}
           >
-            {filteredMarkets.map((market) => (
+            {displayedMarkets.map((market) => (
               <MarketCard
                 duplicateLabel={duplicateLabelByMarketId.get(market.id)}
                 key={market.id}
@@ -295,12 +304,11 @@ export function MarketsBoard() {
             <div className="flex justify-center">
               <Button
                 className="w-full sm:w-auto"
-                disabled={summaryQuery.isFetching && !summaryData}
                 onClick={() => setVisibleMarketLimit((current) => current + MARKET_PAGE_SIZE)}
                 type="button"
                 variant="outline"
               >
-                {summaryQuery.isFetching && !summaryData ? "Loading markets..." : "Load more markets"}
+                Load more markets
               </Button>
             </div>
           )}

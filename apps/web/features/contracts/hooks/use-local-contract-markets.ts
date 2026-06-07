@@ -89,11 +89,9 @@ export function useLocalContractMarkets({
     query: {
       enabled: shouldReadMarkets,
       placeholderData: (previousData: MarketReadResult | undefined) => previousData,
-      refetchInterval: 20_000,
-      refetchIntervalInBackground: false,
       retry: 1,
-      staleTime: 45_000,
-      gcTime: 60_000
+      staleTime: 2 * 60_000,
+      gcTime: 10 * 60_000
     }
   });
   const participantCounts = useMarketParticipantCounts(

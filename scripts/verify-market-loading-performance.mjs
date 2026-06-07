@@ -71,4 +71,28 @@ assert.doesNotMatch(
   'MarketsBoard should not poll market summaries every 30 seconds while users are browsing.'
 );
 
+assert.match(
+  marketsBoard,
+  /getMarketsByFilter\(\s*boardMarkets,/s,
+  'MarketsBoard stats should filter the complete in-memory market dataset, not only the visible page.'
+);
+
+assert.match(
+  marketsBoard,
+  /filteredMarkets\.slice\(0, visibleMarketLimit\)/,
+  'MarketsBoard should slice only after filtering/aggregating so Load More only reveals in-memory markets.'
+);
+
+assert.doesNotMatch(
+  marketsBoard,
+  /limit:\s*visibleMarketLimit/,
+  'MarketsBoard fallback contract reads should not be tied to Load More visibility.'
+);
+
+assert.match(
+  marketsBoard,
+  /includeParticipantCounts:\s*false/,
+  'MarketsBoard fallback should skip participant log scans because list statistics do not use them.'
+);
+
 console.log('Market loading performance static verification passed.');
