@@ -2,7 +2,7 @@
   "chainId": 5042002,
   "deploymentBlock": 43407857,
   "contracts": {
-    "MarketFactory": "0x7bca73d2dd03924bdac330d176760b09f17c1504",
+    "MarketFactory": "0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23",
     "SettlementToken": "0x3600000000000000000000000000000000000000",
     "MockUSDC": "0x3600000000000000000000000000000000000000"
   },

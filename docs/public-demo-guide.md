@@ -6,7 +6,7 @@
 - Arc testnet RPC: https://rpc.testnet.arc.network
 - Arc testnet chain ID: `5042002`
 - Settlement token: Arc testnet USDC at `0x3600000000000000000000000000000000000000`
-- MarketFactory: `0x7BCa73D2dD03924bDaC330D176760B09f17C1504`
+- MarketFactory: `0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23`
 
 ## Faucet
 
@@ -33,7 +33,7 @@ To approve the current demo creator wallet, set:
 ```txt
 ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
 PRIVATE_KEY=0x...
-MARKET_FACTORY_ADDRESS=0x7BCa73D2dD03924bDaC330D176760B09f17C1504
+MARKET_FACTORY_ADDRESS=0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23
 CREATOR_ADDRESS=0x303ACa77DE86EEFAe32d7C98DA4C3e836Cc4E46F
 ```
 

@@ -50,7 +50,7 @@ External Signals use public prediction market metadata only as reference materia
 - Explorer: `https://testnet.arcscan.app`
 - Faucet: `https://faucet.circle.com`
 - Settlement token: `0x3600000000000000000000000000000000000000`
-- MarketFactory: `0x7bca73d2dd03924bdac330d176760b09f17c1504`
+- MarketFactory: `0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23`
 
 Probity currently uses Arc Testnet and USDC-style settlement. Users need Arc testnet USDC for gas and trading in the demo. Circle Wallets, Paymaster, Gas Station, and other Circle Developer Platform products are future roadmap integrations; they are not currently live in this MVP.
 
@@ -59,7 +59,7 @@ Probity currently uses Arc Testnet and USDC-style settlement. Users need Arc tes
 MarketFactory:
 
 ```txt
-0x7bca73d2dd03924bdac330d176760b09f17c1504
+0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23
 ```
 
 Settlement token:
