@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 
 const publicNavItems = [
   { label: "Markets", href: "/markets" },
-  { label: "Portfolio", href: "/portfolio" }
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Evidence", href: "/protocol-evidence" }
 ];
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";

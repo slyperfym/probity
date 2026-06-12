@@ -13,7 +13,7 @@ Prediction markets are useful for aggregating expectations around macro, crypto,
 
 ## Solution
 
-Probity provides an Arc-ready MVP for binary YES/NO markets with a professional market UI, wallet connection, local MockUSDC trading, resolver-controlled settlement, claimable payouts, and an indexing-ready data model.
+Probity provides a live Arc Testnet MVP for binary YES/NO markets with a professional market UI, wallet connection, Arc-native market contracts, resolver-controlled settlement, claimable payouts, and an indexing-ready data model.
 
 ## Why Arc
 
@@ -23,12 +23,11 @@ Arc is a strong fit because prediction markets benefit from stablecoin-native se
 
 - Market discovery and market detail pages
 - RainbowKit wallet connection
-- Local MockUSDC approval and trading UX
+- Arc Testnet settlement-token approval and trading UX
 - YES/NO position accounting
 - Resolver/admin dashboard
 - Claim payout flow after resolution
-- Mock fallback for public demos
-- Arc testnet configuration and deployment workflow
+- Live Arc Testnet configuration and deployment metadata
 - Indexing-ready event/entity architecture
 
 ## Smart Contract Architecture
@@ -49,7 +48,7 @@ Probity includes typed protocol events, market entities, trade history models, p
 
 ## Arc Testnet Readiness
 
-Arc testnet configuration is prepared with chain ID `5042002` and RPC `https://rpc.testnet.arc.network`. The app displays a polished demo mode when Arc testnet is selected but `MarketFactory` and settlement token addresses are not configured. Mock data remains active until those addresses are supplied.
+Probity is live on Arc Testnet with chain ID `5042002`, RPC `https://rpc.testnet.arc.network`, active deployment metadata, and visible Protocol Evidence links for reviewers.
 
 ## Current MVP Limitations
 
@@ -59,12 +58,12 @@ Arc testnet configuration is prepared with chain ID `5042002` and RPC `https://r
 - No dispute system
 - No AMM or order book
 - No hosted indexer/database yet
-- Local trading uses MockUSDC and Anvil
-- Public demo uses mock fallback unless Arc testnet contract addresses are configured
+- Testnet-only settlement and resolver-controlled MVP flow
+- Hosted indexing/database remains future work
 
 ## Roadmap
 
-- Deploy contracts to Arc testnet
+- Continue hardening the Arc Testnet deployment
 - Add hosted event indexer
 - Add real market creation flow
 - Keep resolver workflow simple while improving fund-safety controls
@@ -78,14 +77,14 @@ Arc testnet configuration is prepared with chain ID `5042002` and RPC `https://r
 2. Show the institutional landing page.
 3. Browse markets on `/markets`.
 4. Open a market detail page and explain YES/NO probabilities.
-5. Explain wallet connection and local MockUSDC trading.
+5. Explain wallet connection and Arc Testnet settlement-token trading.
 6. Show the admin resolver dashboard.
-7. Explain that Arc testnet configuration is ready and mock fallback remains active until contract addresses are configured.
+7. Open `/protocol-evidence` and verify the MarketFactory, resolver, settlement token, and sample market Arcscan links.
 
 ## Technical Highlights
 
 - Full-stack monorepo with frontend, contracts, shared types, deployment artifacts, and docs
 - Foundry contract workflow for local and Arc testnet deployment
-- Real local approve, buy, resolve, and claim flows
-- Professional demo UX with safe fallback behavior
+- Live Arc Testnet approve, buy, resolve, and claim flows
+- Professional MVP UX with transparent deployment evidence
 - Clean separation between protocol events, frontend state, and future indexing

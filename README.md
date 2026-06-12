@@ -16,12 +16,30 @@ External Signals use public prediction market metadata only as reference materia
 - Arc Testnet explorer: [https://testnet.arcscan.app](https://testnet.arcscan.app)
 - Circle faucet: [https://faucet.circle.com](https://faucet.circle.com)
 
-## Current Status
+## Live Arc Testnet Evidence
 
-- Working Arc Testnet MVP
+- Arc Testnet chain ID: `5042002`
+- MarketFactory: [`0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23`](https://testnet.arcscan.app/address/0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23)
+- Settlement token: [`0x3600000000000000000000000000000000000000`](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000)
+- Current deployed market count: `49`
+- Explorer: [Arcscan Testnet](https://testnet.arcscan.app)
+
+Example deployed markets:
+
+- [`0x06d3e9B95Efa99e409f81223422a6d0821dcf35E`](https://testnet.arcscan.app/address/0x06d3e9B95Efa99e409f81223422a6d0821dcf35E)
+- [`0x08280ce6bEA070E2a8Dbc4424824c7e2514AB683`](https://testnet.arcscan.app/address/0x08280ce6bEA070E2a8Dbc4424824c7e2514AB683)
+- [`0xa76C8496585b57c9B659C09cEFB105a2303E74bc`](https://testnet.arcscan.app/address/0xa76C8496585b57c9B659C09cEFB105a2303E74bc)
+
+## Current MVP Status
+
+- Live on Arc Testnet
 - Not production and not audited
 - Public demo frontend deployed on Vercel
-- Smart contracts deployed on Arc Testnet
+- Arc-native market creation through `MarketFactory`
+- Buy YES/NO positions with Arc testnet USDC-style settlement
+- Portfolio tracking for wallet positions
+- Resolver settlement after market expiration
+- Claim payouts for winning positions
 - USDC-style settlement configured
 - WalletConnect/mobile wallet support when a Reown Project ID is configured
 - Approved creator market creation
@@ -68,7 +86,7 @@ Settlement token:
 0x3600000000000000000000000000000000000000
 ```
 
-The `MarketFactory` creates individual `PredictionMarket` contracts used by the live Arc Testnet demo. Each `PredictionMarket` tracks YES/NO positions, settlement token balances, expiration, resolver-controlled outcomes, sell-back actions, claimable payouts, and, in new deployments, cancellation/refund state.
+The `MarketFactory` creates individual `PredictionMarket` contracts used by the live Arc Testnet app. Each `PredictionMarket` tracks YES/NO positions, settlement token balances, expiration, resolver-controlled outcomes, sell-back actions, claimable payouts, and, in new deployments, cancellation/refund state.
 
 ## How It Works
 
@@ -202,14 +220,32 @@ MARKET_FACTORY_ADDRESS=
 
 ## Roadmap
 
-- Stabilize Arc Testnet MVP
-- Improve USDC trading UX
-- Improve mobile wallet onboarding
-- Add reliable onchain indexing and analytics
-- Improve participant and trade history indexing
-- Expand creator and proposal workflows
-- Improve resolver/oracle framework
-- Explore Circle Wallets and Paymaster integrations
+Phase 1 (completed):
+
+- Arc Testnet deployment
+- MarketFactory
+- Portfolio
+- Settlement
+
+Phase 2:
+
+- Resolver evidence system
+- Better analytics
+- Market discovery
+
+Phase 3:
+
+- Circle Wallets integration
+- Gas abstraction exploration
+- Mainnet readiness
+
+## Grant Reviewer Quick Links
+
+- Live app: [https://probity-market.vercel.app](https://probity-market.vercel.app)
+- GitHub repo: [https://github.com/slyperfym/probity](https://github.com/slyperfym/probity)
+- Arcscan MarketFactory: [0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23](https://testnet.arcscan.app/address/0xA7CD2aA6E8af1375170c1c8bacf3Ac15E7D92e23)
+- Arcscan settlement token: [0x3600000000000000000000000000000000000000](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000)
+- Sample markets: [market 0](https://testnet.arcscan.app/address/0x06d3e9B95Efa99e409f81223422a6d0821dcf35E), [market 1](https://testnet.arcscan.app/address/0x08280ce6bEA070E2a8Dbc4424824c7e2514AB683), [latest sampled market](https://testnet.arcscan.app/address/0xa76C8496585b57c9B659C09cEFB105a2303E74bc)
 
 ## Grant Context
 

@@ -23,6 +23,7 @@ import {
 } from "@/features/markets/lib/market-summary-cache";
 import type { Market, MarketCategory, MarketStatus } from "@/features/markets/types";
 import type { MarketSummary, MarketSummaryResponse } from "@/features/markets/types/market-summary";
+import { ProtocolEvidencePanel } from "@/features/protocol/components/protocol-evidence-panel";
 import { cn } from "@/lib/utils";
 
 type CategoryFilter = (typeof marketCategories)[number];
@@ -256,6 +257,8 @@ export function MarketsBoard() {
           </div>
         </div>
       </div>
+
+      <ProtocolEvidencePanel compact />
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="flex flex-col gap-3">

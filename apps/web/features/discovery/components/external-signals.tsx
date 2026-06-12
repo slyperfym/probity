@@ -75,7 +75,8 @@ export function ExternalSignals({
           Market References
         </div>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          External references for drafting separate Probity markets.
+          External references are used only to draft markets. Settlement occurs exclusively on Probity
+          Arc-native contracts.
         </p>
       </div>
 
@@ -185,8 +186,8 @@ function ExternalSignalCard({
         <CardTitle className="text-[15px] leading-6 text-slate-950 sm:text-sm">{market.question}</CardTitle>
         <p className="text-xs leading-5 text-slate-500">
           {listedMarketId
-            ? "Already on Probity."
-            : "Reference only."}
+            ? "Already settled through Probity contracts."
+            : "Drafts a separate Probity market."}
         </p>
       </CardHeader>
       <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">

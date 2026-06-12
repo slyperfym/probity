@@ -22,6 +22,8 @@ type DeploymentAddresses = {
     SettlementToken?: string;
     MockUSDC?: string;
   };
+  marketCount?: number;
+  markets?: string[];
   metadata?: {
     deployer?: string;
     resolver?: string;
@@ -123,6 +125,9 @@ export const deploymentConfig = {
   isMockFallbackEnabled: publicEnv.enableMockMarkets,
   isMockOnly: getMarketDataMode() === "mock",
   marketDataMode: getMarketDataMode(),
+  marketCount: activeDeployment.marketCount,
+  marketExplorerBaseUrl: activeDeploymentTarget === "arc-testnet" ? "https://testnet.arcscan.app/address" : "",
+  markets: (activeDeployment.markets ?? []).map(normalizeAddress).filter(Boolean),
   resolverAddress: normalizeAddress(activeDeployment.metadata?.resolver),
   target: activeDeploymentTarget
 } as const;
