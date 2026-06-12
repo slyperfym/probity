@@ -48,7 +48,7 @@ export function TradingPanel({ market }: { market: Market }) {
   const estimatedNoSellPayout = estimatedShares * ((100 - market.yesProbability) / 100);
   const parsedAmount = parseTradeAmount(amount);
   const hasEnteredAmount = parsedAmount > 0n;
-  const isMarketClosed = market.status === "expired" || market.status === "resolved";
+  const isMarketClosed = market.status === "expired" || market.status === "resolved" || market.status === "cancelled";
   const tokenLabel = deploymentConfig.isArcTestnet ? "Arc Testnet USDC" : "Local settlement token";
   const environmentLabel = deploymentConfig.isArcTestnet ? "Live Onchain" : "Local Test";
   const configuredSettlementToken = contractAddresses.MockUSDC?.toLowerCase();
@@ -607,6 +607,10 @@ function getStatusMessage({
   }
 
   if (isMarketClosed) {
+    if (marketStatus === "cancelled") {
+      return "This market was cancelled. Trading is closed and remaining YES/NO shares are refundable from Portfolio.";
+    }
+
     if (marketStatus === "expired") {
       return "Awaiting resolver settlement. Claim is available after the resolver finalizes the winning outcome.";
     }

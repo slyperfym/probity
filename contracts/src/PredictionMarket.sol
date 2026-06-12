@@ -3,6 +3,10 @@ pragma solidity ^0.8.24;
 
 import { IERC20 } from "./interfaces/IERC20.sol";
 
+interface IMarketFactoryOwner {
+    function owner() external view returns (address);
+}
+
 contract PredictionMarket {
     enum Side {
         Yes,
@@ -26,9 +30,11 @@ contract PredictionMarket {
     IERC20 public immutable settlementToken;
     address public immutable resolver;
     uint256 public immutable expirationTime;
+    uint256 public constant OWNER_CANCELLATION_GRACE_PERIOD = 7 days;
 
     string public title;
     string public metadataURI;
+    string private _resolutionEvidence;
 
     Status public status;
     Outcome public resolvedOutcome;
@@ -51,8 +57,12 @@ contract PredictionMarket {
         uint256 totalYesShares,
         uint256 totalNoShares
     );
-    event MarketResolved(address indexed resolver, Outcome indexed outcome, uint256 totalDeposited);
+    event MarketResolved(
+        address indexed resolver, Outcome indexed outcome, uint256 totalDeposited, string evidenceURI
+    );
+    event MarketCancelled(address indexed canceller);
     event WinningsClaimed(address indexed user, uint256 amount);
+    event RefundClaimed(address indexed user, uint256 amount);
     event YesSold(address indexed user, uint256 shares, uint256 payout);
     event NoSold(address indexed user, uint256 shares, uint256 payout);
 
@@ -61,16 +71,21 @@ contract PredictionMarket {
     error InvalidExpiration();
     error MarketNotActive();
     error MarketNotExpired();
+    error MarketNotCancelled();
     error MarketAlreadyResolved();
+    error MarketCancelledStatus();
     error MarketExpired();
     error UnauthorizedResolver();
+    error UnauthorizedCanceller();
     error InvalidOutcome();
+    error EmptyEvidence();
     error AmountZero();
     error InsufficientPosition();
     error InsufficientContractLiquidity();
     error TokenTransferFailed();
     error AlreadyClaimed();
     error NothingToClaim();
+    error NothingToRefund();
     error NoWinningShares();
     error Reentrancy();
 
@@ -124,19 +139,39 @@ contract PredictionMarket {
         payout = _sell(Side.No, amount);
     }
 
-    function resolve(Outcome outcome) external {
+    function resolve(Outcome outcome, string calldata evidenceURI) external {
         if (msg.sender != resolver) revert UnauthorizedResolver();
+        if (status == Status.Cancelled) revert MarketCancelledStatus();
         if (status != Status.Active) revert MarketAlreadyResolved();
         if (block.timestamp < expirationTime) revert MarketNotExpired();
         if (outcome != Outcome.Yes && outcome != Outcome.No) revert InvalidOutcome();
+        if (bytes(evidenceURI).length == 0) revert EmptyEvidence();
 
         status = Status.Resolved;
         resolvedOutcome = outcome;
+        _resolutionEvidence = evidenceURI;
 
-        emit MarketResolved(msg.sender, outcome, totalDeposited);
+        emit MarketResolved(msg.sender, outcome, totalDeposited, evidenceURI);
+    }
+
+    function cancel() external {
+        if (status == Status.Cancelled) revert MarketCancelledStatus();
+        if (status != Status.Active) revert MarketAlreadyResolved();
+        if (block.timestamp < expirationTime) revert MarketNotExpired();
+
+        bool resolverCanCancel = msg.sender == resolver;
+        bool ownerCanCancel = msg.sender == IMarketFactoryOwner(factory).owner()
+            && block.timestamp >= expirationTime + OWNER_CANCELLATION_GRACE_PERIOD;
+
+        if (!resolverCanCancel && !ownerCanCancel) revert UnauthorizedCanceller();
+
+        status = Status.Cancelled;
+
+        emit MarketCancelled(msg.sender);
     }
 
     function claim() external nonReentrant returns (uint256 payout) {
+        if (status == Status.Cancelled) revert MarketCancelledStatus();
         if (status != Status.Resolved) revert MarketNotExpired();
         if (claimed[msg.sender]) revert AlreadyClaimed();
 
@@ -164,8 +199,43 @@ contract PredictionMarket {
         emit WinningsClaimed(msg.sender, payout);
     }
 
+    function claimRefund() external nonReentrant returns (uint256 refund) {
+        if (status != Status.Cancelled) revert MarketNotCancelled();
+
+        uint256 yes = yesShares[msg.sender];
+        uint256 no = noShares[msg.sender];
+        refund = yes + no;
+
+        if (refund == 0) revert NothingToRefund();
+        if (refund > totalDeposited || refund > settlementToken.balanceOf(address(this))) {
+            revert InsufficientContractLiquidity();
+        }
+
+        yesShares[msg.sender] = 0;
+        noShares[msg.sender] = 0;
+        totalYesShares -= yes;
+        totalNoShares -= no;
+        totalDeposited -= refund;
+
+        if (!settlementToken.transfer(msg.sender, refund)) revert TokenTransferFailed();
+
+        emit RefundClaimed(msg.sender, refund);
+    }
+
+    function refundAmount(address user) external view returns (uint256) {
+        if (status != Status.Cancelled) {
+            return 0;
+        }
+
+        return yesShares[user] + noShares[user];
+    }
+
     function getPosition(address user) external view returns (uint256 yes, uint256 no, bool hasClaimed) {
         return (yesShares[user], noShares[user], claimed[user]);
+    }
+
+    function resolutionEvidence() external view returns (string memory) {
+        return _resolutionEvidence;
     }
 
     function isExpired() external view returns (bool) {
@@ -195,6 +265,7 @@ contract PredictionMarket {
     }
 
     function _sell(Side side, uint256 amount) internal nonReentrant returns (uint256 payout) {
+        if (status == Status.Cancelled) revert MarketCancelledStatus();
         if (status != Status.Active) revert MarketAlreadyResolved();
         if (block.timestamp >= expirationTime) revert MarketExpired();
         if (amount == 0) revert AmountZero();

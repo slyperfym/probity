@@ -122,8 +122,8 @@ export function usePredictionMarketPosition({
     query: {
       enabled,
       placeholderData: (previousData: unknown) => previousData,
-      refetchInterval: 8_000,
-      refetchIntervalInBackground: false
+      staleTime: 60_000,
+      gcTime: 5 * 60_000
     }
   });
 }

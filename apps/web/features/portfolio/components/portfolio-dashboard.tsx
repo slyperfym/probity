@@ -245,17 +245,22 @@ function mapLivePosition({
   const totalShares = yes + no;
   const winningShares =
     market.outcome === "yes" ? yes : market.outcome === "no" ? no : 0;
+  const isRefundable = market.status === "cancelled" && totalShares > 0;
   const isClaimable = market.status === "resolved" && winningShares > 0 && !hasClaimed;
   const status = hasClaimed
     ? "claimed"
-    : isClaimable
+    : isRefundable
+      ? "refundable"
+      : isClaimable
       ? "claimable"
       : market.status === "expired"
         ? "expired"
         : "active";
   const claimStatus = hasClaimed
     ? "Claimed"
-    : isClaimable
+    : isRefundable
+      ? "Refund available"
+      : isClaimable
       ? "Claimable"
       : market.status === "expired"
         ? "Awaiting resolver settlement"
@@ -266,8 +271,9 @@ function mapLivePosition({
   return {
     averagePrice: 1,
     canClaim: isClaimable,
+    canRefund: isRefundable,
     category: market.category,
-    claimableUsd: isClaimable ? winningShares : 0,
+    claimableUsd: isClaimable ? winningShares : isRefundable ? totalShares : 0,
     claimStatus,
     currentProbability: market.yesProbability / 100,
     expiresAt: market.expiresAt,

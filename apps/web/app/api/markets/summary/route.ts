@@ -525,6 +525,10 @@ function getMarketStatus(status: number | undefined, expirationTime: bigint): Ma
     return "resolved";
   }
 
+  if (status === 2) {
+    return "cancelled";
+  }
+
   if (Date.now() >= Number(expirationTime) * 1000) {
     return "expired";
   }

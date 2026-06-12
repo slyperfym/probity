@@ -139,6 +139,7 @@ function parsePredictionMarketEvent(
 
   if (decoded.eventName === "MarketResolved") {
     const args = decoded.args as unknown as {
+      evidenceURI: string;
       outcome: number;
       resolver: Address;
       totalDeposited: bigint;
@@ -148,9 +149,23 @@ function parsePredictionMarketEvent(
       ...blockRef,
       eventName: "MarketResolved",
       market,
+      evidenceURI: args.evidenceURI,
       outcome: args.outcome === 1 ? "YES" : "NO",
       resolver: args.resolver,
       totalDeposited: args.totalDeposited
+    };
+  }
+
+  if (decoded.eventName === "MarketCancelled") {
+    const args = decoded.args as unknown as {
+      canceller: Address;
+    };
+
+    return {
+      ...blockRef,
+      canceller: args.canceller,
+      eventName: "MarketCancelled",
+      market
     };
   }
 
@@ -164,6 +179,21 @@ function parsePredictionMarketEvent(
       ...blockRef,
       amount: args.amount,
       eventName: "WinningsClaimed",
+      market,
+      user: args.user
+    };
+  }
+
+  if (decoded.eventName === "RefundClaimed") {
+    const args = decoded.args as unknown as {
+      amount: bigint;
+      user: Address;
+    };
+
+    return {
+      ...blockRef,
+      amount: args.amount,
+      eventName: "RefundClaimed",
       market,
       user: args.user
     };

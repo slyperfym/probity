@@ -36,6 +36,7 @@ contract DeployArcTestnet is LocalScriptBase {
 
         factory = new MarketFactory();
         factory.setResolverApproval(resolver, true);
+        factory.setSettlementTokenApproval(settlementToken, true);
 
         if (shouldSeedMarkets) {
             markets = _createDemoMarkets(factory, settlementToken, resolver);

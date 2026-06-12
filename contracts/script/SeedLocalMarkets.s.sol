@@ -21,6 +21,8 @@ contract SeedLocalMarkets is LocalScriptBase {
 
         vm.startBroadcast(privateKey);
 
+        factory.setSettlementTokenApproval(usdcAddress, true);
+
         markets = new address[](3);
         markets[0] = factory.createMarket(
             usdcAddress,

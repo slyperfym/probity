@@ -28,6 +28,7 @@ contract SeedArcTestnetMarkets is LocalScriptBase {
         vm.startBroadcast(privateKey);
 
         factory.setResolverApproval(resolver, true);
+        factory.setSettlementTokenApproval(settlementToken, true);
 
         if (factory.marketCount() == 0 || forceSeedMarkets) {
             _createDemoMarkets(factory, settlementToken, resolver);

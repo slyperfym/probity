@@ -46,6 +46,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   const resolveWrite = useWriteContract();
   const resolveReceipt = useWaitForTransactionReceipt({ hash: resolveWrite.data });
   const [pendingMarketId, setPendingMarketId] = React.useState<string | null>(null);
+  const [evidenceByMarketId, setEvidenceByMarketId] = React.useState<Record<string, string>>({});
   const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const [activity, setActivity] = React.useState<ActivityFeedItem[]>([]);
 
@@ -93,11 +94,29 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
       return;
     }
 
+    const evidence = evidenceByMarketId[market.id]?.trim() ?? "";
+
+    if (!evidence) {
+      return;
+    }
+
     setPendingMarketId(`${market.id}:${outcome}`);
     resolveWrite.writeContract({
       ...getPredictionMarketConfig(market.contractAddress),
-      args: [outcome === "YES" ? 1 : 2],
+      args: [outcome === "YES" ? 1 : 2, evidence],
       functionName: "resolve"
+    });
+  }
+
+  function cancelMarket(market: ResolverMarket) {
+    if (!isLocalMode || !market.contractAddress) {
+      return;
+    }
+
+    setPendingMarketId(`${market.id}:CANCEL`);
+    resolveWrite.writeContract({
+      ...getPredictionMarketConfig(market.contractAddress),
+      functionName: "cancel"
     });
   }
 
@@ -156,11 +175,30 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                         })}
                       />
                     </div>
+                    {market.status === "awaiting_resolution" && (
+                      <label className="mt-3 block max-w-2xl text-xs text-slate-500">
+                        Resolver-submitted evidence
+                        <input
+                          className="mt-1 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-300"
+                          onChange={(event) =>
+                            setEvidenceByMarketId((current) => ({
+                              ...current,
+                              [market.id]: event.target.value
+                            }))
+                          }
+                          placeholder="URL, transaction hash, IPFS URI, or source reference"
+                          value={evidenceByMarketId[market.id] ?? ""}
+                        />
+                      </label>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 lg:flex lg:shrink-0">
                     <Button
                       className="w-full"
-                      disabled={!canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market })}
+                      disabled={
+                        !canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market }) ||
+                        !(evidenceByMarketId[market.id]?.trim())
+                      }
                       onClick={() => resolveMarket(market, "YES")}
                       size="sm"
                       variant="secondary"
@@ -172,7 +210,10 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                     </Button>
                     <Button
                       className="w-full"
-                      disabled={!canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market })}
+                      disabled={
+                        !canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market }) ||
+                        !(evidenceByMarketId[market.id]?.trim())
+                      }
                       onClick={() => resolveMarket(market, "NO")}
                       size="sm"
                       variant="secondary"
@@ -181,6 +222,18 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                         <Loader2 className="h-4 w-4 animate-spin" />
                       )}
                       Resolve NO
+                    </Button>
+                    <Button
+                      className="col-span-2 w-full lg:col-span-1"
+                      disabled={!canCancel({ accountAddress, isConnected, isLocalMode, isResolving, market })}
+                      onClick={() => cancelMarket(market)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {isResolving && pendingMarketId === `${market.id}:CANCEL` && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      )}
+                      Cancel
                     </Button>
                   </div>
                 </div>
@@ -253,6 +306,10 @@ function ResolverStatusBadge({ status }: { status: ResolverMarket["status"] }) {
     return <Badge variant="yes">Resolved</Badge>;
   }
 
+  if (status === "cancelled") {
+    return <Badge variant="muted">Cancelled</Badge>;
+  }
+
   return <Badge variant="muted">Review</Badge>;
 }
 
@@ -277,7 +334,14 @@ function toResolverMarket(market: Market): ResolverMarket {
     proposedOutcome: market.outcome ? market.outcome.toUpperCase() as "YES" | "NO" : null,
     resolver: market.resolver,
     resolverAddress: market.resolverAddress,
-    status: market.status === "resolved" ? "resolved" : isExpired ? "awaiting_resolution" : "active",
+    status:
+      market.status === "resolved"
+        ? "resolved"
+        : market.status === "cancelled"
+          ? "cancelled"
+          : isExpired
+            ? "awaiting_resolution"
+            : "active",
     title: market.title,
     volumeUsd: market.volumeUsd
   };
@@ -305,6 +369,22 @@ function canResolve({
   }
 
   return isResolverEligible({ accountAddress: getAddress(accountAddress), market });
+}
+
+function canCancel({
+  accountAddress,
+  isConnected,
+  isLocalMode,
+  isResolving,
+  market
+}: {
+  accountAddress: `0x${string}` | undefined;
+  isConnected: boolean;
+  isLocalMode: boolean;
+  isResolving: boolean;
+  market: ResolverMarket;
+}) {
+  return canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market });
 }
 
 function getResolveAvailabilityLabel({

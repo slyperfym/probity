@@ -36,7 +36,8 @@ export type MarketReadTuple = [
   bigint | undefined,
   bigint | undefined,
   bigint | undefined,
-  Address | undefined
+  Address | undefined,
+  string | undefined
 ];
 
 type MarketReadResult = Array<
@@ -79,7 +80,8 @@ export function useLocalContractMarkets({
         { abi: contractAbis.predictionMarket, address, functionName: "totalYesShares" },
         { abi: contractAbis.predictionMarket, address, functionName: "totalNoShares" },
         { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" },
-        { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" }
+        { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" },
+        { abi: contractAbis.predictionMarket, address, functionName: "resolutionEvidence" }
       ]),
     [marketAddresses]
   );
@@ -106,9 +108,9 @@ export function useLocalContractMarkets({
 
     return marketAddresses
       .map((address, index) => {
-        const offset = index * 10;
+        const offset = index * 11;
         const readTuple = marketReads.data
-          .slice(offset, offset + 10)
+          .slice(offset, offset + 11)
           .map((result) => (result.status === "success" ? result.result : undefined)) as MarketReadTuple;
 
         const market = mapPredictionMarketReadsToMarket(address, readTuple);
@@ -160,7 +162,8 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
     totalYesShares,
     totalNoShares,
     totalDeposited,
-    settlementTokenAddress
+    settlementTokenAddress,
+    resolutionEvidence
   ] = reads;
 
   if (!title || expirationTime === undefined) {
@@ -193,6 +196,7 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
     participants: 0,
     resolver: resolver ? `${resolver.slice(0, 6)}...${resolver.slice(-4)}` : "Configured resolver",
     resolverAddress: resolver,
+    resolutionEvidence,
     rules: [
       resolutionCriteria,
       "YES/NO balances and settlement funds are read directly from the deployed PredictionMarket contract.",
@@ -210,6 +214,10 @@ export function mapPredictionMarketReadsToMarket(address: Address, reads: Market
 function getMarketStatus(status: number | undefined, expiresAt: string): MarketStatus {
   if (status === 1) {
     return "resolved";
+  }
+
+  if (status === 2) {
+    return "cancelled";
   }
 
   if (Date.now() >= new Date(expiresAt).getTime()) {

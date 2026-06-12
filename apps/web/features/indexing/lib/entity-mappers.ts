@@ -78,17 +78,17 @@ export function positionHistoryFromEvent(event: ProbityProtocolEvent): PositionH
     };
   }
 
-  if (event.eventName === "WinningsClaimed") {
+  if (event.eventName === "WinningsClaimed" || event.eventName === "RefundClaimed") {
     return {
       cashDelta: event.amount,
-      id: `${event.transactionHash}-${event.logIndex ?? 0}-claim`,
+      id: `${event.transactionHash}-${event.logIndex ?? 0}-${event.eventName === "RefundClaimed" ? "refund" : "claim"}`,
       marketId: event.market,
-      positionId: `${event.user}-${event.market}-claim`,
+      positionId: `${event.user}-${event.market}-${event.eventName === "RefundClaimed" ? "refund" : "claim"}`,
       shareDelta: 0n,
       side: "YES",
       timestamp: 0,
       transactionHash: event.transactionHash,
-      type: "claim",
+      type: event.eventName === "RefundClaimed" ? "claim" : "claim",
       user: event.user
     };
   }
@@ -125,7 +125,7 @@ export function activityFromProtocolEvent(event: ProbityProtocolEvent): Activity
   if (event.eventName === "MarketResolved") {
     return {
       actor: event.resolver,
-      description: `Resolved ${event.outcome}`,
+      description: `Resolved ${event.outcome} with resolver-submitted evidence: ${event.evidenceURI}`,
       eventName: event.eventName,
       id: `${event.transactionHash}-${event.logIndex ?? 0}`,
       marketAddress: event.market,
@@ -135,15 +135,28 @@ export function activityFromProtocolEvent(event: ProbityProtocolEvent): Activity
     };
   }
 
-  if (event.eventName === "WinningsClaimed") {
+  if (event.eventName === "MarketCancelled") {
     return {
-      actor: event.user,
-      description: "Payout claimed",
+      actor: event.canceller,
+      description: "Market cancelled; remaining positions can claim refunds",
       eventName: event.eventName,
       id: `${event.transactionHash}-${event.logIndex ?? 0}`,
       marketAddress: event.market,
       timestamp: new Date(0).toISOString(),
-      title: "Claimed winnings",
+      title: "Market cancelled",
+      transactionHash: event.transactionHash
+    };
+  }
+
+  if (event.eventName === "WinningsClaimed" || event.eventName === "RefundClaimed") {
+    return {
+      actor: event.user,
+      description: event.eventName === "RefundClaimed" ? "Refund claimed" : "Payout claimed",
+      eventName: event.eventName,
+      id: `${event.transactionHash}-${event.logIndex ?? 0}`,
+      marketAddress: event.market,
+      timestamp: new Date(0).toISOString(),
+      title: event.eventName === "RefundClaimed" ? "Claimed refund" : "Claimed winnings",
       transactionHash: event.transactionHash
     };
   }

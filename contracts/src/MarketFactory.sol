@@ -8,6 +8,7 @@ contract MarketFactory {
 
     mapping(address resolver => bool approved) public approvedResolvers;
     mapping(address creator => bool approved) public approvedCreators;
+    mapping(address token => bool approved) public allowedSettlementTokens;
     mapping(address market => bool approved) public isMarket;
 
     address[] private _markets;
@@ -15,6 +16,7 @@ contract MarketFactory {
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event ResolverApprovalUpdated(address indexed resolver, bool approved);
     event CreatorApprovalUpdated(address indexed creator, bool approved);
+    event SettlementTokenApprovalUpdated(address indexed token, bool approved);
     event MarketCreated(
         address indexed market,
         address indexed creator,
@@ -29,6 +31,8 @@ contract MarketFactory {
     error NotApprovedCreator();
     error ResolverNotApproved();
     error ZeroAddress();
+    error InvalidSettlementToken();
+    error SettlementTokenNotApproved();
     error EmptyTitle();
     error InvalidExpiration();
 
@@ -66,6 +70,13 @@ contract MarketFactory {
         emit CreatorApprovalUpdated(creator, approved);
     }
 
+    function setSettlementTokenApproval(address token, bool approved) external onlyOwner {
+        if (token == address(0)) revert InvalidSettlementToken();
+
+        allowedSettlementTokens[token] = approved;
+        emit SettlementTokenApprovalUpdated(token, approved);
+    }
+
     function createMarket(
         address settlementToken,
         address resolver,
@@ -74,7 +85,9 @@ contract MarketFactory {
         string calldata metadataURI
     ) external returns (address market) {
         if (!approvedCreators[msg.sender]) revert NotApprovedCreator();
-        if (settlementToken == address(0) || resolver == address(0)) revert ZeroAddress();
+        if (resolver == address(0)) revert ZeroAddress();
+        if (settlementToken == address(0)) revert InvalidSettlementToken();
+        if (!allowedSettlementTokens[settlementToken]) revert SettlementTokenNotApproved();
         if (!approvedResolvers[resolver]) revert ResolverNotApproved();
         if (bytes(title).length == 0) revert EmptyTitle();
         if (expirationTime <= block.timestamp) revert InvalidExpiration();

@@ -1,0 +1,67 @@
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/app/api/markets/summary/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/activity/hooks/use-onchain-activity.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/admin/components/resolver-dashboard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/admin/types.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/contracts/hooks/use-local-contract-markets.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/contracts/hooks/use-prediction-market.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/indexing/lib/entity-mappers.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/indexing/lib/protocol-log-parser.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/markets/components/contract-market-detail.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/markets/components/market-status-badge.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/markets/data/mock-markets.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/markets/lib/formatters.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/markets/types.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/portfolio/components/portfolio-dashboard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/portfolio/components/portfolio-positions.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/portfolio/types.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/features/trading/components/trading-panel.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/script/DeployArcTestnet.s.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/script/DeployLocal.s.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/script/SeedArcTestnetMarkets.s.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/script/SeedLocalMarkets.s.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/src/MarketFactory.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/src/PredictionMarket.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/test/ProbityLifecycle.t.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contracts/test/TestBase.sol', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deployments/arc-testnet/abis/MarketFactory.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deployments/arc-testnet/abis/PredictionMarket.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deployments/local/abis/MarketFactory.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deployments/local/abis/PredictionMarket.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/runbooks/arc-testnet-readiness.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/runbooks/local-contract-integration.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/types/src/protocol.ts', LF will be replaced by CRLF the next time Git touches it
+ README.md                                          |  28 [32m++[m[31m-[m
+ apps/web/app/api/markets/summary/route.ts          |   4 [32m+[m
+ .../activity/hooks/use-onchain-activity.ts         |   2 [32m+[m[31m-[m
+ .../admin/components/resolver-dashboard.tsx        |  88 [32m++++++[m[31m-[m
+ apps/web/features/admin/types.ts                   |   2 [32m+[m[31m-[m
+ .../contracts/hooks/use-local-contract-markets.ts  |  18 [32m+[m[31m-[m
+ .../contracts/hooks/use-prediction-market.ts       |   4 [32m+[m[31m-[m
+ apps/web/features/indexing/lib/entity-mappers.ts   |  29 [32m++[m[31m-[m
+ .../features/indexing/lib/protocol-log-parser.ts   |  30 [32m+++[m
+ .../markets/components/contract-market-detail.tsx  |  46 [32m+++[m[31m-[m
+ .../markets/components/market-status-badge.tsx     |   4 [32m+[m
+ apps/web/features/markets/data/mock-markets.ts     |   2 [32m+[m[31m-[m
+ apps/web/features/markets/lib/formatters.ts        |   4 [32m+[m
+ apps/web/features/markets/types.ts                 |   3 [32m+[m[31m-[m
+ .../portfolio/components/portfolio-dashboard.tsx   |  12 [32m+[m[31m-[m
+ .../portfolio/components/portfolio-positions.tsx   |  27 [32m++[m[31m-[m
+ apps/web/features/portfolio/types.ts               |   3 [32m+[m[31m-[m
+ .../features/trading/components/trading-panel.tsx  |   6 [32m+[m[31m-[m
+ contracts/script/DeployArcTestnet.s.sol            |   1 [32m+[m
+ contracts/script/DeployLocal.s.sol                 |   1 [32m+[m
+ contracts/script/SeedArcTestnetMarkets.s.sol       |   1 [32m+[m
+ contracts/script/SeedLocalMarkets.s.sol            |   2 [32m+[m
+ contracts/src/MarketFactory.sol                    |  15 [32m+[m[31m-[m
+ contracts/src/PredictionMarket.sol                 |  77 [32m+++++[m[31m-[m
+ contracts/test/ProbityLifecycle.t.sol              | 259 [32m++++++++++++++++++++[m[31m-[m
+ contracts/test/TestBase.sol                        |   6 [32m+[m
+ deployments/arc-testnet/abis/MarketFactory.json    |  69 [32m++++++[m
+ deployments/arc-testnet/abis/PredictionMarket.json | 212 [32m++++++++++++++[m[31m---[m
+ deployments/local/abis/MarketFactory.json          |  69 [32m++++++[m
+ deployments/local/abis/PredictionMarket.json       | 212 [32m++++++++++++++[m[31m---[m
+ docs/runbooks/arc-testnet-readiness.md             |  21 [32m+[m[31m-[m
+ docs/runbooks/local-contract-integration.md        |  11 [32m+[m[31m-[m
+ packages/types/src/protocol.ts                     |  18 [32m++[m
+ 33 files changed, 1155 insertions(+), 131 deletions(-)

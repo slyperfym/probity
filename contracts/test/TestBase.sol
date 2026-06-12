@@ -24,6 +24,12 @@ contract TestBase {
         }
     }
 
+    function assertEq(string memory actual, string memory expected, string memory message) internal pure {
+        if (keccak256(bytes(actual)) != keccak256(bytes(expected))) {
+            revert(message);
+        }
+    }
+
     function assertTrue(bool value, string memory message) internal pure {
         if (!value) {
             revert(message);

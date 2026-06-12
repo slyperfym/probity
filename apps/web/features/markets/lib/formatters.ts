@@ -39,5 +39,9 @@ export function getStatusLabel(status: MarketStatus) {
     return "Expired";
   }
 
+  if (status === "cancelled") {
+    return "Cancelled";
+  }
+
   return "Resolved";
 }

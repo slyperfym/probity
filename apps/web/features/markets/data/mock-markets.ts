@@ -2,7 +2,7 @@ import type { Market, MarketCategory, MarketStatus } from "@/features/markets/ty
 
 export const marketCategories = ["All", "Macro", "Crypto", "Policy", "Arc", "Earnings"] as const;
 
-export const marketStatuses = ["All", "active", "expired", "resolved"] as const;
+export const marketStatuses = ["All", "active", "expired", "resolved", "cancelled"] as const;
 
 // Mock data is deliberately shaped like indexed contract data so this module can
 // later be replaced by an indexer/API adapter without changing page components.

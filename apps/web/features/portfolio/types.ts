@@ -12,7 +12,7 @@ export type PortfolioPosition = {
   averagePrice: number;
   currentProbability: number;
   notionalUsd: number;
-  status: "active" | "claimable" | "claimed" | "expired";
+  status: "active" | "claimable" | "claimed" | "expired" | "refundable";
   marketStatus?: string;
   marketOutcome?: "yes" | "no" | null;
   claimStatus?: string;
@@ -20,6 +20,7 @@ export type PortfolioPosition = {
   settlementToken?: string;
   claimableUsd: number;
   canClaim?: boolean;
+  canRefund?: boolean;
 };
 
 export type PortfolioActivity = {

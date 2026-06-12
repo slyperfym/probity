@@ -2,7 +2,7 @@ import type { ExternalReferenceMetadata } from "@/features/discovery/types";
 
 export type MarketCategory = "Macro" | "Crypto" | "Policy" | "Arc" | "Earnings";
 
-export type MarketStatus = "active" | "expired" | "resolved";
+export type MarketStatus = "active" | "expired" | "resolved" | "cancelled";
 
 export type MarketOutcome = "yes" | "no" | null;
 
@@ -20,6 +20,7 @@ export type Market = {
   settlementTokenAddress?: `0x${string}`;
   resolver: string;
   resolverAddress?: `0x${string}`;
+  resolutionEvidence?: string;
   rules: string[];
   outcome: MarketOutcome;
   participants: number;

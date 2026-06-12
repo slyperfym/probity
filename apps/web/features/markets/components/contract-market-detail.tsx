@@ -47,7 +47,8 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
       { abi: contractAbis.predictionMarket, address, functionName: "totalYesShares" },
       { abi: contractAbis.predictionMarket, address, functionName: "totalNoShares" },
       { abi: contractAbis.predictionMarket, address, functionName: "totalDeposited" },
-      { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" }
+      { abi: contractAbis.predictionMarket, address, functionName: "settlementToken" },
+      { abi: contractAbis.predictionMarket, address, functionName: "resolutionEvidence" }
     ],
     [address]
   );
@@ -281,6 +282,17 @@ export function ContractMarketDetail({ marketAddress }: { marketAddress: string 
             </Card>
           )}
 
+          {marketWithParticipants.resolutionEvidence && (
+            <Card>
+              <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
+                <CardTitle className="text-sm">Resolver-submitted evidence</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2">
+                <EvidenceReference value={marketWithParticipants.resolutionEvidence} />
+              </CardContent>
+            </Card>
+          )}
+
           <OnchainActivityList
             emptyDescription="No activity found for this market yet."
             emptyTitle="No activity"
@@ -371,6 +383,38 @@ function MetaChip({
       <span className="min-w-0 truncate font-semibold text-slate-800">{value}</span>
     </div>
   );
+}
+
+function EvidenceReference({ value }: { value: string }) {
+  const href = getEvidenceHref(value);
+
+  if (href) {
+    return (
+      <Link
+        className="inline-flex items-center gap-2 break-all text-sm font-medium text-indigo-700 transition hover:text-indigo-900"
+        href={href}
+        rel="noreferrer"
+        target="_blank"
+      >
+        {value}
+        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+      </Link>
+    );
+  }
+
+  return <p className="break-all text-sm leading-6 text-slate-600">{value}</p>;
+}
+
+function getEvidenceHref(value: string) {
+  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("ipfs://")) {
+    return value.startsWith("ipfs://") ? `https://ipfs.io/ipfs/${value.slice("ipfs://".length)}` : value;
+  }
+
+  if (/^0x[0-9a-fA-F]{64}$/.test(value)) {
+    return deploymentConfig.isArcTestnet ? `https://testnet.arcscan.app/tx/${value}` : undefined;
+  }
+
+  return undefined;
 }
 
 function shortValue(value: string) {

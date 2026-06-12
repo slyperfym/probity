@@ -18,6 +18,7 @@ contract DeployLocal is LocalScriptBase {
         factory = new MarketFactory();
 
         factory.setResolverApproval(deployer, true);
+        factory.setSettlementTokenApproval(address(usdc), true);
 
         usdc.mint(deployer, 1_000_000 * USDC);
         usdc.mint(ANVIL_ACCOUNT_2, 250_000 * USDC);

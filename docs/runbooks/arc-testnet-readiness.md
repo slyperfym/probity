@@ -68,16 +68,17 @@ The `SettlementToken` key is the preferred frontend settlement-token address. Th
 4. Select the Arc testnet USDC settlement token address from official docs, faucet, explorer, or user-provided configuration.
 5. Deploy `MarketFactory`.
 6. Approve the intended resolver address in `MarketFactory`.
-7. Create seed markets if needed.
-8. Export ABIs:
+7. Approve the configured Arc Testnet settlement token in `MarketFactory`.
+8. Create seed markets if needed.
+9. Export ABIs:
 
 ```txt
 pnpm contracts:export-abis
 ```
 
-9. Update `deployments/arc-testnet/addresses.json`.
-10. Configure Vercel environment variables.
-11. Redeploy the frontend.
+10. Update `deployments/arc-testnet/addresses.json`.
+11. Configure Vercel environment variables.
+12. Redeploy the frontend.
 
 ## Foundry Deployment Command
 
@@ -120,6 +121,13 @@ deployments/arc-testnet/addresses.json
 ```
 
 The script verifies it is running on chain id `5042002` before broadcasting.
+It also calls `setSettlementTokenApproval(SETTLEMENT_TOKEN_ADDRESS, true)` on the fresh factory before optional seed market creation.
+
+## New Deployment Requirement
+
+The grant-readiness contract changes add cancellation, refunds, resolver evidence, and settlement-token whitelisting. These changes alter ABI and bytecode. A new `MarketFactory` deployment is required before enabling these capabilities in the frontend.
+
+Existing Arc Testnet markets remain readable where their legacy ABI supports the requested fields, but they do not support `cancel()`, `claimRefund()`, `refundAmount(address)`, `resolutionEvidence()`, or evidence-required `resolve(outcome, evidenceURI)`. Do not advertise cancellation/refunds for legacy markets and do not silently point Vercel to an undeployed replacement factory.
 
 ## Seed Markets After Deployment
 
@@ -140,6 +148,7 @@ The seed script:
 - confirms chain id `5042002`
 - uses `SETTLEMENT_TOKEN_ADDRESS` as the USDC settlement token
 - approves the resolver on the existing factory
+- approves `SETTLEMENT_TOKEN_ADDRESS` on the existing factory
 - creates three demo markets only when `marketCount()` is zero
 - writes the latest `factory.allMarkets()` array back to `deployments/arc-testnet/addresses.json`
 
@@ -154,6 +163,8 @@ After seeding, update Vercel only if contract addresses changed. If only the `ma
 - Confirm `SETTLEMENT_TOKEN_ADDRESS` onchain before using an existing token.
 - Tell public demo users to fund wallets with Arc testnet USDC from the Circle faucet before trading.
 - Keep public demo fallback enabled until both `MarketFactory` and settlement token addresses are configured in Vercel.
+- Treat resolver evidence as an auditable admin-submitted reference, not decentralized oracle output.
+- Contracts are unaudited and testnet-only.
 
 ## Vercel Checklist
 

@@ -26,8 +26,7 @@ pnpm chain:local
 pnpm contracts:deploy:local
 ```
 
-The script approves the default Anvil deployer as resolver, mints mock USDC to the first
-few Anvil accounts, and writes deployment addresses to:
+The script approves the default Anvil deployer as resolver, approves local MockUSDC as an allowed settlement token, mints mock USDC to the first few Anvil accounts, and writes deployment addresses to:
 
 ```txt
 deployments/local/addresses.json
@@ -62,6 +61,8 @@ This calls the deployed `MarketFactory` and updates `deployments/local/addresses
 with the seeded market addresses for human inspection. The frontend reads live market
 addresses from `MarketFactory.allMarkets()`.
 
+The seed script also calls `setSettlementTokenApproval(MockUSDC, true)` so reseeding works against a fresh factory that enforces the settlement-token whitelist.
+
 6. Configure frontend environment in `apps/web/.env.local`:
 
 ```txt
@@ -84,3 +85,9 @@ pnpm --filter @probity/web dev
 
 The app remains usable without deployed contracts. Read hooks are disabled when a valid factory address is missing, and mock market data remains the UI fallback.
 If Anvil is stopped or the configured RPC is unavailable, contract reads fail safely and the market board returns to mock data.
+
+## Cancellation, Refunds, and Evidence
+
+Local markets created from the current contracts support resolver cancellation after expiration, factory-owner emergency cancellation after the unresolved grace period, and `claimRefund()` for remaining YES/NO balances on cancelled markets. Resolution calls require a non-empty evidence reference such as a URL, transaction hash, or IPFS URI. This is resolver-submitted evidence for auditability, not decentralized oracle resolution.
+
+Older local deployments must be redeployed to test these flows because the ABI and bytecode changed. Legacy markets may remain readable, but they do not implement cancellation, refunds, or required resolution evidence.

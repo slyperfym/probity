@@ -99,15 +99,16 @@ export function ClaimableRewards({
   const claimWrite = useWriteContract();
   const claimReceipt = useWaitForTransactionReceipt({ hash: claimWrite.data });
   const [pendingMarketId, setPendingMarketId] = React.useState("");
+  const [pendingAction, setPendingAction] = React.useState<"claim" | "refund" | null>(null);
   const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const isWrongChain = isConnected && chainId !== undefined && chainId !== probityChain.id;
   const isClaiming = claimWrite.isPending || claimReceipt.isLoading;
   const claimablePositions = positions.filter(
     (position) =>
-      position.status === "claimable" &&
-      position.canClaim !== false &&
+      (position.status === "claimable" || position.status === "refundable") &&
+      (position.status === "refundable" ? position.canRefund !== false : position.canClaim !== false) &&
       position.claimableUsd > 0 &&
-      position.claimStatus === "Claimable"
+      (position.claimStatus === "Claimable" || position.claimStatus === "Refund available")
   );
 
   React.useEffect(() => {
@@ -116,6 +117,7 @@ export function ClaimableRewards({
       void refreshOnchainQueries(queryClient).finally(() => {
         setIsRefreshingOnchainData(false);
         setPendingMarketId("");
+        setPendingAction(null);
       });
     }
   }, [claimReceipt.isSuccess, queryClient]);
@@ -126,9 +128,10 @@ export function ClaimableRewards({
     }
 
     setPendingMarketId(position.marketId);
+    setPendingAction(position.status === "refundable" ? "refund" : "claim");
     claimWrite.writeContract({
       ...getPredictionMarketConfig(position.marketId as Address),
-      functionName: "claim"
+      functionName: position.status === "refundable" ? "claimRefund" : "claim"
     });
   }
 
@@ -170,7 +173,7 @@ export function ClaimableRewards({
                 {isClaiming && pendingMarketId === position.marketId && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}
-                {isWrongChain ? "Wrong chain" : "Claim Payout"}
+                {isWrongChain ? "Wrong chain" : position.status === "refundable" ? "Claim Refund" : "Claim Payout"}
               </Button>
             </div>
             {claimWrite.error && pendingMarketId === position.marketId && (
@@ -182,7 +185,7 @@ export function ClaimableRewards({
             )}
             {claimReceipt.isSuccess && pendingMarketId === position.marketId && (
               <p className="mt-3 text-xs leading-5 text-emerald-700">
-                Payout claimed on Arc Testnet. Refreshing portfolio data.
+                {pendingAction === "refund" ? "Refund claimed" : "Payout claimed"} on Arc Testnet. Refreshing portfolio data.
               </p>
             )}
           </div>
@@ -202,6 +205,10 @@ function getClaimStateLabel(position: PortfolioPosition) {
     return "Claimable";
   }
 
+  if (position.status === "refundable") {
+    return "Refund available";
+  }
+
   if (position.status === "claimed") {
     return "Claimed";
   }
@@ -218,6 +225,10 @@ function getPositionStateLabel(position: PortfolioPosition) {
     return "Claimable";
   }
 
+  if (position.status === "refundable") {
+    return "Refund";
+  }
+
   if (position.status === "claimed") {
     return "Claimed";
   }
@@ -228,6 +239,10 @@ function getPositionStateLabel(position: PortfolioPosition) {
 
   if (position.marketStatus === "expired" || position.status === "expired") {
     return "Awaiting resolution";
+  }
+
+  if (position.marketStatus === "cancelled") {
+    return "Cancelled";
   }
 
   if (position.marketStatus === "active" || position.status === "active") {

@@ -30,6 +30,10 @@ export function getMarketStateLabel(status: MarketStatus, outcome?: MarketOutcom
     return "Awaiting resolution";
   }
 
+  if (status === "cancelled") {
+    return "Cancelled";
+  }
+
   if (outcome === "yes") {
     return "Resolved YES";
   }

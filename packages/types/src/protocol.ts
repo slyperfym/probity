@@ -4,7 +4,9 @@ export type ProtocolEventName =
   | "MarketCreated"
   | "SharesPurchased"
   | "MarketResolved"
+  | "MarketCancelled"
   | "WinningsClaimed"
+  | "RefundClaimed"
   | "ResolverApprovalUpdated"
   | "CreatorApprovalUpdated";
 
@@ -36,10 +38,24 @@ export type MarketResolvedEvent = IndexedBlockRef & {
   resolver: HexAddress;
   outcome: "YES" | "NO";
   totalDeposited: bigint;
+  evidenceURI: string;
+};
+
+export type MarketCancelledEvent = IndexedBlockRef & {
+  eventName: "MarketCancelled";
+  market: HexAddress;
+  canceller: HexAddress;
 };
 
 export type WinningsClaimedEvent = IndexedBlockRef & {
   eventName: "WinningsClaimed";
+  market: HexAddress;
+  user: HexAddress;
+  amount: bigint;
+};
+
+export type RefundClaimedEvent = IndexedBlockRef & {
+  eventName: "RefundClaimed";
   market: HexAddress;
   user: HexAddress;
   amount: bigint;
@@ -55,7 +71,9 @@ export type ProbityProtocolEvent =
   | MarketCreatedEvent
   | SharesPurchasedEvent
   | MarketResolvedEvent
+  | MarketCancelledEvent
   | WinningsClaimedEvent
+  | RefundClaimedEvent
   | ApprovalEvent;
 
 export type ActivityFeedItem = {
