@@ -88,6 +88,6 @@ If Anvil is stopped or the configured RPC is unavailable, contract reads fail sa
 
 ## Cancellation, Refunds, and Evidence
 
-Local markets created from the current contracts support resolver cancellation after expiration, factory-owner emergency cancellation after the unresolved grace period, and `claimRefund()` for remaining YES/NO balances on cancelled markets. Resolution calls require a non-empty evidence reference such as a URL, transaction hash, or IPFS URI. This is resolver-submitted evidence for auditability, not decentralized oracle resolution.
+Local markets created from the current contracts support resolver cancellation after expiration, factory-owner emergency cancellation after the unresolved grace period, and `claimRefund()` for remaining YES/NO balances on cancelled markets. Resolution remains the original simple resolver-controlled YES/NO flow.
 
-Older local deployments must be redeployed to test these flows because the ABI and bytecode changed. Legacy markets may remain readable, but they do not implement cancellation, refunds, or required resolution evidence.
+Older local deployments must be redeployed to test cancellation and refunds because the ABI and bytecode changed. Legacy markets may remain readable and resolvable through the original `resolve(outcome)` path, but they do not implement cancellation or refunds.

@@ -67,7 +67,7 @@ Arc testnet configuration is prepared with chain ID `5042002` and RPC `https://r
 - Deploy contracts to Arc testnet
 - Add hosted event indexer
 - Add real market creation flow
-- Add resolver evidence workflow
+- Keep resolver workflow simple while improving fund-safety controls
 - Add oracle/dispute module
 - Improve portfolio analytics from indexed events
 - Add production security review and audit

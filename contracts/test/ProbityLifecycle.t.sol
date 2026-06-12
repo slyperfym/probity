@@ -157,7 +157,7 @@ contract ProbityLifecycleTest is TestBase {
         vm.warp(expiration + 1);
 
         vm.prank(resolver);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/alice-yes");
+        market.resolve(PredictionMarket.Outcome.Yes);
 
         vm.prank(alice);
         vm.expectRevert(PredictionMarket.MarketAlreadyResolved.selector);
@@ -179,28 +179,19 @@ contract ProbityLifecycleTest is TestBase {
 
         vm.prank(alice);
         vm.expectRevert(PredictionMarket.UnauthorizedResolver.selector);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/yes");
+        market.resolve(PredictionMarket.Outcome.Yes);
 
         vm.prank(resolver);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/yes");
+        market.resolve(PredictionMarket.Outcome.Yes);
 
         assertEq(uint256(market.status()), uint256(PredictionMarket.Status.Resolved), "resolved");
         assertEq(uint256(market.resolvedOutcome()), uint256(PredictionMarket.Outcome.Yes), "outcome");
-        assertEq(market.resolutionEvidence(), "ipfs://evidence/yes", "evidence");
     }
 
     function testCannotResolveBeforeExpiration() public {
         vm.prank(resolver);
         vm.expectRevert(PredictionMarket.MarketNotExpired.selector);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/early");
-    }
-
-    function testResolutionRequiresEvidence() public {
-        vm.warp(expiration + 1);
-
-        vm.prank(resolver);
-        vm.expectRevert(PredictionMarket.EmptyEvidence.selector);
-        market.resolve(PredictionMarket.Outcome.Yes, "");
+        market.resolve(PredictionMarket.Outcome.Yes);
     }
 
     function testWinningUsersClaimProRataPayout() public {
@@ -216,7 +207,7 @@ contract ProbityLifecycleTest is TestBase {
         vm.warp(expiration + 1);
 
         vm.prank(resolver);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/yes");
+        market.resolve(PredictionMarket.Outcome.Yes);
 
         vm.prank(alice);
         uint256 payout = market.claim();
@@ -240,7 +231,7 @@ contract ProbityLifecycleTest is TestBase {
         vm.warp(expiration + 1);
 
         vm.prank(resolver);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/yes");
+        market.resolve(PredictionMarket.Outcome.Yes);
 
         vm.prank(bob);
         vm.expectRevert(PredictionMarket.NothingToClaim.selector);
@@ -256,7 +247,7 @@ contract ProbityLifecycleTest is TestBase {
         vm.warp(expiration + 1);
 
         vm.prank(resolver);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/yes");
+        market.resolve(PredictionMarket.Outcome.Yes);
 
         vm.prank(alice);
         market.claim();
@@ -342,7 +333,7 @@ contract ProbityLifecycleTest is TestBase {
 
         vm.prank(resolver);
         vm.expectRevert(PredictionMarket.MarketCancelledStatus.selector);
-        market.resolve(PredictionMarket.Outcome.Yes, "ipfs://evidence/late");
+        market.resolve(PredictionMarket.Outcome.Yes);
     }
 
     function testRefundYesOnlyPosition() public {

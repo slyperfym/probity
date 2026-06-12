@@ -38,7 +38,6 @@ export type MarketResolvedEvent = IndexedBlockRef & {
   resolver: HexAddress;
   outcome: "YES" | "NO";
   totalDeposited: bigint;
-  evidenceURI: string;
 };
 
 export type MarketCancelledEvent = IndexedBlockRef & {

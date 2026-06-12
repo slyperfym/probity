@@ -125,9 +125,9 @@ It also calls `setSettlementTokenApproval(SETTLEMENT_TOKEN_ADDRESS, true)` on th
 
 ## New Deployment Requirement
 
-The grant-readiness contract changes add cancellation, refunds, resolver evidence, and settlement-token whitelisting. These changes alter ABI and bytecode. A new `MarketFactory` deployment is required before enabling these capabilities in the frontend.
+The grant-readiness contract changes add cancellation, refunds, and settlement-token whitelisting. These changes alter ABI and bytecode. A new `MarketFactory` deployment is required before enabling these capabilities in the frontend.
 
-Existing Arc Testnet markets remain readable where their legacy ABI supports the requested fields, but they do not support `cancel()`, `claimRefund()`, `refundAmount(address)`, `resolutionEvidence()`, or evidence-required `resolve(outcome, evidenceURI)`. Do not advertise cancellation/refunds for legacy markets and do not silently point Vercel to an undeployed replacement factory.
+Existing Arc Testnet markets remain readable and resolvable through the original `resolve(outcome)` path, but they do not support `cancel()`, `claimRefund()`, or `refundAmount(address)`. Do not advertise cancellation/refunds for legacy markets and do not silently point Vercel to an undeployed replacement factory.
 
 ## Seed Markets After Deployment
 
@@ -163,7 +163,7 @@ After seeding, update Vercel only if contract addresses changed. If only the `ma
 - Confirm `SETTLEMENT_TOKEN_ADDRESS` onchain before using an existing token.
 - Tell public demo users to fund wallets with Arc testnet USDC from the Circle faucet before trading.
 - Keep public demo fallback enabled until both `MarketFactory` and settlement token addresses are configured in Vercel.
-- Treat resolver evidence as an auditable admin-submitted reference, not decentralized oracle output.
+- Treat resolver decisions as controlled/admin-submitted MVP resolution, not decentralized oracle output.
 - Contracts are unaudited and testnet-only.
 
 ## Vercel Checklist

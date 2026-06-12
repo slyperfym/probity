@@ -125,7 +125,7 @@ export function activityFromProtocolEvent(event: ProbityProtocolEvent): Activity
   if (event.eventName === "MarketResolved") {
     return {
       actor: event.resolver,
-      description: `Resolved ${event.outcome} with resolver-submitted evidence: ${event.evidenceURI}`,
+      description: `Resolved ${event.outcome}`,
       eventName: event.eventName,
       id: `${event.transactionHash}-${event.logIndex ?? 0}`,
       marketAddress: event.market,

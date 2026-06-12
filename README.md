@@ -26,7 +26,6 @@ External Signals use public prediction market metadata only as reference materia
 - WalletConnect/mobile wallet support when a Reown Project ID is configured
 - Approved creator market creation
 - Resolver/admin resolution flow
-- Resolver-submitted evidence references for new resolutions
 - Cancellation and refund flow for unresolved markets in new deployments
 - Settlement-token whitelist in `MarketFactory`
 - External signal reference flow
@@ -69,7 +68,7 @@ Settlement token:
 0x3600000000000000000000000000000000000000
 ```
 
-The `MarketFactory` creates individual `PredictionMarket` contracts used by the live Arc Testnet demo. Each `PredictionMarket` tracks YES/NO positions, settlement token balances, expiration, resolver-controlled outcomes, resolver-submitted evidence references, sell-back actions, claimable payouts, and, in new deployments, cancellation/refund state.
+The `MarketFactory` creates individual `PredictionMarket` contracts used by the live Arc Testnet demo. Each `PredictionMarket` tracks YES/NO positions, settlement token balances, expiration, resolver-controlled outcomes, sell-back actions, claimable payouts, and, in new deployments, cancellation/refund state.
 
 ## How It Works
 
@@ -85,15 +84,15 @@ New `PredictionMarket` deployments support cancellation after expiration. The co
 
 When a market is cancelled, buys, sells, normal resolution, and normal winning claims are disabled. Users can call `claimRefund()` to recover their remaining YES plus remaining NO shares. Refunds use current remaining balances, so shares sold before cancellation are not refundable. Refund accounting follows checks-effects-interactions and zeros user YES/NO balances before transferring settlement tokens.
 
-New resolutions require a non-empty evidence URI, transaction hash, IPFS URI, or source reference. This is resolver-submitted evidence, not decentralized oracle resolution. The reference is stored onchain and emitted in the resolution event so reviewers can audit what the resolver cited.
+Resolution remains the original simple resolver-controlled Arc MVP flow: the configured resolver finalizes YES or NO after expiration. Any source links or resolution criteria should be treated as supporting metadata, not as a decentralized oracle.
 
 `MarketFactory` now uses an owner-managed settlement-token whitelist. New markets can only be created with approved settlement tokens. The deployment scripts approve the configured local MockUSDC or Arc Testnet settlement token immediately after deploying a fresh factory.
 
 ## Deployment Compatibility
 
-The cancellation/refund/evidence/whitelist changes alter contract ABI and bytecode. A new `MarketFactory` deployment is required before the frontend should be pointed at these capabilities.
+The cancellation/refund/whitelist changes alter contract ABI and bytecode. A new `MarketFactory` deployment is required before the frontend should be pointed at these capabilities.
 
-Existing Arc Testnet markets remain readable through legacy-compatible reads where practical, but they do not implement `cancel()`, `claimRefund()`, `refundAmount()`, or required resolution evidence. Do not present old markets as refundable or cancellable. Do not silently point the frontend to a new undeployed factory address; update deployment artifacts and environment variables only after a real deployment.
+Existing Arc Testnet markets remain readable and resolvable through the original `resolve(outcome)` path. They do not implement `cancel()`, `claimRefund()`, or `refundAmount()`. Do not present old markets as refundable or cancellable. Do not silently point the frontend to a new undeployed factory address; update deployment artifacts and environment variables only after a real deployment.
 
 ## Tech Stack
 
@@ -192,7 +191,7 @@ MARKET_FACTORY_ADDRESS=
 - Not production
 - Not financial advice
 - No production oracle yet
-- Resolver flow is controlled/admin-based with resolver-submitted evidence references
+- Resolver flow is controlled/admin-based
 - Contracts are unaudited and testnet-only
 - Legacy deployed markets do not support cancellation/refunds
 - Participant indexing is being improved

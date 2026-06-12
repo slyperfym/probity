@@ -636,57 +636,6 @@
     "stateMutability": "view"
   },
   {
-    "type": "function",
-    "name": "resolve",
-    "inputs": [
-      {
-        "name": "outcome",
-        "type": "uint8",
-        "indexed": false,
-        "internalType": "enum PredictionMarket.Outcome"
-      },
-      {
-        "name": "evidenceURI",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "event",
-    "name": "MarketResolved",
-    "inputs": [
-      {
-        "name": "resolver",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "outcome",
-        "type": "uint8",
-        "indexed": true,
-        "internalType": "enum PredictionMarket.Outcome"
-      },
-      {
-        "name": "totalDeposited",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      },
-      {
-        "name": "evidenceURI",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
-      }
-    ],
-    "anonymous": false
-  },
-  {
     "type": "event",
     "name": "MarketCancelled",
     "inputs": [
@@ -720,11 +669,6 @@
   },
   {
     "type": "error",
-    "name": "EmptyEvidence",
-    "inputs": []
-  },
-  {
-    "type": "error",
     "name": "MarketCancelledStatus",
     "inputs": []
   },
@@ -742,5 +686,44 @@
     "type": "error",
     "name": "UnauthorizedCanceller",
     "inputs": []
+  },
+  {
+    "type": "function",
+    "name": "resolve",
+    "inputs": [
+      {
+        "name": "outcome",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "enum PredictionMarket.Outcome"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "MarketResolved",
+    "inputs": [
+      {
+        "name": "resolver",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "outcome",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "enum PredictionMarket.Outcome"
+      },
+      {
+        "name": "totalDeposited",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
   }
 ]

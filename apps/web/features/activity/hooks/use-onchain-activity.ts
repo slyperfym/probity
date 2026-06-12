@@ -31,7 +31,7 @@ const winningsClaimedEvent = parseAbiItem(
   "event WinningsClaimed(address indexed user, uint256 amount)"
 );
 const marketResolvedEvent = parseAbiItem(
-  "event MarketResolved(address indexed resolver, uint8 indexed outcome, uint256 totalDeposited, string evidenceURI)"
+  "event MarketResolved(address indexed resolver, uint8 indexed outcome, uint256 totalDeposited)"
 );
 const marketCreatedEvent = parseAbiItem(
   "event MarketCreated(address indexed market, address indexed creator, address indexed settlementToken, address resolver, uint256 expirationTime, string title, string metadataURI)"

@@ -46,7 +46,6 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
   const resolveWrite = useWriteContract();
   const resolveReceipt = useWaitForTransactionReceipt({ hash: resolveWrite.data });
   const [pendingMarketId, setPendingMarketId] = React.useState<string | null>(null);
-  const [evidenceByMarketId, setEvidenceByMarketId] = React.useState<Record<string, string>>({});
   const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const [activity, setActivity] = React.useState<ActivityFeedItem[]>([]);
 
@@ -94,16 +93,10 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
       return;
     }
 
-    const evidence = evidenceByMarketId[market.id]?.trim() ?? "";
-
-    if (!evidence) {
-      return;
-    }
-
     setPendingMarketId(`${market.id}:${outcome}`);
     resolveWrite.writeContract({
       ...getPredictionMarketConfig(market.contractAddress),
-      args: [outcome === "YES" ? 1 : 2, evidence],
+      args: [outcome === "YES" ? 1 : 2],
       functionName: "resolve"
     });
   }
@@ -175,30 +168,11 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                         })}
                       />
                     </div>
-                    {market.status === "awaiting_resolution" && (
-                      <label className="mt-3 block max-w-2xl text-xs text-slate-500">
-                        Resolver-submitted evidence
-                        <input
-                          className="mt-1 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-300"
-                          onChange={(event) =>
-                            setEvidenceByMarketId((current) => ({
-                              ...current,
-                              [market.id]: event.target.value
-                            }))
-                          }
-                          placeholder="URL, transaction hash, IPFS URI, or source reference"
-                          value={evidenceByMarketId[market.id] ?? ""}
-                        />
-                      </label>
-                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 lg:flex lg:shrink-0">
                     <Button
                       className="w-full"
-                      disabled={
-                        !canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market }) ||
-                        !(evidenceByMarketId[market.id]?.trim())
-                      }
+                      disabled={!canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market })}
                       onClick={() => resolveMarket(market, "YES")}
                       size="sm"
                       variant="secondary"
@@ -210,10 +184,7 @@ export function ResolverDashboard({ markets: mockMarkets }: { markets: ResolverM
                     </Button>
                     <Button
                       className="w-full"
-                      disabled={
-                        !canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market }) ||
-                        !(evidenceByMarketId[market.id]?.trim())
-                      }
+                      disabled={!canResolve({ accountAddress, isConnected, isLocalMode, isResolving, market })}
                       onClick={() => resolveMarket(market, "NO")}
                       size="sm"
                       variant="secondary"

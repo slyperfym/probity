@@ -57,9 +57,7 @@ contract PredictionMarket {
         uint256 totalYesShares,
         uint256 totalNoShares
     );
-    event MarketResolved(
-        address indexed resolver, Outcome indexed outcome, uint256 totalDeposited, string evidenceURI
-    );
+    event MarketResolved(address indexed resolver, Outcome indexed outcome, uint256 totalDeposited);
     event MarketCancelled(address indexed canceller);
     event WinningsClaimed(address indexed user, uint256 amount);
     event RefundClaimed(address indexed user, uint256 amount);
@@ -78,7 +76,6 @@ contract PredictionMarket {
     error UnauthorizedResolver();
     error UnauthorizedCanceller();
     error InvalidOutcome();
-    error EmptyEvidence();
     error AmountZero();
     error InsufficientPosition();
     error InsufficientContractLiquidity();
@@ -139,19 +136,17 @@ contract PredictionMarket {
         payout = _sell(Side.No, amount);
     }
 
-    function resolve(Outcome outcome, string calldata evidenceURI) external {
+    function resolve(Outcome outcome) external {
         if (msg.sender != resolver) revert UnauthorizedResolver();
         if (status == Status.Cancelled) revert MarketCancelledStatus();
         if (status != Status.Active) revert MarketAlreadyResolved();
         if (block.timestamp < expirationTime) revert MarketNotExpired();
         if (outcome != Outcome.Yes && outcome != Outcome.No) revert InvalidOutcome();
-        if (bytes(evidenceURI).length == 0) revert EmptyEvidence();
 
         status = Status.Resolved;
         resolvedOutcome = outcome;
-        _resolutionEvidence = evidenceURI;
 
-        emit MarketResolved(msg.sender, outcome, totalDeposited, evidenceURI);
+        emit MarketResolved(msg.sender, outcome, totalDeposited);
     }
 
     function cancel() external {

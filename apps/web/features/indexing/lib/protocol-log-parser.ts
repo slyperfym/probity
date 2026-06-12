@@ -139,7 +139,6 @@ function parsePredictionMarketEvent(
 
   if (decoded.eventName === "MarketResolved") {
     const args = decoded.args as unknown as {
-      evidenceURI: string;
       outcome: number;
       resolver: Address;
       totalDeposited: bigint;
@@ -149,7 +148,6 @@ function parsePredictionMarketEvent(
       ...blockRef,
       eventName: "MarketResolved",
       market,
-      evidenceURI: args.evidenceURI,
       outcome: args.outcome === 1 ? "YES" : "NO",
       resolver: args.resolver,
       totalDeposited: args.totalDeposited
