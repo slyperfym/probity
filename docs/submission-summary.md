@@ -79,7 +79,7 @@ Probity is live on Arc Testnet with chain ID `5042002`, RPC `https://rpc.testnet
 4. Open a market detail page and explain YES/NO probabilities.
 5. Explain wallet connection and Arc Testnet settlement-token trading.
 6. Show the admin resolver dashboard.
-7. Open `/protocol-evidence` and verify the MarketFactory, resolver, settlement token, and sample market Arcscan links.
+7. Open `/protocol-evidence` and verify the MarketFactory, settlement token, market count, and sample market Arcscan links.
 
 ## Technical Highlights
 

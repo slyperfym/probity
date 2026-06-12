@@ -128,7 +128,6 @@ export const deploymentConfig = {
   marketCount: activeDeployment.marketCount,
   marketExplorerBaseUrl: activeDeploymentTarget === "arc-testnet" ? "https://testnet.arcscan.app/address" : "",
   markets: (activeDeployment.markets ?? []).map(normalizeAddress).filter(Boolean),
-  resolverAddress: normalizeAddress(activeDeployment.metadata?.resolver),
   target: activeDeploymentTarget
 } as const;
 

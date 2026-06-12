@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 import type { Address } from "viem";
 
 import { contractAddresses, deploymentConfig } from "@/config/contracts";
@@ -9,7 +7,6 @@ import { useMarketFactoryMarketCount } from "@/features/contracts/hooks/use-mark
 import { cn } from "@/lib/utils";
 
 type ProtocolEvidencePanelProps = {
-  compact?: boolean;
   className?: string;
   title?: string;
 };
@@ -17,7 +14,6 @@ type ProtocolEvidencePanelProps = {
 const ARCSCAN_ADDRESS_URL = "https://testnet.arcscan.app/address";
 
 export function ProtocolEvidencePanel({
-  compact = false,
   className,
   title = "Live Arc Testnet"
 }: ProtocolEvidencePanelProps) {
@@ -32,7 +28,6 @@ export function ProtocolEvidencePanel({
         : "Checking...";
   const factoryAddress = contractAddresses.MarketFactory;
   const settlementTokenAddress = contractAddresses.MockUSDC;
-  const resolverAddress = deploymentConfig.resolverAddress;
 
   return (
     <section className={cn("rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5", className)}>
@@ -43,16 +38,9 @@ export function ProtocolEvidencePanel({
           </div>
           <h2 className="mt-1 text-lg font-semibold text-slate-950">{title}</h2>
         </div>
-        <Link
-          className="inline-flex h-8 w-fit items-center gap-1.5 rounded-full border border-slate-200 px-3 text-xs font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
-          href="/protocol-evidence"
-        >
-          Protocol Evidence
-          <ExternalLink className="h-3.5 w-3.5" />
-        </Link>
       </div>
 
-      <div className={cn("mt-4 grid gap-2", compact ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2")}>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <EvidenceItem label="Chain ID" value={String(deploymentConfig.chainId)} />
         <EvidenceItem label="Current market count" value={marketCount} />
         <EvidenceItem
@@ -65,13 +53,6 @@ export function ProtocolEvidencePanel({
           label="Settlement token"
           value={formatAddress(settlementTokenAddress)}
         />
-        {!compact && (
-          <EvidenceItem
-            href={addressUrl(resolverAddress)}
-            label="Resolver"
-            value={formatAddress(resolverAddress)}
-          />
-        )}
       </div>
 
       <p className="mt-4 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-600">

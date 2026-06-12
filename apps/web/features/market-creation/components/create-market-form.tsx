@@ -58,9 +58,7 @@ export function CreateMarketForm() {
       : ""
   );
   const [expiry, setExpiry] = React.useState(() => toDateInputValue(importedExpiry));
-  const [resolver, setResolver] = React.useState(
-    deploymentConfig.resolverAddress ?? accountAddress ?? ""
-  );
+  const [resolver, setResolver] = React.useState(accountAddress ?? "");
   const [hasManuallyEditedResolver, setHasManuallyEditedResolver] = React.useState(false);
   const [isRefreshingOnchainData, setIsRefreshingOnchainData] = React.useState(false);
   const resolutionCriteriaId = React.useId();
@@ -127,10 +125,8 @@ export function CreateMarketForm() {
       return;
     }
 
-    const configuredResolver = deploymentConfig.resolverAddress;
     const shouldUseCreatorWallet =
       !resolver ||
-      (configuredResolver && resolver.toLowerCase() === configuredResolver.toLowerCase()) ||
       !isAddress(resolver);
 
     if (shouldUseCreatorWallet) {

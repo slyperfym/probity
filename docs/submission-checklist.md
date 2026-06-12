@@ -24,7 +24,7 @@
 - Open the wallet connection control and note that wallet support is configured with wagmi, viem, and RainbowKit.
 - Visit the portfolio page to show positions, claimable rewards, and activity history.
 - Visit the admin page to show resolver-controlled settlement and claimable market operations.
-- Close by opening `/protocol-evidence` and verifying the active MarketFactory, resolver, settlement token, and sample market Arcscan links.
+- Close by opening `/protocol-evidence` and verifying the active MarketFactory, settlement token, market count, and sample market Arcscan links.
 
 ## Arc Testnet Readiness Checklist
 
@@ -46,7 +46,7 @@
 
 - Confirm `https://probity-market.vercel.app` loads successfully.
 - Confirm browser title reads `Probity`.
-- Confirm `/markets` shows the Live Arc Testnet section with chain ID, MarketFactory, settlement token, and market count.
+- Confirm `/markets` focuses on trading and discovery without the protocol transparency widget.
 - Confirm `/protocol-evidence` shows Arcscan links for the active deployment.
 - Confirm navigation works for `/`, `/markets`, `/portfolio`, `/protocol-evidence`, `/create`, and `/admin`.
 - Confirm README, submission summary, and demo script match the public demo state.
