@@ -93,13 +93,7 @@ contract MarketFactory {
         if (expirationTime <= block.timestamp) revert InvalidExpiration();
 
         PredictionMarket predictionMarket = new PredictionMarket(
-            address(this),
-            msg.sender,
-            settlementToken,
-            resolver,
-            expirationTime,
-            title,
-            metadataURI
+            address(this), msg.sender, settlementToken, resolver, expirationTime, title, metadataURI
         );
 
         market = address(predictionMarket);

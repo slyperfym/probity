@@ -58,13 +58,7 @@ contract SeedLocalMarkets is LocalScriptBase {
         vm.writeFile(
             LOCAL_ADDRESSES_PATH,
             _deploymentJson(
-                factoryAddress,
-                usdcAddress,
-                markets,
-                resolver,
-                resolver,
-                "local-anvil",
-                "MockUSDC"
+                factoryAddress, usdcAddress, markets, resolver, resolver, "local-anvil", "MockUSDC"
             )
         );
     }

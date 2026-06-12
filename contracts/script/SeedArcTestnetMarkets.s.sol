@@ -52,11 +52,9 @@ contract SeedArcTestnetMarkets is LocalScriptBase {
         );
     }
 
-    function _createDemoMarkets(
-        MarketFactory factory,
-        address settlementToken,
-        address resolver
-    ) internal {
+    function _createDemoMarkets(MarketFactory factory, address settlementToken, address resolver)
+        internal
+    {
         factory.createMarket(
             settlementToken,
             resolver,

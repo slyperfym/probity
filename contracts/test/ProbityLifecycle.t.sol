@@ -185,7 +185,9 @@ contract ProbityLifecycleTest is TestBase {
         market.resolve(PredictionMarket.Outcome.Yes);
 
         assertEq(uint256(market.status()), uint256(PredictionMarket.Status.Resolved), "resolved");
-        assertEq(uint256(market.resolvedOutcome()), uint256(PredictionMarket.Outcome.Yes), "outcome");
+        assertEq(
+            uint256(market.resolvedOutcome()), uint256(PredictionMarket.Outcome.Yes), "outcome"
+        );
     }
 
     function testCannotResolveBeforeExpiration() public {
@@ -289,7 +291,9 @@ contract ProbityLifecycleTest is TestBase {
 
         market.cancel();
 
-        assertEq(uint256(market.status()), uint256(PredictionMarket.Status.Cancelled), "owner cancelled");
+        assertEq(
+            uint256(market.status()), uint256(PredictionMarket.Status.Cancelled), "owner cancelled"
+        );
     }
 
     function testUnauthorizedCancelRejected() public {

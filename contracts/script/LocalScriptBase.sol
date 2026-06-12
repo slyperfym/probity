@@ -7,7 +7,10 @@ interface Vm {
     function envOr(string calldata name, address defaultValue) external returns (address value);
     function envOr(string calldata name, uint256 defaultValue) external returns (uint256 value);
     function envUint(string calldata name) external returns (uint256 value);
-    function parseJsonAddress(string calldata json, string calldata key) external pure returns (address);
+    function parseJsonAddress(string calldata json, string calldata key)
+        external
+        pure
+        returns (address);
     function readFile(string calldata path) external view returns (string memory data);
     function startBroadcast(uint256 privateKey) external;
     function stopBroadcast() external;
@@ -24,7 +27,8 @@ abstract contract LocalScriptBase {
     address internal constant ANVIL_ACCOUNT_4 = 0x90F79bf6EB2c4f870365E785982E1f101E93b906;
 
     string internal constant LOCAL_ADDRESSES_PATH = "../deployments/local/addresses.json";
-    string internal constant ARC_TESTNET_ADDRESSES_PATH = "../deployments/arc-testnet/addresses.json";
+    string internal constant ARC_TESTNET_ADDRESSES_PATH =
+        "../deployments/arc-testnet/addresses.json";
 
     function _privateKey() internal returns (uint256) {
         return vm.envOr("LOCAL_PRIVATE_KEY", DEFAULT_ANVIL_PRIVATE_KEY);

@@ -58,11 +58,10 @@ contract DeployArcTestnet is LocalScriptBase {
         );
     }
 
-    function _createDemoMarkets(
-        MarketFactory factory,
-        address settlementToken,
-        address resolver
-    ) internal returns (address[] memory markets) {
+    function _createDemoMarkets(MarketFactory factory, address settlementToken, address resolver)
+        internal
+        returns (address[] memory markets)
+    {
         markets = new address[](3);
 
         markets[0] = factory.createMarket(

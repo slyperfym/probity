@@ -62,7 +62,11 @@ contract MockUSDC is IERC20 {
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) external override returns (bool) {
+    function transferFrom(address from, address to, uint256 amount)
+        external
+        override
+        returns (bool)
+    {
         uint256 allowed = allowance[from][msg.sender];
         if (allowed < amount) revert InsufficientAllowance();
 

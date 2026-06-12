@@ -225,7 +225,11 @@ contract PredictionMarket {
         return yesShares[user] + noShares[user];
     }
 
-    function getPosition(address user) external view returns (uint256 yes, uint256 no, bool hasClaimed) {
+    function getPosition(address user)
+        external
+        view
+        returns (uint256 yes, uint256 no, bool hasClaimed)
+    {
         return (yesShares[user], noShares[user], claimed[user]);
     }
 
